@@ -63,7 +63,7 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
   ```
 
 ### 1.4 Configuración de Testing
-- [] Instalar dependencias de testing:
+- [x] Instalar dependencias de testing:
   ```bash
   # Para el cliente React
   cd app
@@ -73,10 +73,10 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
   cd ../server
   npm install --save-dev jest supertest
   ```
-- [] Configurar Jest para el cliente (app/jest.config.js)
-- [] Configurar Jest para el servidor (server/jest.config.js)
-- [] Configurar setup de testing para cada parte
-- [] Organizar estructura de tests en directorio __tests__/
+- [x] Configurar Jest para el cliente (app/jest.config.js)
+- [x] Configurar Jest para el servidor (server/jest.config.js)
+- [x] Configurar setup de testing para cada parte
+- [x] Organizar estructura de tests en directorio __tests__/
 
 ## Fase 2: Implementación de Funcionalidades Core
 
