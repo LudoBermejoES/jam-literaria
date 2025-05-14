@@ -15,45 +15,51 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  username  String
-  createdAt DateTime  @default(now())
-  sessions  Session[] @relation("UserSessions")
-  ideas     Idea[]
-  votes     Vote[]
+  id           String     @id @default(uuid())
+  name         String
+  sessions     Session[]  @relation("SessionParticipants")
+  ownedSessions Session[] @relation("SessionOwner")
+  ideas        Idea[]
+  votes        Vote[]
+  createdAt    DateTime   @default(now())
+  lastActive   DateTime   @default(now())  // Para gestionar reconexiones
 }
 
 model Session {
-  id        String   @id @default(uuid())
-  code      String   @unique
-  createdAt DateTime @default(now())
-  status    String   @default("WAITING") // WAITING, IDEAS, VOTING, FINISHED
-  users     User[]   @relation("UserSessions")
-  ideas     Idea[]
-  votes     Vote[]
-  ownerId   String
+  id           String     @id @default(uuid())
+  code         String     @unique // Código único para unirse (autor o libro famoso)
+  status       String     @default("WAITING") // WAITING, COLLECTING_IDEAS, VOTING, REVOTING, FINISHED
+  currentRound Int        @default(0)
+  owner        User       @relation("SessionOwner", fields: [ownerId], references: [id])
+  ownerId      String
+  participants User[]     @relation("SessionParticipants")
+  ideas        Idea[]
+  votes        Vote[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model Idea {
   id        String   @id @default(uuid())
-  content   String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
+  content   String   // Sin límite de longitud
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
   session   Session  @relation(fields: [sessionId], references: [id])
   sessionId String
   votes     Vote[]
+  createdAt DateTime @default(now())
 }
 
 model Vote {
   id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   userId    String
-  session   Session  @relation(fields: [sessionId], references: [id])
-  sessionId String
   idea      Idea     @relation(fields: [ideaId], references: [id])
   ideaId    String
+  session   Session  @relation(fields: [sessionId], references: [id])
+  sessionId String
+  round     Int      // Para identificar la ronda de votación
+  createdAt DateTime @default(now())
 
-  @@unique([userId, ideaId])
+  @@unique([userId, ideaId, round, sessionId])
 }

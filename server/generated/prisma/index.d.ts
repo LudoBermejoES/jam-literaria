@@ -1143,12 +1143,14 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     sessions: number
+    ownedSessions: number
     ideas: number
     votes: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+    ownedSessions?: boolean | UserCountOutputTypeCountOwnedSessionsArgs
     ideas?: boolean | UserCountOutputTypeCountIdeasArgs
     votes?: boolean | UserCountOutputTypeCountVotesArgs
   }
@@ -1174,6 +1176,13 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountOwnedSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SessionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountIdeasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: IdeaWhereInput
   }
@@ -1191,13 +1200,13 @@ export namespace Prisma {
    */
 
   export type SessionCountOutputType = {
-    users: number
+    participants: number
     ideas: number
     votes: number
   }
 
   export type SessionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    users?: boolean | SessionCountOutputTypeCountUsersArgs
+    participants?: boolean | SessionCountOutputTypeCountParticipantsArgs
     ideas?: boolean | SessionCountOutputTypeCountIdeasArgs
     votes?: boolean | SessionCountOutputTypeCountVotesArgs
   }
@@ -1216,7 +1225,7 @@ export namespace Prisma {
   /**
    * SessionCountOutputType without action
    */
-  export type SessionCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SessionCountOutputTypeCountParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserWhereInput
   }
 
@@ -1282,40 +1291,46 @@ export namespace Prisma {
 
   export type UserMinAggregateOutputType = {
     id: string | null
-    username: string | null
+    name: string | null
     createdAt: Date | null
+    lastActive: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
     id: string | null
-    username: string | null
+    name: string | null
     createdAt: Date | null
+    lastActive: Date | null
   }
 
   export type UserCountAggregateOutputType = {
     id: number
-    username: number
+    name: number
     createdAt: number
+    lastActive: number
     _all: number
   }
 
 
   export type UserMinAggregateInputType = {
     id?: true
-    username?: true
+    name?: true
     createdAt?: true
+    lastActive?: true
   }
 
   export type UserMaxAggregateInputType = {
     id?: true
-    username?: true
+    name?: true
     createdAt?: true
+    lastActive?: true
   }
 
   export type UserCountAggregateInputType = {
     id?: true
-    username?: true
+    name?: true
     createdAt?: true
+    lastActive?: true
     _all?: true
   }
 
@@ -1393,8 +1408,9 @@ export namespace Prisma {
 
   export type UserGroupByOutputType = {
     id: string
-    username: string
+    name: string
     createdAt: Date
+    lastActive: Date
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -1416,9 +1432,11 @@ export namespace Prisma {
 
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    username?: boolean
+    name?: boolean
     createdAt?: boolean
+    lastActive?: boolean
     sessions?: boolean | User$sessionsArgs<ExtArgs>
+    ownedSessions?: boolean | User$ownedSessionsArgs<ExtArgs>
     ideas?: boolean | User$ideasArgs<ExtArgs>
     votes?: boolean | User$votesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1426,25 +1444,29 @@ export namespace Prisma {
 
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    username?: boolean
+    name?: boolean
     createdAt?: boolean
+    lastActive?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    username?: boolean
+    name?: boolean
     createdAt?: boolean
+    lastActive?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
     id?: boolean
-    username?: boolean
+    name?: boolean
     createdAt?: boolean
+    lastActive?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "createdAt" | "lastActive", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sessions?: boolean | User$sessionsArgs<ExtArgs>
+    ownedSessions?: boolean | User$ownedSessionsArgs<ExtArgs>
     ideas?: boolean | User$ideasArgs<ExtArgs>
     votes?: boolean | User$votesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1456,13 +1478,15 @@ export namespace Prisma {
     name: "User"
     objects: {
       sessions: Prisma.$SessionPayload<ExtArgs>[]
+      ownedSessions: Prisma.$SessionPayload<ExtArgs>[]
       ideas: Prisma.$IdeaPayload<ExtArgs>[]
       votes: Prisma.$VotePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      username: string
+      name: string
       createdAt: Date
+      lastActive: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1858,6 +1882,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     sessions<T extends User$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    ownedSessions<T extends User$ownedSessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$ownedSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ideas<T extends User$ideasArgs<ExtArgs> = {}>(args?: Subset<T, User$ideasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IdeaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     votes<T extends User$votesArgs<ExtArgs> = {}>(args?: Subset<T, User$votesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -1890,8 +1915,9 @@ export namespace Prisma {
    */
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
-    readonly username: FieldRef<"User", 'String'>
+    readonly name: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
+    readonly lastActive: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -2302,6 +2328,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.ownedSessions
+   */
+  export type User$ownedSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
+    select?: SessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Session
+     */
+    omit?: SessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionInclude<ExtArgs> | null
+    where?: SessionWhereInput
+    orderBy?: SessionOrderByWithRelationInput | SessionOrderByWithRelationInput[]
+    cursor?: SessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[]
+  }
+
+  /**
    * User.ideas
    */
   export type User$ideasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2374,58 +2424,88 @@ export namespace Prisma {
 
   export type AggregateSession = {
     _count: SessionCountAggregateOutputType | null
+    _avg: SessionAvgAggregateOutputType | null
+    _sum: SessionSumAggregateOutputType | null
     _min: SessionMinAggregateOutputType | null
     _max: SessionMaxAggregateOutputType | null
+  }
+
+  export type SessionAvgAggregateOutputType = {
+    currentRound: number | null
+  }
+
+  export type SessionSumAggregateOutputType = {
+    currentRound: number | null
   }
 
   export type SessionMinAggregateOutputType = {
     id: string | null
     code: string | null
-    createdAt: Date | null
     status: string | null
+    currentRound: number | null
     ownerId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SessionMaxAggregateOutputType = {
     id: string | null
     code: string | null
-    createdAt: Date | null
     status: string | null
+    currentRound: number | null
     ownerId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SessionCountAggregateOutputType = {
     id: number
     code: number
-    createdAt: number
     status: number
+    currentRound: number
     ownerId: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
 
+  export type SessionAvgAggregateInputType = {
+    currentRound?: true
+  }
+
+  export type SessionSumAggregateInputType = {
+    currentRound?: true
+  }
+
   export type SessionMinAggregateInputType = {
     id?: true
     code?: true
-    createdAt?: true
     status?: true
+    currentRound?: true
     ownerId?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type SessionMaxAggregateInputType = {
     id?: true
     code?: true
-    createdAt?: true
     status?: true
+    currentRound?: true
     ownerId?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type SessionCountAggregateInputType = {
     id?: true
     code?: true
-    createdAt?: true
     status?: true
+    currentRound?: true
     ownerId?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -2467,6 +2547,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: SessionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SessionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: SessionMinAggregateInputType
@@ -2497,6 +2589,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: SessionCountAggregateInputType | true
+    _avg?: SessionAvgAggregateInputType
+    _sum?: SessionSumAggregateInputType
     _min?: SessionMinAggregateInputType
     _max?: SessionMaxAggregateInputType
   }
@@ -2504,10 +2598,14 @@ export namespace Prisma {
   export type SessionGroupByOutputType = {
     id: string
     code: string
-    createdAt: Date
     status: string
+    currentRound: number
     ownerId: string
+    createdAt: Date
+    updatedAt: Date
     _count: SessionCountAggregateOutputType | null
+    _avg: SessionAvgAggregateOutputType | null
+    _sum: SessionSumAggregateOutputType | null
     _min: SessionMinAggregateOutputType | null
     _max: SessionMaxAggregateOutputType | null
   }
@@ -2529,10 +2627,13 @@ export namespace Prisma {
   export type SessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     code?: boolean
-    createdAt?: boolean
     status?: boolean
+    currentRound?: boolean
     ownerId?: boolean
-    users?: boolean | Session$usersArgs<ExtArgs>
+    createdAt?: boolean
+    updatedAt?: boolean
+    owner?: boolean | UserDefaultArgs<ExtArgs>
+    participants?: boolean | Session$participantsArgs<ExtArgs>
     ideas?: boolean | Session$ideasArgs<ExtArgs>
     votes?: boolean | Session$votesArgs<ExtArgs>
     _count?: boolean | SessionCountOutputTypeDefaultArgs<ExtArgs>
@@ -2541,50 +2642,66 @@ export namespace Prisma {
   export type SessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     code?: boolean
-    createdAt?: boolean
     status?: boolean
+    currentRound?: boolean
     ownerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    owner?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["session"]>
 
   export type SessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     code?: boolean
-    createdAt?: boolean
     status?: boolean
+    currentRound?: boolean
     ownerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    owner?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["session"]>
 
   export type SessionSelectScalar = {
     id?: boolean
     code?: boolean
-    createdAt?: boolean
     status?: boolean
+    currentRound?: boolean
     ownerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type SessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "createdAt" | "status" | "ownerId", ExtArgs["result"]["session"]>
+  export type SessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "status" | "currentRound" | "ownerId" | "createdAt" | "updatedAt", ExtArgs["result"]["session"]>
   export type SessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    users?: boolean | Session$usersArgs<ExtArgs>
+    owner?: boolean | UserDefaultArgs<ExtArgs>
+    participants?: boolean | Session$participantsArgs<ExtArgs>
     ideas?: boolean | Session$ideasArgs<ExtArgs>
     votes?: boolean | Session$votesArgs<ExtArgs>
     _count?: boolean | SessionCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type SessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type SessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type SessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    owner?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type SessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    owner?: boolean | UserDefaultArgs<ExtArgs>
+  }
 
   export type $SessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Session"
     objects: {
-      users: Prisma.$UserPayload<ExtArgs>[]
+      owner: Prisma.$UserPayload<ExtArgs>
+      participants: Prisma.$UserPayload<ExtArgs>[]
       ideas: Prisma.$IdeaPayload<ExtArgs>[]
       votes: Prisma.$VotePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       code: string
-      createdAt: Date
       status: string
+      currentRound: number
       ownerId: string
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["session"]>
     composites: {}
   }
@@ -2979,7 +3096,8 @@ export namespace Prisma {
    */
   export interface Prisma__SessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    users<T extends Session$usersArgs<ExtArgs> = {}>(args?: Subset<T, Session$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    participants<T extends Session$participantsArgs<ExtArgs> = {}>(args?: Subset<T, Session$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ideas<T extends Session$ideasArgs<ExtArgs> = {}>(args?: Subset<T, Session$ideasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IdeaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     votes<T extends Session$votesArgs<ExtArgs> = {}>(args?: Subset<T, Session$votesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -3013,9 +3131,11 @@ export namespace Prisma {
   interface SessionFieldRefs {
     readonly id: FieldRef<"Session", 'String'>
     readonly code: FieldRef<"Session", 'String'>
-    readonly createdAt: FieldRef<"Session", 'DateTime'>
     readonly status: FieldRef<"Session", 'String'>
+    readonly currentRound: FieldRef<"Session", 'Int'>
     readonly ownerId: FieldRef<"Session", 'String'>
+    readonly createdAt: FieldRef<"Session", 'DateTime'>
+    readonly updatedAt: FieldRef<"Session", 'DateTime'>
   }
     
 
@@ -3263,6 +3383,10 @@ export namespace Prisma {
      * The data used to create many Sessions.
      */
     data: SessionCreateManyInput | SessionCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -3333,6 +3457,10 @@ export namespace Prisma {
      * Limit how many Sessions to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -3402,9 +3530,9 @@ export namespace Prisma {
   }
 
   /**
-   * Session.users
+   * Session.participants
    */
-  export type Session$usersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Session$participantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the User
      */
@@ -3505,25 +3633,25 @@ export namespace Prisma {
   export type IdeaMinAggregateOutputType = {
     id: string | null
     content: string | null
-    createdAt: Date | null
-    userId: string | null
+    authorId: string | null
     sessionId: string | null
+    createdAt: Date | null
   }
 
   export type IdeaMaxAggregateOutputType = {
     id: string | null
     content: string | null
-    createdAt: Date | null
-    userId: string | null
+    authorId: string | null
     sessionId: string | null
+    createdAt: Date | null
   }
 
   export type IdeaCountAggregateOutputType = {
     id: number
     content: number
-    createdAt: number
-    userId: number
+    authorId: number
     sessionId: number
+    createdAt: number
     _all: number
   }
 
@@ -3531,25 +3659,25 @@ export namespace Prisma {
   export type IdeaMinAggregateInputType = {
     id?: true
     content?: true
-    createdAt?: true
-    userId?: true
+    authorId?: true
     sessionId?: true
+    createdAt?: true
   }
 
   export type IdeaMaxAggregateInputType = {
     id?: true
     content?: true
-    createdAt?: true
-    userId?: true
+    authorId?: true
     sessionId?: true
+    createdAt?: true
   }
 
   export type IdeaCountAggregateInputType = {
     id?: true
     content?: true
-    createdAt?: true
-    userId?: true
+    authorId?: true
     sessionId?: true
+    createdAt?: true
     _all?: true
   }
 
@@ -3628,9 +3756,9 @@ export namespace Prisma {
   export type IdeaGroupByOutputType = {
     id: string
     content: string
-    createdAt: Date
-    userId: string
+    authorId: string
     sessionId: string
+    createdAt: Date
     _count: IdeaCountAggregateOutputType | null
     _min: IdeaMinAggregateOutputType | null
     _max: IdeaMaxAggregateOutputType | null
@@ -3653,10 +3781,10 @@ export namespace Prisma {
   export type IdeaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     content?: boolean
-    createdAt?: boolean
-    userId?: boolean
+    authorId?: boolean
     sessionId?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    createdAt?: boolean
+    author?: boolean | UserDefaultArgs<ExtArgs>
     session?: boolean | SessionDefaultArgs<ExtArgs>
     votes?: boolean | Idea$votesArgs<ExtArgs>
     _count?: boolean | IdeaCountOutputTypeDefaultArgs<ExtArgs>
@@ -3665,60 +3793,60 @@ export namespace Prisma {
   export type IdeaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     content?: boolean
-    createdAt?: boolean
-    userId?: boolean
+    authorId?: boolean
     sessionId?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    createdAt?: boolean
+    author?: boolean | UserDefaultArgs<ExtArgs>
     session?: boolean | SessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["idea"]>
 
   export type IdeaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     content?: boolean
-    createdAt?: boolean
-    userId?: boolean
+    authorId?: boolean
     sessionId?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    createdAt?: boolean
+    author?: boolean | UserDefaultArgs<ExtArgs>
     session?: boolean | SessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["idea"]>
 
   export type IdeaSelectScalar = {
     id?: boolean
     content?: boolean
-    createdAt?: boolean
-    userId?: boolean
+    authorId?: boolean
     sessionId?: boolean
+    createdAt?: boolean
   }
 
-  export type IdeaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "content" | "createdAt" | "userId" | "sessionId", ExtArgs["result"]["idea"]>
+  export type IdeaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "content" | "authorId" | "sessionId" | "createdAt", ExtArgs["result"]["idea"]>
   export type IdeaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    author?: boolean | UserDefaultArgs<ExtArgs>
     session?: boolean | SessionDefaultArgs<ExtArgs>
     votes?: boolean | Idea$votesArgs<ExtArgs>
     _count?: boolean | IdeaCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type IdeaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    author?: boolean | UserDefaultArgs<ExtArgs>
     session?: boolean | SessionDefaultArgs<ExtArgs>
   }
   export type IdeaIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    author?: boolean | UserDefaultArgs<ExtArgs>
     session?: boolean | SessionDefaultArgs<ExtArgs>
   }
 
   export type $IdeaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Idea"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
+      author: Prisma.$UserPayload<ExtArgs>
       session: Prisma.$SessionPayload<ExtArgs>
       votes: Prisma.$VotePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       content: string
-      createdAt: Date
-      userId: string
+      authorId: string
       sessionId: string
+      createdAt: Date
     }, ExtArgs["result"]["idea"]>
     composites: {}
   }
@@ -4113,7 +4241,7 @@ export namespace Prisma {
    */
   export interface Prisma__IdeaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    author<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     session<T extends SessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SessionDefaultArgs<ExtArgs>>): Prisma__SessionClient<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     votes<T extends Idea$votesArgs<ExtArgs> = {}>(args?: Subset<T, Idea$votesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -4147,9 +4275,9 @@ export namespace Prisma {
   interface IdeaFieldRefs {
     readonly id: FieldRef<"Idea", 'String'>
     readonly content: FieldRef<"Idea", 'String'>
-    readonly createdAt: FieldRef<"Idea", 'DateTime'>
-    readonly userId: FieldRef<"Idea", 'String'>
+    readonly authorId: FieldRef<"Idea", 'String'>
     readonly sessionId: FieldRef<"Idea", 'String'>
+    readonly createdAt: FieldRef<"Idea", 'DateTime'>
   }
     
 
@@ -4592,58 +4720,82 @@ export namespace Prisma {
 
   export type AggregateVote = {
     _count: VoteCountAggregateOutputType | null
+    _avg: VoteAvgAggregateOutputType | null
+    _sum: VoteSumAggregateOutputType | null
     _min: VoteMinAggregateOutputType | null
     _max: VoteMaxAggregateOutputType | null
   }
 
+  export type VoteAvgAggregateOutputType = {
+    round: number | null
+  }
+
+  export type VoteSumAggregateOutputType = {
+    round: number | null
+  }
+
   export type VoteMinAggregateOutputType = {
     id: string | null
-    createdAt: Date | null
     userId: string | null
-    sessionId: string | null
     ideaId: string | null
+    sessionId: string | null
+    round: number | null
+    createdAt: Date | null
   }
 
   export type VoteMaxAggregateOutputType = {
     id: string | null
-    createdAt: Date | null
     userId: string | null
-    sessionId: string | null
     ideaId: string | null
+    sessionId: string | null
+    round: number | null
+    createdAt: Date | null
   }
 
   export type VoteCountAggregateOutputType = {
     id: number
-    createdAt: number
     userId: number
-    sessionId: number
     ideaId: number
+    sessionId: number
+    round: number
+    createdAt: number
     _all: number
   }
 
 
+  export type VoteAvgAggregateInputType = {
+    round?: true
+  }
+
+  export type VoteSumAggregateInputType = {
+    round?: true
+  }
+
   export type VoteMinAggregateInputType = {
     id?: true
-    createdAt?: true
     userId?: true
-    sessionId?: true
     ideaId?: true
+    sessionId?: true
+    round?: true
+    createdAt?: true
   }
 
   export type VoteMaxAggregateInputType = {
     id?: true
-    createdAt?: true
     userId?: true
-    sessionId?: true
     ideaId?: true
+    sessionId?: true
+    round?: true
+    createdAt?: true
   }
 
   export type VoteCountAggregateInputType = {
     id?: true
-    createdAt?: true
     userId?: true
-    sessionId?: true
     ideaId?: true
+    sessionId?: true
+    round?: true
+    createdAt?: true
     _all?: true
   }
 
@@ -4685,6 +4837,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: VoteAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: VoteSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: VoteMinAggregateInputType
@@ -4715,17 +4879,22 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: VoteCountAggregateInputType | true
+    _avg?: VoteAvgAggregateInputType
+    _sum?: VoteSumAggregateInputType
     _min?: VoteMinAggregateInputType
     _max?: VoteMaxAggregateInputType
   }
 
   export type VoteGroupByOutputType = {
     id: string
-    createdAt: Date
     userId: string
-    sessionId: string
     ideaId: string
+    sessionId: string
+    round: number
+    createdAt: Date
     _count: VoteCountAggregateOutputType | null
+    _avg: VoteAvgAggregateOutputType | null
+    _sum: VoteSumAggregateOutputType | null
     _min: VoteMinAggregateOutputType | null
     _max: VoteMaxAggregateOutputType | null
   }
@@ -4746,75 +4915,80 @@ export namespace Prisma {
 
   export type VoteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    createdAt?: boolean
     userId?: boolean
-    sessionId?: boolean
     ideaId?: boolean
+    sessionId?: boolean
+    round?: boolean
+    createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-    session?: boolean | SessionDefaultArgs<ExtArgs>
     idea?: boolean | IdeaDefaultArgs<ExtArgs>
+    session?: boolean | SessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vote"]>
 
   export type VoteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    createdAt?: boolean
     userId?: boolean
-    sessionId?: boolean
     ideaId?: boolean
+    sessionId?: boolean
+    round?: boolean
+    createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-    session?: boolean | SessionDefaultArgs<ExtArgs>
     idea?: boolean | IdeaDefaultArgs<ExtArgs>
+    session?: boolean | SessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vote"]>
 
   export type VoteSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    createdAt?: boolean
     userId?: boolean
-    sessionId?: boolean
     ideaId?: boolean
+    sessionId?: boolean
+    round?: boolean
+    createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-    session?: boolean | SessionDefaultArgs<ExtArgs>
     idea?: boolean | IdeaDefaultArgs<ExtArgs>
+    session?: boolean | SessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vote"]>
 
   export type VoteSelectScalar = {
     id?: boolean
-    createdAt?: boolean
     userId?: boolean
-    sessionId?: boolean
     ideaId?: boolean
+    sessionId?: boolean
+    round?: boolean
+    createdAt?: boolean
   }
 
-  export type VoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "createdAt" | "userId" | "sessionId" | "ideaId", ExtArgs["result"]["vote"]>
+  export type VoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "ideaId" | "sessionId" | "round" | "createdAt", ExtArgs["result"]["vote"]>
   export type VoteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    session?: boolean | SessionDefaultArgs<ExtArgs>
     idea?: boolean | IdeaDefaultArgs<ExtArgs>
+    session?: boolean | SessionDefaultArgs<ExtArgs>
   }
   export type VoteIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    session?: boolean | SessionDefaultArgs<ExtArgs>
     idea?: boolean | IdeaDefaultArgs<ExtArgs>
+    session?: boolean | SessionDefaultArgs<ExtArgs>
   }
   export type VoteIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    session?: boolean | SessionDefaultArgs<ExtArgs>
     idea?: boolean | IdeaDefaultArgs<ExtArgs>
+    session?: boolean | SessionDefaultArgs<ExtArgs>
   }
 
   export type $VotePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Vote"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
-      session: Prisma.$SessionPayload<ExtArgs>
       idea: Prisma.$IdeaPayload<ExtArgs>
+      session: Prisma.$SessionPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      createdAt: Date
       userId: string
-      sessionId: string
       ideaId: string
+      sessionId: string
+      round: number
+      createdAt: Date
     }, ExtArgs["result"]["vote"]>
     composites: {}
   }
@@ -5210,8 +5384,8 @@ export namespace Prisma {
   export interface Prisma__VoteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    session<T extends SessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SessionDefaultArgs<ExtArgs>>): Prisma__SessionClient<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     idea<T extends IdeaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, IdeaDefaultArgs<ExtArgs>>): Prisma__IdeaClient<$Result.GetResult<Prisma.$IdeaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    session<T extends SessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SessionDefaultArgs<ExtArgs>>): Prisma__SessionClient<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5242,10 +5416,11 @@ export namespace Prisma {
    */
   interface VoteFieldRefs {
     readonly id: FieldRef<"Vote", 'String'>
-    readonly createdAt: FieldRef<"Vote", 'DateTime'>
     readonly userId: FieldRef<"Vote", 'String'>
-    readonly sessionId: FieldRef<"Vote", 'String'>
     readonly ideaId: FieldRef<"Vote", 'String'>
+    readonly sessionId: FieldRef<"Vote", 'String'>
+    readonly round: FieldRef<"Vote", 'Int'>
+    readonly createdAt: FieldRef<"Vote", 'DateTime'>
   }
     
 
@@ -5671,8 +5846,9 @@ export namespace Prisma {
 
   export const UserScalarFieldEnum: {
     id: 'id',
-    username: 'username',
-    createdAt: 'createdAt'
+    name: 'name',
+    createdAt: 'createdAt',
+    lastActive: 'lastActive'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -5681,9 +5857,11 @@ export namespace Prisma {
   export const SessionScalarFieldEnum: {
     id: 'id',
     code: 'code',
-    createdAt: 'createdAt',
     status: 'status',
-    ownerId: 'ownerId'
+    currentRound: 'currentRound',
+    ownerId: 'ownerId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
@@ -5692,9 +5870,9 @@ export namespace Prisma {
   export const IdeaScalarFieldEnum: {
     id: 'id',
     content: 'content',
-    createdAt: 'createdAt',
-    userId: 'userId',
-    sessionId: 'sessionId'
+    authorId: 'authorId',
+    sessionId: 'sessionId',
+    createdAt: 'createdAt'
   };
 
   export type IdeaScalarFieldEnum = (typeof IdeaScalarFieldEnum)[keyof typeof IdeaScalarFieldEnum]
@@ -5702,10 +5880,11 @@ export namespace Prisma {
 
   export const VoteScalarFieldEnum: {
     id: 'id',
-    createdAt: 'createdAt',
     userId: 'userId',
+    ideaId: 'ideaId',
     sessionId: 'sessionId',
-    ideaId: 'ideaId'
+    round: 'round',
+    createdAt: 'createdAt'
   };
 
   export type VoteScalarFieldEnum = (typeof VoteScalarFieldEnum)[keyof typeof VoteScalarFieldEnum]
@@ -5743,6 +5922,13 @@ export namespace Prisma {
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
     
+
+
+  /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
   /**
    * Deep Input Types
    */
@@ -5753,18 +5939,22 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
-    username?: StringFilter<"User"> | string
+    name?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
+    lastActive?: DateTimeFilter<"User"> | Date | string
     sessions?: SessionListRelationFilter
+    ownedSessions?: SessionListRelationFilter
     ideas?: IdeaListRelationFilter
     votes?: VoteListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
-    username?: SortOrder
+    name?: SortOrder
     createdAt?: SortOrder
+    lastActive?: SortOrder
     sessions?: SessionOrderByRelationAggregateInput
+    ownedSessions?: SessionOrderByRelationAggregateInput
     ideas?: IdeaOrderByRelationAggregateInput
     votes?: VoteOrderByRelationAggregateInput
   }
@@ -5774,17 +5964,20 @@ export namespace Prisma {
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
-    username?: StringFilter<"User"> | string
+    name?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
+    lastActive?: DateTimeFilter<"User"> | Date | string
     sessions?: SessionListRelationFilter
+    ownedSessions?: SessionListRelationFilter
     ideas?: IdeaListRelationFilter
     votes?: VoteListRelationFilter
   }, "id">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
-    username?: SortOrder
+    name?: SortOrder
     createdAt?: SortOrder
+    lastActive?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -5795,8 +5988,9 @@ export namespace Prisma {
     OR?: UserScalarWhereWithAggregatesInput[]
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
-    username?: StringWithAggregatesFilter<"User"> | string
+    name?: StringWithAggregatesFilter<"User"> | string
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    lastActive?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
   export type SessionWhereInput = {
@@ -5805,10 +5999,13 @@ export namespace Prisma {
     NOT?: SessionWhereInput | SessionWhereInput[]
     id?: StringFilter<"Session"> | string
     code?: StringFilter<"Session"> | string
-    createdAt?: DateTimeFilter<"Session"> | Date | string
     status?: StringFilter<"Session"> | string
+    currentRound?: IntFilter<"Session"> | number
     ownerId?: StringFilter<"Session"> | string
-    users?: UserListRelationFilter
+    createdAt?: DateTimeFilter<"Session"> | Date | string
+    updatedAt?: DateTimeFilter<"Session"> | Date | string
+    owner?: XOR<UserScalarRelationFilter, UserWhereInput>
+    participants?: UserListRelationFilter
     ideas?: IdeaListRelationFilter
     votes?: VoteListRelationFilter
   }
@@ -5816,10 +6013,13 @@ export namespace Prisma {
   export type SessionOrderByWithRelationInput = {
     id?: SortOrder
     code?: SortOrder
-    createdAt?: SortOrder
     status?: SortOrder
+    currentRound?: SortOrder
     ownerId?: SortOrder
-    users?: UserOrderByRelationAggregateInput
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    owner?: UserOrderByWithRelationInput
+    participants?: UserOrderByRelationAggregateInput
     ideas?: IdeaOrderByRelationAggregateInput
     votes?: VoteOrderByRelationAggregateInput
   }
@@ -5830,10 +6030,13 @@ export namespace Prisma {
     AND?: SessionWhereInput | SessionWhereInput[]
     OR?: SessionWhereInput[]
     NOT?: SessionWhereInput | SessionWhereInput[]
-    createdAt?: DateTimeFilter<"Session"> | Date | string
     status?: StringFilter<"Session"> | string
+    currentRound?: IntFilter<"Session"> | number
     ownerId?: StringFilter<"Session"> | string
-    users?: UserListRelationFilter
+    createdAt?: DateTimeFilter<"Session"> | Date | string
+    updatedAt?: DateTimeFilter<"Session"> | Date | string
+    owner?: XOR<UserScalarRelationFilter, UserWhereInput>
+    participants?: UserListRelationFilter
     ideas?: IdeaListRelationFilter
     votes?: VoteListRelationFilter
   }, "id" | "code">
@@ -5841,12 +6044,16 @@ export namespace Prisma {
   export type SessionOrderByWithAggregationInput = {
     id?: SortOrder
     code?: SortOrder
-    createdAt?: SortOrder
     status?: SortOrder
+    currentRound?: SortOrder
     ownerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: SessionCountOrderByAggregateInput
+    _avg?: SessionAvgOrderByAggregateInput
     _max?: SessionMaxOrderByAggregateInput
     _min?: SessionMinOrderByAggregateInput
+    _sum?: SessionSumOrderByAggregateInput
   }
 
   export type SessionScalarWhereWithAggregatesInput = {
@@ -5855,9 +6062,11 @@ export namespace Prisma {
     NOT?: SessionScalarWhereWithAggregatesInput | SessionScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Session"> | string
     code?: StringWithAggregatesFilter<"Session"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"Session"> | Date | string
     status?: StringWithAggregatesFilter<"Session"> | string
+    currentRound?: IntWithAggregatesFilter<"Session"> | number
     ownerId?: StringWithAggregatesFilter<"Session"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Session"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Session"> | Date | string
   }
 
   export type IdeaWhereInput = {
@@ -5866,10 +6075,10 @@ export namespace Prisma {
     NOT?: IdeaWhereInput | IdeaWhereInput[]
     id?: StringFilter<"Idea"> | string
     content?: StringFilter<"Idea"> | string
-    createdAt?: DateTimeFilter<"Idea"> | Date | string
-    userId?: StringFilter<"Idea"> | string
+    authorId?: StringFilter<"Idea"> | string
     sessionId?: StringFilter<"Idea"> | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    createdAt?: DateTimeFilter<"Idea"> | Date | string
+    author?: XOR<UserScalarRelationFilter, UserWhereInput>
     session?: XOR<SessionScalarRelationFilter, SessionWhereInput>
     votes?: VoteListRelationFilter
   }
@@ -5877,10 +6086,10 @@ export namespace Prisma {
   export type IdeaOrderByWithRelationInput = {
     id?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
     sessionId?: SortOrder
-    user?: UserOrderByWithRelationInput
+    createdAt?: SortOrder
+    author?: UserOrderByWithRelationInput
     session?: SessionOrderByWithRelationInput
     votes?: VoteOrderByRelationAggregateInput
   }
@@ -5891,10 +6100,10 @@ export namespace Prisma {
     OR?: IdeaWhereInput[]
     NOT?: IdeaWhereInput | IdeaWhereInput[]
     content?: StringFilter<"Idea"> | string
-    createdAt?: DateTimeFilter<"Idea"> | Date | string
-    userId?: StringFilter<"Idea"> | string
+    authorId?: StringFilter<"Idea"> | string
     sessionId?: StringFilter<"Idea"> | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    createdAt?: DateTimeFilter<"Idea"> | Date | string
+    author?: XOR<UserScalarRelationFilter, UserWhereInput>
     session?: XOR<SessionScalarRelationFilter, SessionWhereInput>
     votes?: VoteListRelationFilter
   }, "id">
@@ -5902,9 +6111,9 @@ export namespace Prisma {
   export type IdeaOrderByWithAggregationInput = {
     id?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
     sessionId?: SortOrder
+    createdAt?: SortOrder
     _count?: IdeaCountOrderByAggregateInput
     _max?: IdeaMaxOrderByAggregateInput
     _min?: IdeaMinOrderByAggregateInput
@@ -5916,9 +6125,9 @@ export namespace Prisma {
     NOT?: IdeaScalarWhereWithAggregatesInput | IdeaScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Idea"> | string
     content?: StringWithAggregatesFilter<"Idea"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"Idea"> | Date | string
-    userId?: StringWithAggregatesFilter<"Idea"> | string
+    authorId?: StringWithAggregatesFilter<"Idea"> | string
     sessionId?: StringWithAggregatesFilter<"Idea"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Idea"> | Date | string
   }
 
   export type VoteWhereInput = {
@@ -5926,50 +6135,56 @@ export namespace Prisma {
     OR?: VoteWhereInput[]
     NOT?: VoteWhereInput | VoteWhereInput[]
     id?: StringFilter<"Vote"> | string
-    createdAt?: DateTimeFilter<"Vote"> | Date | string
     userId?: StringFilter<"Vote"> | string
-    sessionId?: StringFilter<"Vote"> | string
     ideaId?: StringFilter<"Vote"> | string
+    sessionId?: StringFilter<"Vote"> | string
+    round?: IntFilter<"Vote"> | number
+    createdAt?: DateTimeFilter<"Vote"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    session?: XOR<SessionScalarRelationFilter, SessionWhereInput>
     idea?: XOR<IdeaScalarRelationFilter, IdeaWhereInput>
+    session?: XOR<SessionScalarRelationFilter, SessionWhereInput>
   }
 
   export type VoteOrderByWithRelationInput = {
     id?: SortOrder
-    createdAt?: SortOrder
     userId?: SortOrder
-    sessionId?: SortOrder
     ideaId?: SortOrder
+    sessionId?: SortOrder
+    round?: SortOrder
+    createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
-    session?: SessionOrderByWithRelationInput
     idea?: IdeaOrderByWithRelationInput
+    session?: SessionOrderByWithRelationInput
   }
 
   export type VoteWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    userId_ideaId?: VoteUserIdIdeaIdCompoundUniqueInput
+    userId_ideaId_round_sessionId?: VoteUserIdIdeaIdRoundSessionIdCompoundUniqueInput
     AND?: VoteWhereInput | VoteWhereInput[]
     OR?: VoteWhereInput[]
     NOT?: VoteWhereInput | VoteWhereInput[]
-    createdAt?: DateTimeFilter<"Vote"> | Date | string
     userId?: StringFilter<"Vote"> | string
-    sessionId?: StringFilter<"Vote"> | string
     ideaId?: StringFilter<"Vote"> | string
+    sessionId?: StringFilter<"Vote"> | string
+    round?: IntFilter<"Vote"> | number
+    createdAt?: DateTimeFilter<"Vote"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    session?: XOR<SessionScalarRelationFilter, SessionWhereInput>
     idea?: XOR<IdeaScalarRelationFilter, IdeaWhereInput>
-  }, "id" | "userId_ideaId">
+    session?: XOR<SessionScalarRelationFilter, SessionWhereInput>
+  }, "id" | "userId_ideaId_round_sessionId">
 
   export type VoteOrderByWithAggregationInput = {
     id?: SortOrder
-    createdAt?: SortOrder
     userId?: SortOrder
-    sessionId?: SortOrder
     ideaId?: SortOrder
+    sessionId?: SortOrder
+    round?: SortOrder
+    createdAt?: SortOrder
     _count?: VoteCountOrderByAggregateInput
+    _avg?: VoteAvgOrderByAggregateInput
     _max?: VoteMaxOrderByAggregateInput
     _min?: VoteMinOrderByAggregateInput
+    _sum?: VoteSumOrderByAggregateInput
   }
 
   export type VoteScalarWhereWithAggregatesInput = {
@@ -5977,73 +6192,87 @@ export namespace Prisma {
     OR?: VoteScalarWhereWithAggregatesInput[]
     NOT?: VoteScalarWhereWithAggregatesInput | VoteScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Vote"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"Vote"> | Date | string
     userId?: StringWithAggregatesFilter<"Vote"> | string
-    sessionId?: StringWithAggregatesFilter<"Vote"> | string
     ideaId?: StringWithAggregatesFilter<"Vote"> | string
+    sessionId?: StringWithAggregatesFilter<"Vote"> | string
+    round?: IntWithAggregatesFilter<"Vote"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"Vote"> | Date | string
   }
 
   export type UserCreateInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
-    sessions?: SessionCreateNestedManyWithoutUsersInput
-    ideas?: IdeaCreateNestedManyWithoutUserInput
+    lastActive?: Date | string
+    sessions?: SessionCreateNestedManyWithoutParticipantsInput
+    ownedSessions?: SessionCreateNestedManyWithoutOwnerInput
+    ideas?: IdeaCreateNestedManyWithoutAuthorInput
     votes?: VoteCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
-    sessions?: SessionUncheckedCreateNestedManyWithoutUsersInput
-    ideas?: IdeaUncheckedCreateNestedManyWithoutUserInput
+    lastActive?: Date | string
+    sessions?: SessionUncheckedCreateNestedManyWithoutParticipantsInput
+    ownedSessions?: SessionUncheckedCreateNestedManyWithoutOwnerInput
+    ideas?: IdeaUncheckedCreateNestedManyWithoutAuthorInput
     votes?: VoteUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sessions?: SessionUpdateManyWithoutUsersNestedInput
-    ideas?: IdeaUpdateManyWithoutUserNestedInput
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUpdateManyWithoutParticipantsNestedInput
+    ownedSessions?: SessionUpdateManyWithoutOwnerNestedInput
+    ideas?: IdeaUpdateManyWithoutAuthorNestedInput
     votes?: VoteUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sessions?: SessionUncheckedUpdateManyWithoutUsersNestedInput
-    ideas?: IdeaUncheckedUpdateManyWithoutUserNestedInput
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUncheckedUpdateManyWithoutParticipantsNestedInput
+    ownedSessions?: SessionUncheckedUpdateManyWithoutOwnerNestedInput
+    ideas?: IdeaUncheckedUpdateManyWithoutAuthorNestedInput
     votes?: VoteUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
+    lastActive?: Date | string
   }
 
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SessionCreateInput = {
     id?: string
     code: string
-    createdAt?: Date | string
     status?: string
-    ownerId: string
-    users?: UserCreateNestedManyWithoutSessionsInput
+    currentRound?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedSessionsInput
+    participants?: UserCreateNestedManyWithoutSessionsInput
     ideas?: IdeaCreateNestedManyWithoutSessionInput
     votes?: VoteCreateNestedManyWithoutSessionInput
   }
@@ -6051,10 +6280,12 @@ export namespace Prisma {
   export type SessionUncheckedCreateInput = {
     id?: string
     code: string
-    createdAt?: Date | string
     status?: string
+    currentRound?: number
     ownerId: string
-    users?: UserUncheckedCreateNestedManyWithoutSessionsInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: UserUncheckedCreateNestedManyWithoutSessionsInput
     ideas?: IdeaUncheckedCreateNestedManyWithoutSessionInput
     votes?: VoteUncheckedCreateNestedManyWithoutSessionInput
   }
@@ -6062,10 +6293,12 @@ export namespace Prisma {
   export type SessionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
-    users?: UserUpdateManyWithoutSessionsNestedInput
+    currentRound?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedSessionsNestedInput
+    participants?: UserUpdateManyWithoutSessionsNestedInput
     ideas?: IdeaUpdateManyWithoutSessionNestedInput
     votes?: VoteUpdateManyWithoutSessionNestedInput
   }
@@ -6073,10 +6306,12 @@ export namespace Prisma {
   export type SessionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
     ownerId?: StringFieldUpdateOperationsInput | string
-    users?: UserUncheckedUpdateManyWithoutSessionsNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: UserUncheckedUpdateManyWithoutSessionsNestedInput
     ideas?: IdeaUncheckedUpdateManyWithoutSessionNestedInput
     votes?: VoteUncheckedUpdateManyWithoutSessionNestedInput
   }
@@ -6084,32 +6319,37 @@ export namespace Prisma {
   export type SessionCreateManyInput = {
     id?: string
     code: string
-    createdAt?: Date | string
     status?: string
+    currentRound?: number
     ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SessionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SessionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
     ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type IdeaCreateInput = {
     id?: string
     content: string
     createdAt?: Date | string
-    user: UserCreateNestedOneWithoutIdeasInput
+    author: UserCreateNestedOneWithoutIdeasInput
     session: SessionCreateNestedOneWithoutIdeasInput
     votes?: VoteCreateNestedManyWithoutIdeaInput
   }
@@ -6117,9 +6357,9 @@ export namespace Prisma {
   export type IdeaUncheckedCreateInput = {
     id?: string
     content: string
-    createdAt?: Date | string
-    userId: string
+    authorId: string
     sessionId: string
+    createdAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutIdeaInput
   }
 
@@ -6127,7 +6367,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutIdeasNestedInput
+    author?: UserUpdateOneRequiredWithoutIdeasNestedInput
     session?: SessionUpdateOneRequiredWithoutIdeasNestedInput
     votes?: VoteUpdateManyWithoutIdeaNestedInput
   }
@@ -6135,18 +6375,18 @@ export namespace Prisma {
   export type IdeaUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutIdeaNestedInput
   }
 
   export type IdeaCreateManyInput = {
     id?: string
     content: string
-    createdAt?: Date | string
-    userId: string
+    authorId: string
     sessionId: string
+    createdAt?: Date | string
   }
 
   export type IdeaUpdateManyMutationInput = {
@@ -6158,62 +6398,69 @@ export namespace Prisma {
   export type IdeaUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VoteCreateInput = {
     id?: string
+    round: number
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutVotesInput
-    session: SessionCreateNestedOneWithoutVotesInput
     idea: IdeaCreateNestedOneWithoutVotesInput
+    session: SessionCreateNestedOneWithoutVotesInput
   }
 
   export type VoteUncheckedCreateInput = {
     id?: string
-    createdAt?: Date | string
     userId: string
-    sessionId: string
     ideaId: string
+    sessionId: string
+    round: number
+    createdAt?: Date | string
   }
 
   export type VoteUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutVotesNestedInput
-    session?: SessionUpdateOneRequiredWithoutVotesNestedInput
     idea?: IdeaUpdateOneRequiredWithoutVotesNestedInput
+    session?: SessionUpdateOneRequiredWithoutVotesNestedInput
   }
 
   export type VoteUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
-    sessionId?: StringFieldUpdateOperationsInput | string
     ideaId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VoteCreateManyInput = {
     id?: string
-    createdAt?: Date | string
     userId: string
-    sessionId: string
     ideaId: string
+    sessionId: string
+    round: number
+    createdAt?: Date | string
   }
 
   export type VoteUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VoteUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
-    sessionId?: StringFieldUpdateOperationsInput | string
     ideaId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -6273,20 +6520,23 @@ export namespace Prisma {
 
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
-    username?: SortOrder
+    name?: SortOrder
     createdAt?: SortOrder
+    lastActive?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
-    username?: SortOrder
+    name?: SortOrder
     createdAt?: SortOrder
+    lastActive?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
-    username?: SortOrder
+    name?: SortOrder
     createdAt?: SortOrder
+    lastActive?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -6320,6 +6570,22 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
   export type UserListRelationFilter = {
     every?: UserWhereInput
     some?: UserWhereInput
@@ -6333,30 +6599,55 @@ export namespace Prisma {
   export type SessionCountOrderByAggregateInput = {
     id?: SortOrder
     code?: SortOrder
-    createdAt?: SortOrder
     status?: SortOrder
+    currentRound?: SortOrder
     ownerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SessionAvgOrderByAggregateInput = {
+    currentRound?: SortOrder
   }
 
   export type SessionMaxOrderByAggregateInput = {
     id?: SortOrder
     code?: SortOrder
-    createdAt?: SortOrder
     status?: SortOrder
+    currentRound?: SortOrder
     ownerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SessionMinOrderByAggregateInput = {
     id?: SortOrder
     code?: SortOrder
-    createdAt?: SortOrder
     status?: SortOrder
+    currentRound?: SortOrder
     ownerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
+  export type SessionSumOrderByAggregateInput = {
+    currentRound?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type SessionScalarRelationFilter = {
@@ -6367,25 +6658,25 @@ export namespace Prisma {
   export type IdeaCountOrderByAggregateInput = {
     id?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
     sessionId?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type IdeaMaxOrderByAggregateInput = {
     id?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
     sessionId?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type IdeaMinOrderByAggregateInput = {
     id?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
     sessionId?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type IdeaScalarRelationFilter = {
@@ -6393,45 +6684,65 @@ export namespace Prisma {
     isNot?: IdeaWhereInput
   }
 
-  export type VoteUserIdIdeaIdCompoundUniqueInput = {
+  export type VoteUserIdIdeaIdRoundSessionIdCompoundUniqueInput = {
     userId: string
     ideaId: string
+    round: number
+    sessionId: string
   }
 
   export type VoteCountOrderByAggregateInput = {
     id?: SortOrder
-    createdAt?: SortOrder
     userId?: SortOrder
-    sessionId?: SortOrder
     ideaId?: SortOrder
+    sessionId?: SortOrder
+    round?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VoteAvgOrderByAggregateInput = {
+    round?: SortOrder
   }
 
   export type VoteMaxOrderByAggregateInput = {
     id?: SortOrder
-    createdAt?: SortOrder
     userId?: SortOrder
-    sessionId?: SortOrder
     ideaId?: SortOrder
+    sessionId?: SortOrder
+    round?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type VoteMinOrderByAggregateInput = {
     id?: SortOrder
-    createdAt?: SortOrder
     userId?: SortOrder
-    sessionId?: SortOrder
     ideaId?: SortOrder
+    sessionId?: SortOrder
+    round?: SortOrder
+    createdAt?: SortOrder
   }
 
-  export type SessionCreateNestedManyWithoutUsersInput = {
-    create?: XOR<SessionCreateWithoutUsersInput, SessionUncheckedCreateWithoutUsersInput> | SessionCreateWithoutUsersInput[] | SessionUncheckedCreateWithoutUsersInput[]
-    connectOrCreate?: SessionCreateOrConnectWithoutUsersInput | SessionCreateOrConnectWithoutUsersInput[]
+  export type VoteSumOrderByAggregateInput = {
+    round?: SortOrder
+  }
+
+  export type SessionCreateNestedManyWithoutParticipantsInput = {
+    create?: XOR<SessionCreateWithoutParticipantsInput, SessionUncheckedCreateWithoutParticipantsInput> | SessionCreateWithoutParticipantsInput[] | SessionUncheckedCreateWithoutParticipantsInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutParticipantsInput | SessionCreateOrConnectWithoutParticipantsInput[]
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
   }
 
-  export type IdeaCreateNestedManyWithoutUserInput = {
-    create?: XOR<IdeaCreateWithoutUserInput, IdeaUncheckedCreateWithoutUserInput> | IdeaCreateWithoutUserInput[] | IdeaUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: IdeaCreateOrConnectWithoutUserInput | IdeaCreateOrConnectWithoutUserInput[]
-    createMany?: IdeaCreateManyUserInputEnvelope
+  export type SessionCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<SessionCreateWithoutOwnerInput, SessionUncheckedCreateWithoutOwnerInput> | SessionCreateWithoutOwnerInput[] | SessionUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutOwnerInput | SessionCreateOrConnectWithoutOwnerInput[]
+    createMany?: SessionCreateManyOwnerInputEnvelope
+    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+  }
+
+  export type IdeaCreateNestedManyWithoutAuthorInput = {
+    create?: XOR<IdeaCreateWithoutAuthorInput, IdeaUncheckedCreateWithoutAuthorInput> | IdeaCreateWithoutAuthorInput[] | IdeaUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: IdeaCreateOrConnectWithoutAuthorInput | IdeaCreateOrConnectWithoutAuthorInput[]
+    createMany?: IdeaCreateManyAuthorInputEnvelope
     connect?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
   }
 
@@ -6442,16 +6753,23 @@ export namespace Prisma {
     connect?: VoteWhereUniqueInput | VoteWhereUniqueInput[]
   }
 
-  export type SessionUncheckedCreateNestedManyWithoutUsersInput = {
-    create?: XOR<SessionCreateWithoutUsersInput, SessionUncheckedCreateWithoutUsersInput> | SessionCreateWithoutUsersInput[] | SessionUncheckedCreateWithoutUsersInput[]
-    connectOrCreate?: SessionCreateOrConnectWithoutUsersInput | SessionCreateOrConnectWithoutUsersInput[]
+  export type SessionUncheckedCreateNestedManyWithoutParticipantsInput = {
+    create?: XOR<SessionCreateWithoutParticipantsInput, SessionUncheckedCreateWithoutParticipantsInput> | SessionCreateWithoutParticipantsInput[] | SessionUncheckedCreateWithoutParticipantsInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutParticipantsInput | SessionCreateOrConnectWithoutParticipantsInput[]
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
   }
 
-  export type IdeaUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<IdeaCreateWithoutUserInput, IdeaUncheckedCreateWithoutUserInput> | IdeaCreateWithoutUserInput[] | IdeaUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: IdeaCreateOrConnectWithoutUserInput | IdeaCreateOrConnectWithoutUserInput[]
-    createMany?: IdeaCreateManyUserInputEnvelope
+  export type SessionUncheckedCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<SessionCreateWithoutOwnerInput, SessionUncheckedCreateWithoutOwnerInput> | SessionCreateWithoutOwnerInput[] | SessionUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutOwnerInput | SessionCreateOrConnectWithoutOwnerInput[]
+    createMany?: SessionCreateManyOwnerInputEnvelope
+    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+  }
+
+  export type IdeaUncheckedCreateNestedManyWithoutAuthorInput = {
+    create?: XOR<IdeaCreateWithoutAuthorInput, IdeaUncheckedCreateWithoutAuthorInput> | IdeaCreateWithoutAuthorInput[] | IdeaUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: IdeaCreateOrConnectWithoutAuthorInput | IdeaCreateOrConnectWithoutAuthorInput[]
+    createMany?: IdeaCreateManyAuthorInputEnvelope
     connect?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
   }
 
@@ -6470,30 +6788,44 @@ export namespace Prisma {
     set?: Date | string
   }
 
-  export type SessionUpdateManyWithoutUsersNestedInput = {
-    create?: XOR<SessionCreateWithoutUsersInput, SessionUncheckedCreateWithoutUsersInput> | SessionCreateWithoutUsersInput[] | SessionUncheckedCreateWithoutUsersInput[]
-    connectOrCreate?: SessionCreateOrConnectWithoutUsersInput | SessionCreateOrConnectWithoutUsersInput[]
-    upsert?: SessionUpsertWithWhereUniqueWithoutUsersInput | SessionUpsertWithWhereUniqueWithoutUsersInput[]
+  export type SessionUpdateManyWithoutParticipantsNestedInput = {
+    create?: XOR<SessionCreateWithoutParticipantsInput, SessionUncheckedCreateWithoutParticipantsInput> | SessionCreateWithoutParticipantsInput[] | SessionUncheckedCreateWithoutParticipantsInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutParticipantsInput | SessionCreateOrConnectWithoutParticipantsInput[]
+    upsert?: SessionUpsertWithWhereUniqueWithoutParticipantsInput | SessionUpsertWithWhereUniqueWithoutParticipantsInput[]
     set?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
     disconnect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
     delete?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    update?: SessionUpdateWithWhereUniqueWithoutUsersInput | SessionUpdateWithWhereUniqueWithoutUsersInput[]
-    updateMany?: SessionUpdateManyWithWhereWithoutUsersInput | SessionUpdateManyWithWhereWithoutUsersInput[]
+    update?: SessionUpdateWithWhereUniqueWithoutParticipantsInput | SessionUpdateWithWhereUniqueWithoutParticipantsInput[]
+    updateMany?: SessionUpdateManyWithWhereWithoutParticipantsInput | SessionUpdateManyWithWhereWithoutParticipantsInput[]
     deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
   }
 
-  export type IdeaUpdateManyWithoutUserNestedInput = {
-    create?: XOR<IdeaCreateWithoutUserInput, IdeaUncheckedCreateWithoutUserInput> | IdeaCreateWithoutUserInput[] | IdeaUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: IdeaCreateOrConnectWithoutUserInput | IdeaCreateOrConnectWithoutUserInput[]
-    upsert?: IdeaUpsertWithWhereUniqueWithoutUserInput | IdeaUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: IdeaCreateManyUserInputEnvelope
+  export type SessionUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<SessionCreateWithoutOwnerInput, SessionUncheckedCreateWithoutOwnerInput> | SessionCreateWithoutOwnerInput[] | SessionUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutOwnerInput | SessionCreateOrConnectWithoutOwnerInput[]
+    upsert?: SessionUpsertWithWhereUniqueWithoutOwnerInput | SessionUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: SessionCreateManyOwnerInputEnvelope
+    set?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    disconnect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    delete?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    update?: SessionUpdateWithWhereUniqueWithoutOwnerInput | SessionUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: SessionUpdateManyWithWhereWithoutOwnerInput | SessionUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
+  }
+
+  export type IdeaUpdateManyWithoutAuthorNestedInput = {
+    create?: XOR<IdeaCreateWithoutAuthorInput, IdeaUncheckedCreateWithoutAuthorInput> | IdeaCreateWithoutAuthorInput[] | IdeaUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: IdeaCreateOrConnectWithoutAuthorInput | IdeaCreateOrConnectWithoutAuthorInput[]
+    upsert?: IdeaUpsertWithWhereUniqueWithoutAuthorInput | IdeaUpsertWithWhereUniqueWithoutAuthorInput[]
+    createMany?: IdeaCreateManyAuthorInputEnvelope
     set?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
     disconnect?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
     delete?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
     connect?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
-    update?: IdeaUpdateWithWhereUniqueWithoutUserInput | IdeaUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: IdeaUpdateManyWithWhereWithoutUserInput | IdeaUpdateManyWithWhereWithoutUserInput[]
+    update?: IdeaUpdateWithWhereUniqueWithoutAuthorInput | IdeaUpdateWithWhereUniqueWithoutAuthorInput[]
+    updateMany?: IdeaUpdateManyWithWhereWithoutAuthorInput | IdeaUpdateManyWithWhereWithoutAuthorInput[]
     deleteMany?: IdeaScalarWhereInput | IdeaScalarWhereInput[]
   }
 
@@ -6511,30 +6843,44 @@ export namespace Prisma {
     deleteMany?: VoteScalarWhereInput | VoteScalarWhereInput[]
   }
 
-  export type SessionUncheckedUpdateManyWithoutUsersNestedInput = {
-    create?: XOR<SessionCreateWithoutUsersInput, SessionUncheckedCreateWithoutUsersInput> | SessionCreateWithoutUsersInput[] | SessionUncheckedCreateWithoutUsersInput[]
-    connectOrCreate?: SessionCreateOrConnectWithoutUsersInput | SessionCreateOrConnectWithoutUsersInput[]
-    upsert?: SessionUpsertWithWhereUniqueWithoutUsersInput | SessionUpsertWithWhereUniqueWithoutUsersInput[]
+  export type SessionUncheckedUpdateManyWithoutParticipantsNestedInput = {
+    create?: XOR<SessionCreateWithoutParticipantsInput, SessionUncheckedCreateWithoutParticipantsInput> | SessionCreateWithoutParticipantsInput[] | SessionUncheckedCreateWithoutParticipantsInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutParticipantsInput | SessionCreateOrConnectWithoutParticipantsInput[]
+    upsert?: SessionUpsertWithWhereUniqueWithoutParticipantsInput | SessionUpsertWithWhereUniqueWithoutParticipantsInput[]
     set?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
     disconnect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
     delete?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    update?: SessionUpdateWithWhereUniqueWithoutUsersInput | SessionUpdateWithWhereUniqueWithoutUsersInput[]
-    updateMany?: SessionUpdateManyWithWhereWithoutUsersInput | SessionUpdateManyWithWhereWithoutUsersInput[]
+    update?: SessionUpdateWithWhereUniqueWithoutParticipantsInput | SessionUpdateWithWhereUniqueWithoutParticipantsInput[]
+    updateMany?: SessionUpdateManyWithWhereWithoutParticipantsInput | SessionUpdateManyWithWhereWithoutParticipantsInput[]
     deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
   }
 
-  export type IdeaUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<IdeaCreateWithoutUserInput, IdeaUncheckedCreateWithoutUserInput> | IdeaCreateWithoutUserInput[] | IdeaUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: IdeaCreateOrConnectWithoutUserInput | IdeaCreateOrConnectWithoutUserInput[]
-    upsert?: IdeaUpsertWithWhereUniqueWithoutUserInput | IdeaUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: IdeaCreateManyUserInputEnvelope
+  export type SessionUncheckedUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<SessionCreateWithoutOwnerInput, SessionUncheckedCreateWithoutOwnerInput> | SessionCreateWithoutOwnerInput[] | SessionUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutOwnerInput | SessionCreateOrConnectWithoutOwnerInput[]
+    upsert?: SessionUpsertWithWhereUniqueWithoutOwnerInput | SessionUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: SessionCreateManyOwnerInputEnvelope
+    set?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    disconnect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    delete?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    update?: SessionUpdateWithWhereUniqueWithoutOwnerInput | SessionUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: SessionUpdateManyWithWhereWithoutOwnerInput | SessionUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
+  }
+
+  export type IdeaUncheckedUpdateManyWithoutAuthorNestedInput = {
+    create?: XOR<IdeaCreateWithoutAuthorInput, IdeaUncheckedCreateWithoutAuthorInput> | IdeaCreateWithoutAuthorInput[] | IdeaUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: IdeaCreateOrConnectWithoutAuthorInput | IdeaCreateOrConnectWithoutAuthorInput[]
+    upsert?: IdeaUpsertWithWhereUniqueWithoutAuthorInput | IdeaUpsertWithWhereUniqueWithoutAuthorInput[]
+    createMany?: IdeaCreateManyAuthorInputEnvelope
     set?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
     disconnect?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
     delete?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
     connect?: IdeaWhereUniqueInput | IdeaWhereUniqueInput[]
-    update?: IdeaUpdateWithWhereUniqueWithoutUserInput | IdeaUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: IdeaUpdateManyWithWhereWithoutUserInput | IdeaUpdateManyWithWhereWithoutUserInput[]
+    update?: IdeaUpdateWithWhereUniqueWithoutAuthorInput | IdeaUpdateWithWhereUniqueWithoutAuthorInput[]
+    updateMany?: IdeaUpdateManyWithWhereWithoutAuthorInput | IdeaUpdateManyWithWhereWithoutAuthorInput[]
     deleteMany?: IdeaScalarWhereInput | IdeaScalarWhereInput[]
   }
 
@@ -6550,6 +6896,12 @@ export namespace Prisma {
     update?: VoteUpdateWithWhereUniqueWithoutUserInput | VoteUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: VoteUpdateManyWithWhereWithoutUserInput | VoteUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: VoteScalarWhereInput | VoteScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutOwnedSessionsInput = {
+    create?: XOR<UserCreateWithoutOwnedSessionsInput, UserUncheckedCreateWithoutOwnedSessionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOwnedSessionsInput
+    connect?: UserWhereUniqueInput
   }
 
   export type UserCreateNestedManyWithoutSessionsInput = {
@@ -6590,6 +6942,22 @@ export namespace Prisma {
     connectOrCreate?: VoteCreateOrConnectWithoutSessionInput | VoteCreateOrConnectWithoutSessionInput[]
     createMany?: VoteCreateManySessionInputEnvelope
     connect?: VoteWhereUniqueInput | VoteWhereUniqueInput[]
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type UserUpdateOneRequiredWithoutOwnedSessionsNestedInput = {
+    create?: XOR<UserCreateWithoutOwnedSessionsInput, UserUncheckedCreateWithoutOwnedSessionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOwnedSessionsInput
+    upsert?: UserUpsertWithoutOwnedSessionsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutOwnedSessionsInput, UserUpdateWithoutOwnedSessionsInput>, UserUncheckedUpdateWithoutOwnedSessionsInput>
   }
 
   export type UserUpdateManyWithoutSessionsNestedInput = {
@@ -6750,16 +7118,16 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type SessionCreateNestedOneWithoutVotesInput = {
-    create?: XOR<SessionCreateWithoutVotesInput, SessionUncheckedCreateWithoutVotesInput>
-    connectOrCreate?: SessionCreateOrConnectWithoutVotesInput
-    connect?: SessionWhereUniqueInput
-  }
-
   export type IdeaCreateNestedOneWithoutVotesInput = {
     create?: XOR<IdeaCreateWithoutVotesInput, IdeaUncheckedCreateWithoutVotesInput>
     connectOrCreate?: IdeaCreateOrConnectWithoutVotesInput
     connect?: IdeaWhereUniqueInput
+  }
+
+  export type SessionCreateNestedOneWithoutVotesInput = {
+    create?: XOR<SessionCreateWithoutVotesInput, SessionUncheckedCreateWithoutVotesInput>
+    connectOrCreate?: SessionCreateOrConnectWithoutVotesInput
+    connect?: SessionWhereUniqueInput
   }
 
   export type UserUpdateOneRequiredWithoutVotesNestedInput = {
@@ -6770,20 +7138,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutVotesInput, UserUpdateWithoutVotesInput>, UserUncheckedUpdateWithoutVotesInput>
   }
 
-  export type SessionUpdateOneRequiredWithoutVotesNestedInput = {
-    create?: XOR<SessionCreateWithoutVotesInput, SessionUncheckedCreateWithoutVotesInput>
-    connectOrCreate?: SessionCreateOrConnectWithoutVotesInput
-    upsert?: SessionUpsertWithoutVotesInput
-    connect?: SessionWhereUniqueInput
-    update?: XOR<XOR<SessionUpdateToOneWithWhereWithoutVotesInput, SessionUpdateWithoutVotesInput>, SessionUncheckedUpdateWithoutVotesInput>
-  }
-
   export type IdeaUpdateOneRequiredWithoutVotesNestedInput = {
     create?: XOR<IdeaCreateWithoutVotesInput, IdeaUncheckedCreateWithoutVotesInput>
     connectOrCreate?: IdeaCreateOrConnectWithoutVotesInput
     upsert?: IdeaUpsertWithoutVotesInput
     connect?: IdeaWhereUniqueInput
     update?: XOR<XOR<IdeaUpdateToOneWithWhereWithoutVotesInput, IdeaUpdateWithoutVotesInput>, IdeaUncheckedUpdateWithoutVotesInput>
+  }
+
+  export type SessionUpdateOneRequiredWithoutVotesNestedInput = {
+    create?: XOR<SessionCreateWithoutVotesInput, SessionUncheckedCreateWithoutVotesInput>
+    connectOrCreate?: SessionCreateOrConnectWithoutVotesInput
+    upsert?: SessionUpsertWithoutVotesInput
+    connect?: SessionWhereUniqueInput
+    update?: XOR<XOR<SessionUpdateToOneWithWhereWithoutVotesInput, SessionUpdateWithoutVotesInput>, SessionUncheckedUpdateWithoutVotesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -6853,32 +7221,96 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type SessionCreateWithoutUsersInput = {
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type SessionCreateWithoutParticipantsInput = {
     id?: string
     code: string
-    createdAt?: Date | string
     status?: string
-    ownerId: string
+    currentRound?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedSessionsInput
     ideas?: IdeaCreateNestedManyWithoutSessionInput
     votes?: VoteCreateNestedManyWithoutSessionInput
   }
 
-  export type SessionUncheckedCreateWithoutUsersInput = {
+  export type SessionUncheckedCreateWithoutParticipantsInput = {
     id?: string
     code: string
-    createdAt?: Date | string
     status?: string
+    currentRound?: number
     ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     ideas?: IdeaUncheckedCreateNestedManyWithoutSessionInput
     votes?: VoteUncheckedCreateNestedManyWithoutSessionInput
   }
 
-  export type SessionCreateOrConnectWithoutUsersInput = {
+  export type SessionCreateOrConnectWithoutParticipantsInput = {
     where: SessionWhereUniqueInput
-    create: XOR<SessionCreateWithoutUsersInput, SessionUncheckedCreateWithoutUsersInput>
+    create: XOR<SessionCreateWithoutParticipantsInput, SessionUncheckedCreateWithoutParticipantsInput>
   }
 
-  export type IdeaCreateWithoutUserInput = {
+  export type SessionCreateWithoutOwnerInput = {
+    id?: string
+    code: string
+    status?: string
+    currentRound?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: UserCreateNestedManyWithoutSessionsInput
+    ideas?: IdeaCreateNestedManyWithoutSessionInput
+    votes?: VoteCreateNestedManyWithoutSessionInput
+  }
+
+  export type SessionUncheckedCreateWithoutOwnerInput = {
+    id?: string
+    code: string
+    status?: string
+    currentRound?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: UserUncheckedCreateNestedManyWithoutSessionsInput
+    ideas?: IdeaUncheckedCreateNestedManyWithoutSessionInput
+    votes?: VoteUncheckedCreateNestedManyWithoutSessionInput
+  }
+
+  export type SessionCreateOrConnectWithoutOwnerInput = {
+    where: SessionWhereUniqueInput
+    create: XOR<SessionCreateWithoutOwnerInput, SessionUncheckedCreateWithoutOwnerInput>
+  }
+
+  export type SessionCreateManyOwnerInputEnvelope = {
+    data: SessionCreateManyOwnerInput | SessionCreateManyOwnerInput[]
+  }
+
+  export type IdeaCreateWithoutAuthorInput = {
     id?: string
     content: string
     createdAt?: Date | string
@@ -6886,35 +7318,37 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutIdeaInput
   }
 
-  export type IdeaUncheckedCreateWithoutUserInput = {
+  export type IdeaUncheckedCreateWithoutAuthorInput = {
     id?: string
     content: string
-    createdAt?: Date | string
     sessionId: string
+    createdAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutIdeaInput
   }
 
-  export type IdeaCreateOrConnectWithoutUserInput = {
+  export type IdeaCreateOrConnectWithoutAuthorInput = {
     where: IdeaWhereUniqueInput
-    create: XOR<IdeaCreateWithoutUserInput, IdeaUncheckedCreateWithoutUserInput>
+    create: XOR<IdeaCreateWithoutAuthorInput, IdeaUncheckedCreateWithoutAuthorInput>
   }
 
-  export type IdeaCreateManyUserInputEnvelope = {
-    data: IdeaCreateManyUserInput | IdeaCreateManyUserInput[]
+  export type IdeaCreateManyAuthorInputEnvelope = {
+    data: IdeaCreateManyAuthorInput | IdeaCreateManyAuthorInput[]
   }
 
   export type VoteCreateWithoutUserInput = {
     id?: string
+    round: number
     createdAt?: Date | string
-    session: SessionCreateNestedOneWithoutVotesInput
     idea: IdeaCreateNestedOneWithoutVotesInput
+    session: SessionCreateNestedOneWithoutVotesInput
   }
 
   export type VoteUncheckedCreateWithoutUserInput = {
     id?: string
-    createdAt?: Date | string
-    sessionId: string
     ideaId: string
+    sessionId: string
+    round: number
+    createdAt?: Date | string
   }
 
   export type VoteCreateOrConnectWithoutUserInput = {
@@ -6926,20 +7360,20 @@ export namespace Prisma {
     data: VoteCreateManyUserInput | VoteCreateManyUserInput[]
   }
 
-  export type SessionUpsertWithWhereUniqueWithoutUsersInput = {
+  export type SessionUpsertWithWhereUniqueWithoutParticipantsInput = {
     where: SessionWhereUniqueInput
-    update: XOR<SessionUpdateWithoutUsersInput, SessionUncheckedUpdateWithoutUsersInput>
-    create: XOR<SessionCreateWithoutUsersInput, SessionUncheckedCreateWithoutUsersInput>
+    update: XOR<SessionUpdateWithoutParticipantsInput, SessionUncheckedUpdateWithoutParticipantsInput>
+    create: XOR<SessionCreateWithoutParticipantsInput, SessionUncheckedCreateWithoutParticipantsInput>
   }
 
-  export type SessionUpdateWithWhereUniqueWithoutUsersInput = {
+  export type SessionUpdateWithWhereUniqueWithoutParticipantsInput = {
     where: SessionWhereUniqueInput
-    data: XOR<SessionUpdateWithoutUsersInput, SessionUncheckedUpdateWithoutUsersInput>
+    data: XOR<SessionUpdateWithoutParticipantsInput, SessionUncheckedUpdateWithoutParticipantsInput>
   }
 
-  export type SessionUpdateManyWithWhereWithoutUsersInput = {
+  export type SessionUpdateManyWithWhereWithoutParticipantsInput = {
     where: SessionScalarWhereInput
-    data: XOR<SessionUpdateManyMutationInput, SessionUncheckedUpdateManyWithoutUsersInput>
+    data: XOR<SessionUpdateManyMutationInput, SessionUncheckedUpdateManyWithoutParticipantsInput>
   }
 
   export type SessionScalarWhereInput = {
@@ -6948,25 +7382,43 @@ export namespace Prisma {
     NOT?: SessionScalarWhereInput | SessionScalarWhereInput[]
     id?: StringFilter<"Session"> | string
     code?: StringFilter<"Session"> | string
-    createdAt?: DateTimeFilter<"Session"> | Date | string
     status?: StringFilter<"Session"> | string
+    currentRound?: IntFilter<"Session"> | number
     ownerId?: StringFilter<"Session"> | string
+    createdAt?: DateTimeFilter<"Session"> | Date | string
+    updatedAt?: DateTimeFilter<"Session"> | Date | string
   }
 
-  export type IdeaUpsertWithWhereUniqueWithoutUserInput = {
+  export type SessionUpsertWithWhereUniqueWithoutOwnerInput = {
+    where: SessionWhereUniqueInput
+    update: XOR<SessionUpdateWithoutOwnerInput, SessionUncheckedUpdateWithoutOwnerInput>
+    create: XOR<SessionCreateWithoutOwnerInput, SessionUncheckedCreateWithoutOwnerInput>
+  }
+
+  export type SessionUpdateWithWhereUniqueWithoutOwnerInput = {
+    where: SessionWhereUniqueInput
+    data: XOR<SessionUpdateWithoutOwnerInput, SessionUncheckedUpdateWithoutOwnerInput>
+  }
+
+  export type SessionUpdateManyWithWhereWithoutOwnerInput = {
+    where: SessionScalarWhereInput
+    data: XOR<SessionUpdateManyMutationInput, SessionUncheckedUpdateManyWithoutOwnerInput>
+  }
+
+  export type IdeaUpsertWithWhereUniqueWithoutAuthorInput = {
     where: IdeaWhereUniqueInput
-    update: XOR<IdeaUpdateWithoutUserInput, IdeaUncheckedUpdateWithoutUserInput>
-    create: XOR<IdeaCreateWithoutUserInput, IdeaUncheckedCreateWithoutUserInput>
+    update: XOR<IdeaUpdateWithoutAuthorInput, IdeaUncheckedUpdateWithoutAuthorInput>
+    create: XOR<IdeaCreateWithoutAuthorInput, IdeaUncheckedCreateWithoutAuthorInput>
   }
 
-  export type IdeaUpdateWithWhereUniqueWithoutUserInput = {
+  export type IdeaUpdateWithWhereUniqueWithoutAuthorInput = {
     where: IdeaWhereUniqueInput
-    data: XOR<IdeaUpdateWithoutUserInput, IdeaUncheckedUpdateWithoutUserInput>
+    data: XOR<IdeaUpdateWithoutAuthorInput, IdeaUncheckedUpdateWithoutAuthorInput>
   }
 
-  export type IdeaUpdateManyWithWhereWithoutUserInput = {
+  export type IdeaUpdateManyWithWhereWithoutAuthorInput = {
     where: IdeaScalarWhereInput
-    data: XOR<IdeaUpdateManyMutationInput, IdeaUncheckedUpdateManyWithoutUserInput>
+    data: XOR<IdeaUpdateManyMutationInput, IdeaUncheckedUpdateManyWithoutAuthorInput>
   }
 
   export type IdeaScalarWhereInput = {
@@ -6975,9 +7427,9 @@ export namespace Prisma {
     NOT?: IdeaScalarWhereInput | IdeaScalarWhereInput[]
     id?: StringFilter<"Idea"> | string
     content?: StringFilter<"Idea"> | string
-    createdAt?: DateTimeFilter<"Idea"> | Date | string
-    userId?: StringFilter<"Idea"> | string
+    authorId?: StringFilter<"Idea"> | string
     sessionId?: StringFilter<"Idea"> | string
+    createdAt?: DateTimeFilter<"Idea"> | Date | string
   }
 
   export type VoteUpsertWithWhereUniqueWithoutUserInput = {
@@ -7001,25 +7453,55 @@ export namespace Prisma {
     OR?: VoteScalarWhereInput[]
     NOT?: VoteScalarWhereInput | VoteScalarWhereInput[]
     id?: StringFilter<"Vote"> | string
-    createdAt?: DateTimeFilter<"Vote"> | Date | string
     userId?: StringFilter<"Vote"> | string
-    sessionId?: StringFilter<"Vote"> | string
     ideaId?: StringFilter<"Vote"> | string
+    sessionId?: StringFilter<"Vote"> | string
+    round?: IntFilter<"Vote"> | number
+    createdAt?: DateTimeFilter<"Vote"> | Date | string
+  }
+
+  export type UserCreateWithoutOwnedSessionsInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    lastActive?: Date | string
+    sessions?: SessionCreateNestedManyWithoutParticipantsInput
+    ideas?: IdeaCreateNestedManyWithoutAuthorInput
+    votes?: VoteCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutOwnedSessionsInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    lastActive?: Date | string
+    sessions?: SessionUncheckedCreateNestedManyWithoutParticipantsInput
+    ideas?: IdeaUncheckedCreateNestedManyWithoutAuthorInput
+    votes?: VoteUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutOwnedSessionsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutOwnedSessionsInput, UserUncheckedCreateWithoutOwnedSessionsInput>
   }
 
   export type UserCreateWithoutSessionsInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
-    ideas?: IdeaCreateNestedManyWithoutUserInput
+    lastActive?: Date | string
+    ownedSessions?: SessionCreateNestedManyWithoutOwnerInput
+    ideas?: IdeaCreateNestedManyWithoutAuthorInput
     votes?: VoteCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
-    ideas?: IdeaUncheckedCreateNestedManyWithoutUserInput
+    lastActive?: Date | string
+    ownedSessions?: SessionUncheckedCreateNestedManyWithoutOwnerInput
+    ideas?: IdeaUncheckedCreateNestedManyWithoutAuthorInput
     votes?: VoteUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -7032,15 +7514,15 @@ export namespace Prisma {
     id?: string
     content: string
     createdAt?: Date | string
-    user: UserCreateNestedOneWithoutIdeasInput
+    author: UserCreateNestedOneWithoutIdeasInput
     votes?: VoteCreateNestedManyWithoutIdeaInput
   }
 
   export type IdeaUncheckedCreateWithoutSessionInput = {
     id?: string
     content: string
+    authorId: string
     createdAt?: Date | string
-    userId: string
     votes?: VoteUncheckedCreateNestedManyWithoutIdeaInput
   }
 
@@ -7055,6 +7537,7 @@ export namespace Prisma {
 
   export type VoteCreateWithoutSessionInput = {
     id?: string
+    round: number
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutVotesInput
     idea: IdeaCreateNestedOneWithoutVotesInput
@@ -7062,9 +7545,10 @@ export namespace Prisma {
 
   export type VoteUncheckedCreateWithoutSessionInput = {
     id?: string
-    createdAt?: Date | string
     userId: string
     ideaId: string
+    round: number
+    createdAt?: Date | string
   }
 
   export type VoteCreateOrConnectWithoutSessionInput = {
@@ -7074,6 +7558,37 @@ export namespace Prisma {
 
   export type VoteCreateManySessionInputEnvelope = {
     data: VoteCreateManySessionInput | VoteCreateManySessionInput[]
+  }
+
+  export type UserUpsertWithoutOwnedSessionsInput = {
+    update: XOR<UserUpdateWithoutOwnedSessionsInput, UserUncheckedUpdateWithoutOwnedSessionsInput>
+    create: XOR<UserCreateWithoutOwnedSessionsInput, UserUncheckedCreateWithoutOwnedSessionsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutOwnedSessionsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutOwnedSessionsInput, UserUncheckedUpdateWithoutOwnedSessionsInput>
+  }
+
+  export type UserUpdateWithoutOwnedSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUpdateManyWithoutParticipantsNestedInput
+    ideas?: IdeaUpdateManyWithoutAuthorNestedInput
+    votes?: VoteUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutOwnedSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUncheckedUpdateManyWithoutParticipantsNestedInput
+    ideas?: IdeaUncheckedUpdateManyWithoutAuthorNestedInput
+    votes?: VoteUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutSessionsInput = {
@@ -7097,8 +7612,9 @@ export namespace Prisma {
     OR?: UserScalarWhereInput[]
     NOT?: UserScalarWhereInput | UserScalarWhereInput[]
     id?: StringFilter<"User"> | string
-    username?: StringFilter<"User"> | string
+    name?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
+    lastActive?: DateTimeFilter<"User"> | Date | string
   }
 
   export type IdeaUpsertWithWhereUniqueWithoutSessionInput = {
@@ -7135,17 +7651,21 @@ export namespace Prisma {
 
   export type UserCreateWithoutIdeasInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
-    sessions?: SessionCreateNestedManyWithoutUsersInput
+    lastActive?: Date | string
+    sessions?: SessionCreateNestedManyWithoutParticipantsInput
+    ownedSessions?: SessionCreateNestedManyWithoutOwnerInput
     votes?: VoteCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutIdeasInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
-    sessions?: SessionUncheckedCreateNestedManyWithoutUsersInput
+    lastActive?: Date | string
+    sessions?: SessionUncheckedCreateNestedManyWithoutParticipantsInput
+    ownedSessions?: SessionUncheckedCreateNestedManyWithoutOwnerInput
     votes?: VoteUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -7157,20 +7677,24 @@ export namespace Prisma {
   export type SessionCreateWithoutIdeasInput = {
     id?: string
     code: string
-    createdAt?: Date | string
     status?: string
-    ownerId: string
-    users?: UserCreateNestedManyWithoutSessionsInput
+    currentRound?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedSessionsInput
+    participants?: UserCreateNestedManyWithoutSessionsInput
     votes?: VoteCreateNestedManyWithoutSessionInput
   }
 
   export type SessionUncheckedCreateWithoutIdeasInput = {
     id?: string
     code: string
-    createdAt?: Date | string
     status?: string
+    currentRound?: number
     ownerId: string
-    users?: UserUncheckedCreateNestedManyWithoutSessionsInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: UserUncheckedCreateNestedManyWithoutSessionsInput
     votes?: VoteUncheckedCreateNestedManyWithoutSessionInput
   }
 
@@ -7181,6 +7705,7 @@ export namespace Prisma {
 
   export type VoteCreateWithoutIdeaInput = {
     id?: string
+    round: number
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutVotesInput
     session: SessionCreateNestedOneWithoutVotesInput
@@ -7188,9 +7713,10 @@ export namespace Prisma {
 
   export type VoteUncheckedCreateWithoutIdeaInput = {
     id?: string
-    createdAt?: Date | string
     userId: string
     sessionId: string
+    round: number
+    createdAt?: Date | string
   }
 
   export type VoteCreateOrConnectWithoutIdeaInput = {
@@ -7215,17 +7741,21 @@ export namespace Prisma {
 
   export type UserUpdateWithoutIdeasInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sessions?: SessionUpdateManyWithoutUsersNestedInput
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUpdateManyWithoutParticipantsNestedInput
+    ownedSessions?: SessionUpdateManyWithoutOwnerNestedInput
     votes?: VoteUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutIdeasInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sessions?: SessionUncheckedUpdateManyWithoutUsersNestedInput
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUncheckedUpdateManyWithoutParticipantsNestedInput
+    ownedSessions?: SessionUncheckedUpdateManyWithoutOwnerNestedInput
     votes?: VoteUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -7243,20 +7773,24 @@ export namespace Prisma {
   export type SessionUpdateWithoutIdeasInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
-    users?: UserUpdateManyWithoutSessionsNestedInput
+    currentRound?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedSessionsNestedInput
+    participants?: UserUpdateManyWithoutSessionsNestedInput
     votes?: VoteUpdateManyWithoutSessionNestedInput
   }
 
   export type SessionUncheckedUpdateWithoutIdeasInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
     ownerId?: StringFieldUpdateOperationsInput | string
-    users?: UserUncheckedUpdateManyWithoutSessionsNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: UserUncheckedUpdateManyWithoutSessionsNestedInput
     votes?: VoteUncheckedUpdateManyWithoutSessionNestedInput
   }
 
@@ -7278,18 +7812,22 @@ export namespace Prisma {
 
   export type UserCreateWithoutVotesInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
-    sessions?: SessionCreateNestedManyWithoutUsersInput
-    ideas?: IdeaCreateNestedManyWithoutUserInput
+    lastActive?: Date | string
+    sessions?: SessionCreateNestedManyWithoutParticipantsInput
+    ownedSessions?: SessionCreateNestedManyWithoutOwnerInput
+    ideas?: IdeaCreateNestedManyWithoutAuthorInput
   }
 
   export type UserUncheckedCreateWithoutVotesInput = {
     id?: string
-    username: string
+    name: string
     createdAt?: Date | string
-    sessions?: SessionUncheckedCreateNestedManyWithoutUsersInput
-    ideas?: IdeaUncheckedCreateNestedManyWithoutUserInput
+    lastActive?: Date | string
+    sessions?: SessionUncheckedCreateNestedManyWithoutParticipantsInput
+    ownedSessions?: SessionUncheckedCreateNestedManyWithoutOwnerInput
+    ideas?: IdeaUncheckedCreateNestedManyWithoutAuthorInput
   }
 
   export type UserCreateOrConnectWithoutVotesInput = {
@@ -7297,50 +7835,54 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutVotesInput, UserUncheckedCreateWithoutVotesInput>
   }
 
-  export type SessionCreateWithoutVotesInput = {
-    id?: string
-    code: string
-    createdAt?: Date | string
-    status?: string
-    ownerId: string
-    users?: UserCreateNestedManyWithoutSessionsInput
-    ideas?: IdeaCreateNestedManyWithoutSessionInput
-  }
-
-  export type SessionUncheckedCreateWithoutVotesInput = {
-    id?: string
-    code: string
-    createdAt?: Date | string
-    status?: string
-    ownerId: string
-    users?: UserUncheckedCreateNestedManyWithoutSessionsInput
-    ideas?: IdeaUncheckedCreateNestedManyWithoutSessionInput
-  }
-
-  export type SessionCreateOrConnectWithoutVotesInput = {
-    where: SessionWhereUniqueInput
-    create: XOR<SessionCreateWithoutVotesInput, SessionUncheckedCreateWithoutVotesInput>
-  }
-
   export type IdeaCreateWithoutVotesInput = {
     id?: string
     content: string
     createdAt?: Date | string
-    user: UserCreateNestedOneWithoutIdeasInput
+    author: UserCreateNestedOneWithoutIdeasInput
     session: SessionCreateNestedOneWithoutIdeasInput
   }
 
   export type IdeaUncheckedCreateWithoutVotesInput = {
     id?: string
     content: string
-    createdAt?: Date | string
-    userId: string
+    authorId: string
     sessionId: string
+    createdAt?: Date | string
   }
 
   export type IdeaCreateOrConnectWithoutVotesInput = {
     where: IdeaWhereUniqueInput
     create: XOR<IdeaCreateWithoutVotesInput, IdeaUncheckedCreateWithoutVotesInput>
+  }
+
+  export type SessionCreateWithoutVotesInput = {
+    id?: string
+    code: string
+    status?: string
+    currentRound?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedSessionsInput
+    participants?: UserCreateNestedManyWithoutSessionsInput
+    ideas?: IdeaCreateNestedManyWithoutSessionInput
+  }
+
+  export type SessionUncheckedCreateWithoutVotesInput = {
+    id?: string
+    code: string
+    status?: string
+    currentRound?: number
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: UserUncheckedCreateNestedManyWithoutSessionsInput
+    ideas?: IdeaUncheckedCreateNestedManyWithoutSessionInput
+  }
+
+  export type SessionCreateOrConnectWithoutVotesInput = {
+    where: SessionWhereUniqueInput
+    create: XOR<SessionCreateWithoutVotesInput, SessionUncheckedCreateWithoutVotesInput>
   }
 
   export type UserUpsertWithoutVotesInput = {
@@ -7356,49 +7898,22 @@ export namespace Prisma {
 
   export type UserUpdateWithoutVotesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sessions?: SessionUpdateManyWithoutUsersNestedInput
-    ideas?: IdeaUpdateManyWithoutUserNestedInput
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUpdateManyWithoutParticipantsNestedInput
+    ownedSessions?: SessionUpdateManyWithoutOwnerNestedInput
+    ideas?: IdeaUpdateManyWithoutAuthorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVotesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sessions?: SessionUncheckedUpdateManyWithoutUsersNestedInput
-    ideas?: IdeaUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type SessionUpsertWithoutVotesInput = {
-    update: XOR<SessionUpdateWithoutVotesInput, SessionUncheckedUpdateWithoutVotesInput>
-    create: XOR<SessionCreateWithoutVotesInput, SessionUncheckedCreateWithoutVotesInput>
-    where?: SessionWhereInput
-  }
-
-  export type SessionUpdateToOneWithWhereWithoutVotesInput = {
-    where?: SessionWhereInput
-    data: XOR<SessionUpdateWithoutVotesInput, SessionUncheckedUpdateWithoutVotesInput>
-  }
-
-  export type SessionUpdateWithoutVotesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    status?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
-    users?: UserUpdateManyWithoutSessionsNestedInput
-    ideas?: IdeaUpdateManyWithoutSessionNestedInput
-  }
-
-  export type SessionUncheckedUpdateWithoutVotesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    status?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
-    users?: UserUncheckedUpdateManyWithoutSessionsNestedInput
-    ideas?: IdeaUncheckedUpdateManyWithoutSessionNestedInput
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUncheckedUpdateManyWithoutParticipantsNestedInput
+    ownedSessions?: SessionUncheckedUpdateManyWithoutOwnerNestedInput
+    ideas?: IdeaUncheckedUpdateManyWithoutAuthorNestedInput
   }
 
   export type IdeaUpsertWithoutVotesInput = {
@@ -7416,61 +7931,145 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutIdeasNestedInput
+    author?: UserUpdateOneRequiredWithoutIdeasNestedInput
     session?: SessionUpdateOneRequiredWithoutIdeasNestedInput
   }
 
   export type IdeaUncheckedUpdateWithoutVotesInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type IdeaCreateManyUserInput = {
+  export type SessionUpsertWithoutVotesInput = {
+    update: XOR<SessionUpdateWithoutVotesInput, SessionUncheckedUpdateWithoutVotesInput>
+    create: XOR<SessionCreateWithoutVotesInput, SessionUncheckedCreateWithoutVotesInput>
+    where?: SessionWhereInput
+  }
+
+  export type SessionUpdateToOneWithWhereWithoutVotesInput = {
+    where?: SessionWhereInput
+    data: XOR<SessionUpdateWithoutVotesInput, SessionUncheckedUpdateWithoutVotesInput>
+  }
+
+  export type SessionUpdateWithoutVotesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedSessionsNestedInput
+    participants?: UserUpdateManyWithoutSessionsNestedInput
+    ideas?: IdeaUpdateManyWithoutSessionNestedInput
+  }
+
+  export type SessionUncheckedUpdateWithoutVotesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: UserUncheckedUpdateManyWithoutSessionsNestedInput
+    ideas?: IdeaUncheckedUpdateManyWithoutSessionNestedInput
+  }
+
+  export type SessionCreateManyOwnerInput = {
+    id?: string
+    code: string
+    status?: string
+    currentRound?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IdeaCreateManyAuthorInput = {
     id?: string
     content: string
-    createdAt?: Date | string
     sessionId: string
+    createdAt?: Date | string
   }
 
   export type VoteCreateManyUserInput = {
     id?: string
-    createdAt?: Date | string
-    sessionId: string
     ideaId: string
+    sessionId: string
+    round: number
+    createdAt?: Date | string
   }
 
-  export type SessionUpdateWithoutUsersInput = {
+  export type SessionUpdateWithoutParticipantsInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    ownerId?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedSessionsNestedInput
     ideas?: IdeaUpdateManyWithoutSessionNestedInput
     votes?: VoteUpdateManyWithoutSessionNestedInput
   }
 
-  export type SessionUncheckedUpdateWithoutUsersInput = {
+  export type SessionUncheckedUpdateWithoutParticipantsInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
     ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ideas?: IdeaUncheckedUpdateManyWithoutSessionNestedInput
     votes?: VoteUncheckedUpdateManyWithoutSessionNestedInput
   }
 
-  export type SessionUncheckedUpdateManyWithoutUsersInput = {
+  export type SessionUncheckedUpdateManyWithoutParticipantsInput = {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
     ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type IdeaUpdateWithoutUserInput = {
+  export type SessionUpdateWithoutOwnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: UserUpdateManyWithoutSessionsNestedInput
+    ideas?: IdeaUpdateManyWithoutSessionNestedInput
+    votes?: VoteUpdateManyWithoutSessionNestedInput
+  }
+
+  export type SessionUncheckedUpdateWithoutOwnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: UserUncheckedUpdateManyWithoutSessionsNestedInput
+    ideas?: IdeaUncheckedUpdateManyWithoutSessionNestedInput
+    votes?: VoteUncheckedUpdateManyWithoutSessionNestedInput
+  }
+
+  export type SessionUncheckedUpdateManyWithoutOwnerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    currentRound?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IdeaUpdateWithoutAuthorInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7478,103 +8077,113 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutIdeaNestedInput
   }
 
-  export type IdeaUncheckedUpdateWithoutUserInput = {
+  export type IdeaUncheckedUpdateWithoutAuthorInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutIdeaNestedInput
   }
 
-  export type IdeaUncheckedUpdateManyWithoutUserInput = {
+  export type IdeaUncheckedUpdateManyWithoutAuthorInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VoteUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    session?: SessionUpdateOneRequiredWithoutVotesNestedInput
     idea?: IdeaUpdateOneRequiredWithoutVotesNestedInput
+    session?: SessionUpdateOneRequiredWithoutVotesNestedInput
   }
 
   export type VoteUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sessionId?: StringFieldUpdateOperationsInput | string
     ideaId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VoteUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sessionId?: StringFieldUpdateOperationsInput | string
     ideaId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type IdeaCreateManySessionInput = {
     id?: string
     content: string
+    authorId: string
     createdAt?: Date | string
-    userId: string
   }
 
   export type VoteCreateManySessionInput = {
     id?: string
-    createdAt?: Date | string
     userId: string
     ideaId: string
+    round: number
+    createdAt?: Date | string
   }
 
   export type UserUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    ideas?: IdeaUpdateManyWithoutUserNestedInput
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedSessions?: SessionUpdateManyWithoutOwnerNestedInput
+    ideas?: IdeaUpdateManyWithoutAuthorNestedInput
     votes?: VoteUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    ideas?: IdeaUncheckedUpdateManyWithoutUserNestedInput
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedSessions?: SessionUncheckedUpdateManyWithoutOwnerNestedInput
+    ideas?: IdeaUncheckedUpdateManyWithoutAuthorNestedInput
     votes?: VoteUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActive?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type IdeaUpdateWithoutSessionInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutIdeasNestedInput
+    author?: UserUpdateOneRequiredWithoutIdeasNestedInput
     votes?: VoteUpdateManyWithoutIdeaNestedInput
   }
 
   export type IdeaUncheckedUpdateWithoutSessionInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
     votes?: VoteUncheckedUpdateManyWithoutIdeaNestedInput
   }
 
   export type IdeaUncheckedUpdateManyWithoutSessionInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
   }
 
   export type VoteUpdateWithoutSessionInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutVotesNestedInput
     idea?: IdeaUpdateOneRequiredWithoutVotesNestedInput
@@ -7582,27 +8191,31 @@ export namespace Prisma {
 
   export type VoteUncheckedUpdateWithoutSessionInput = {
     id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     ideaId?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VoteUncheckedUpdateManyWithoutSessionInput = {
     id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     ideaId?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VoteCreateManyIdeaInput = {
     id?: string
-    createdAt?: Date | string
     userId: string
     sessionId: string
+    round: number
+    createdAt?: Date | string
   }
 
   export type VoteUpdateWithoutIdeaInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutVotesNestedInput
     session?: SessionUpdateOneRequiredWithoutVotesNestedInput
@@ -7610,16 +8223,18 @@ export namespace Prisma {
 
   export type VoteUncheckedUpdateWithoutIdeaInput = {
     id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VoteUncheckedUpdateManyWithoutIdeaInput = {
     id?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
+    round?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

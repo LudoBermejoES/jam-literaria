@@ -119,32 +119,36 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
-  username: 'username',
-  createdAt: 'createdAt'
+  name: 'name',
+  createdAt: 'createdAt',
+  lastActive: 'lastActive'
 };
 
 exports.Prisma.SessionScalarFieldEnum = {
   id: 'id',
   code: 'code',
-  createdAt: 'createdAt',
   status: 'status',
-  ownerId: 'ownerId'
+  currentRound: 'currentRound',
+  ownerId: 'ownerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.IdeaScalarFieldEnum = {
   id: 'id',
   content: 'content',
-  createdAt: 'createdAt',
-  userId: 'userId',
-  sessionId: 'sessionId'
+  authorId: 'authorId',
+  sessionId: 'sessionId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.VoteScalarFieldEnum = {
   id: 'id',
-  createdAt: 'createdAt',
   userId: 'userId',
+  ideaId: 'ideaId',
   sessionId: 'sessionId',
-  ideaId: 'ideaId'
+  round: 'round',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {

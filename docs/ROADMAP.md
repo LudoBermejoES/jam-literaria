@@ -81,15 +81,15 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
 ## Fase 2: Implementación de Funcionalidades Core
 
 ### 2.1 Sistema de Autenticación y Gestión de Usuarios
-- [] Implementar modelo de Usuario en prisma/schema.prisma
-- [] Crear API routes en server/ para:
+- [x] Implementar modelo de Usuario en prisma/schema.prisma
+- [x] Crear API routes en server/ para:
   - Registro de nombre de usuario
   - Validación de sesión
-- [] Implementar middleware de autenticación en server/middleware/
-- [] Crear componentes de UI en app/src/components/:
+- [x] Implementar middleware de autenticación en server/middleware/
+- [x] Crear componentes de UI en app/src/components/:
   - Formulario de ingreso de nombre
   - Pantalla de bienvenida
-- [ ] Implementar tests unitarios en __tests__/auth/
+- [x] Implementar tests unitarios en __tests__/auth/
 
 ### 2.2 Sistema de Sesiones
 - [] Implementar modelo de Sesión en prisma/schema.prisma
