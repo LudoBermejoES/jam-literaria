@@ -236,7 +236,7 @@ describe('Lógica de selección de ideas', () => {
 ```typescript
 // __tests__/integration/api/session/procesar-votos.test.ts
 import { createMocks } from 'node-mocks-http';
-import { POST } from '@/app/api/session/[id]/procesar-votos/route';
+import { procesarVotos } from '@/server/api/session/[id]/procesar-votos';
 import { prisma } from '@/lib/prisma';
 import { io } from '@/lib/socket';
 
@@ -308,13 +308,16 @@ describe('API: procesar-votos', () => {
     });
     
     // Act
-    const response = await POST(req, { params: { id: sessionId } });
-    const data = await response.json();
+    await procesarVotos(req, res);
     
     // Assert
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.accion).toBe('FINALIZAR');
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res._getData())).toEqual(
+      expect.objectContaining({
+        success: true,
+        accion: 'FINALIZAR'
+      })
+    );
     expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: sessionId },
       data: expect.objectContaining({
@@ -376,13 +379,16 @@ describe('API: procesar-votos', () => {
     });
     
     // Act
-    const response = await POST(req, { params: { id: sessionId } });
-    const data = await response.json();
+    await procesarVotos(req, res);
     
     // Assert
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.accion).toBe('NUEVA_RONDA');
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res._getData())).toEqual(
+      expect.objectContaining({
+        success: true,
+        accion: 'NUEVA_RONDA'
+      })
+    );
     expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: sessionId },
       data: expect.objectContaining({

@@ -4,8 +4,8 @@
 Desarrollaremos una aplicación web para organizar jams literarias donde múltiples escritores pueden proponer ideas, votar por ellas y seleccionar tres ideas finales mediante un proceso de votación estructurado.
 
 ## Stack Tecnológico
-- **Frontend**: React.js con Next.js 14 (App Router)
-- **Backend**: Node.js integrado con Next.js (API Routes)
+- **Frontend**: React.js
+- **Backend**: Node.js con Express
 - **Lenguaje**: TypeScript para todo el proyecto
 - **Base de Datos**: SQLite con Prisma ORM
 - **Tiempo Real**: Socket.io para actualización en tiempo real
@@ -15,28 +15,33 @@ Desarrollaremos una aplicación web para organizar jams literarias donde múltip
 ## Estructura de Directorios
 ```
 /
-├── app/                    # Next.js App Router
-│   ├── api/                # API Routes
-│   ├── (auth)/             # Rutas de autenticación
-│   │   ├── page.tsx        # Pantalla inicial (nombre)
-│   │   └── join/[code]     # Unirse por código
-│   ├── session/            # Rutas de sesión
-│   │   ├── new/            # Crear sesión
-│   │   ├── waiting/        # Sala de espera
-│   │   ├── ideas/          # Envío de ideas
-│   │   ├── voting/         # Votación de ideas
-│   │   └── results/        # Resultados finales
-├── components/             # Componentes reutilizables
-├── lib/                    # Utilidades, hooks, constantes
-├── prisma/                 # Esquema de Prisma y migraciones
-├── public/                 # Archivos estáticos
-├── __tests__/             # Tests con Jest
-│   ├── unit/              # Tests unitarios
-│   │   ├── lib/           # Tests de utilidades
-│   │   ├── hooks/         # Tests de hooks
-│   │   └── components/    # Tests de componentes
-│   └── integration/       # Tests de integración
-└── types/                  # Definiciones de TypeScript
+├── src/                    # Código fuente
+│   ├── server/             # Servidor Express
+│   │   ├── api/            # Rutas API
+│   │   └── middleware/     # Middleware de Express
+│   ├── client/             # Cliente React
+│   │   ├── pages/          # Páginas principales
+│   │   │   ├── auth/       # Rutas de autenticación
+│   │   │   │   ├── index.js # Pantalla inicial (nombre)
+│   │   │   │   └── join/   # Unirse por código
+│   │   │   └── session/     # Rutas de sesión
+│   │   │       ├── new/     # Crear sesión
+│   │   │       ├── waiting/ # Sala de espera
+│   │   │       ├── ideas/   # Envío de ideas
+│   │   │       ├── voting/  # Votación de ideas
+│   │   │       └── results/ # Resultados finales
+│   │   ├── components/      # Componentes reutilizables
+│   │   └── hooks/          # Custom hooks
+│   ├── lib/                # Utilidades, constantes
+│   └── types/              # Definiciones de TypeScript
+├── prisma/                # Esquema de Prisma y migraciones
+├── public/                # Archivos estáticos
+└── __tests__/             # Tests con Jest
+    ├── unit/              # Tests unitarios
+    │   ├── lib/           # Tests de utilidades
+    │   ├── hooks/         # Tests de hooks
+    │   └── components/    # Tests de componentes
+    └── integration/       # Tests de integración
 ```
 
 ## Modelo de Datos
@@ -355,14 +360,13 @@ function finalizarSeleccion(ideasElegidas, session) {
 ### Implementación en API Routes
 
 ```javascript
-// app/api/session/[id]/procesar-votos/route.js
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { determinarAccionSiguiente, prepararNuevaRonda, finalizarSeleccion } from '@/lib/votacion';
-import { io } from '@/lib/socket';
+// server/api/session/[id]/procesar-votos.js
+import { prisma } from '../../../lib/prisma';
+import { determinarAccionSiguiente, prepararNuevaRonda, finalizarSeleccion } from '../../../lib/votacion';
+import { io } from '../../../lib/socket';
 
-export async function POST(request, { params }) {
-  const { id } = params;
+export async function procesarVotos(req, res) {
+  const { id } = req.params;
   const sessionId = id;
   
   try {
@@ -378,10 +382,7 @@ export async function POST(request, { params }) {
     });
     
     if (!session) {
-      return NextResponse.json(
-        { error: 'Sesión no encontrada' },
-        { status: 404 }
-      );
+      return res.status(404).json({ error: 'Sesión no encontrada' });
     }
     
     // Contar votos para cada idea en la ronda actual
@@ -448,13 +449,10 @@ export async function POST(request, { params }) {
     }
     else {
       // Caso de error
-      return NextResponse.json(
-        { error: resultado.mensaje },
-        { status: 400 }
-      );
+      return res.status(400).json({ error: resultado.mensaje });
     }
     
-    return NextResponse.json({
+    return res.status(200).json({
       success: true,
       accion: resultado.accion,
       session: sessionActualizada
@@ -462,225 +460,12 @@ export async function POST(request, { params }) {
     
   } catch (error) {
     console.error('Error al procesar votos:', error);
-    return NextResponse.json(
-      { error: 'Error al procesar los votos' },
-      { status: 500 }
-    );
+    return res.status(500).json({ error: 'Error al procesar los votos' });
   }
 }
 ```
 
-### Manejo de Estado en el Cliente
-
-```typescript
-// hooks/useVotacion.ts
-import { useState, useEffect } from 'react';
-import { useSocket } from './useSocket';
-
-type Idea = {
-  id: string;
-  content: string;
-  authorId: string;
-  votos?: number;
-};
-
-type VotacionState = {
-  status: 'WAITING' | 'COLLECTING_IDEAS' | 'VOTING' | 'REVOTING' | 'FINISHED';
-  currentRound: number;
-  ideasDisponibles: Idea[];
-  ideasElegidas: Idea[];
-  ideasCandidatas: Idea[];
-  ideasFinales: Idea[];
-  mensaje: string;
-  isLoading: boolean;
-  error: string | null;
-};
-
-export function useVotacion(sessionId: string) {
-  const [state, setState] = useState<VotacionState>({
-    status: 'WAITING',
-    currentRound: 0,
-    ideasDisponibles: [],
-    ideasElegidas: [],
-    ideasCandidatas: [],
-    ideasFinales: [],
-    mensaje: '',
-    isLoading: true,
-    error: null
-  });
-
-  const { socket } = useSocket(sessionId);
-  
-  // Cargar estado inicial
-  useEffect(() => {
-    async function cargarEstadoInicial() {
-      try {
-        const response = await fetch(`/api/session/${sessionId}`);
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.error || 'Error al cargar la sesión');
-        }
-        
-        // Actualizar estado
-        setState(prev => ({
-          ...prev,
-          status: data.status,
-          currentRound: data.currentRound,
-          ideasDisponibles: data.ideas || [],
-          isLoading: false,
-          // Otros datos necesarios según el estado de la sesión
-          ...(data.metadata || {})
-        }));
-      } catch (error) {
-        setState(prev => ({
-          ...prev,
-          error: error.message,
-          isLoading: false
-        }));
-      }
-    }
-    
-    cargarEstadoInicial();
-  }, [sessionId]);
-  
-  // Escuchar eventos del socket
-  useEffect(() => {
-    if (!socket) return;
-    
-    // Nueva ronda de votación
-    socket.on('new-voting-round', (data) => {
-      setState(prev => ({
-        ...prev,
-        status: 'REVOTING',
-        currentRound: data.round,
-        ideasElegidas: data.ideasElegidas || [],
-        ideasCandidatas: data.ideasCandidatas || [],
-        mensaje: data.mensaje || ''
-      }));
-    });
-    
-    // Votación finalizada
-    socket.on('voting-finished', (data) => {
-      setState(prev => ({
-        ...prev,
-        status: 'FINISHED',
-        ideasFinales: data.ideasFinales || [],
-        mensaje: data.mensaje || ''
-      }));
-    });
-    
-    return () => {
-      socket.off('new-voting-round');
-      socket.off('voting-finished');
-    };
-  }, [socket]);
-  
-  // Función para enviar votos
-  const enviarVotos = async (ideasVotadas: string[]) => {
-    if (ideasVotadas.length !== 3) {
-      setState(prev => ({
-        ...prev,
-        error: 'Debes seleccionar exactamente 3 ideas'
-      }));
-      return;
-    }
-    
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      const response = await fetch(`/api/session/${sessionId}/votar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          ideaIds: ideasVotadas,
-          round: state.currentRound
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al enviar votos');
-      }
-      
-      // Actualizar estado local
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        // El usuario ya votó, pero esperando resultados
-      }));
-      
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error.message,
-        isLoading: false
-      }));
-    }
-  };
-  
-  // Función para procesar votos (solo para el maestro de ceremonias)
-  const procesarVotos = async () => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      const response = await fetch(`/api/session/${sessionId}/procesar-votos`, {
-        method: 'POST'
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al procesar votos');
-      }
-      
-      // El estado se actualizará a través de eventos de socket
-      setState(prev => ({
-        ...prev,
-        isLoading: false
-      }));
-      
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error.message,
-        isLoading: false
-      }));
-    }
-  };
-  
-  return {
-    ...state,
-    enviarVotos,
-    procesarVotos
-  };
-}
-```
-
-## Manejo de Sesiones y Estado en Tiempo Real
-
-### Gestión de Sesiones
-- Utilizaremos Socket.io para mantener sincronizados a todos los participantes
-- Cada sesión tendrá un canal dedicado (`session-${sessionId}`)
-- Eventos principales:
-  - `user-joined`: Cuando un nuevo usuario se une
-  - `session-started`: Cuando el maestro inicia la sesión
-  - `idea-submitted`: Cuando un usuario envía sus ideas
-  - `voting-started`: Cuando comienza la fase de votación
-  - `vote-submitted`: Cuando un usuario envía sus votos
-  - `results-calculated`: Cuando se determinan los resultados
-  - `new-round-started`: Cuando se inicia una nueva ronda
-  - `user-reconnected`: Cuando un usuario se reconecta a la sesión
-
-### Manejo de Reconexiones
-- Implementaremos sistema para detectar cuando un usuario se desconecta y se reconecta
-- Al reconectarse, el usuario recibe el estado actual de la sesión
-- Sus ideas y votos previos se mantienen
-- Si un usuario se desconecta durante votación y no vota, se continúa sin su voto
-- Si se reconecta antes de finalizar la fase, podrá votar normalmente
-
-### Implementación de Socket.io con Next.js
+### Implementación de Socket.io con Express
 ```javascript
 // lib/socket.js
 import { Server } from 'socket.io';
@@ -727,6 +512,28 @@ export const initSocket = (server) => {
   return io;
 };
 ```
+
+## Manejo de Sesiones y Estado en Tiempo Real
+
+### Gestión de Sesiones
+- Utilizaremos Socket.io para mantener sincronizados a todos los participantes
+- Cada sesión tendrá un canal dedicado (`session-${sessionId}`)
+- Eventos principales:
+  - `user-joined`: Cuando un nuevo usuario se une
+  - `session-started`: Cuando el maestro inicia la sesión
+  - `idea-submitted`: Cuando un usuario envía sus ideas
+  - `voting-started`: Cuando comienza la fase de votación
+  - `vote-submitted`: Cuando un usuario envía sus votos
+  - `results-calculated`: Cuando se determinan los resultados
+  - `new-round-started`: Cuando se inicia una nueva ronda
+  - `user-reconnected`: Cuando un usuario se reconecta a la sesión
+
+### Manejo de Reconexiones
+- Implementaremos sistema para detectar cuando un usuario se desconecta y se reconecta
+- Al reconectarse, el usuario recibe el estado actual de la sesión
+- Sus ideas y votos previos se mantienen
+- Si un usuario se desconecta durante votación y no vota, se continúa sin su voto
+- Si se reconecta antes de finalizar la fase, podrá votar normalmente
 
 ## Seguridad y Validaciones
 
@@ -1034,7 +841,7 @@ describe('Lógica de selección de ideas', () => {
 ```typescript
 // __tests__/integration/api/session/procesar-votos.test.ts
 import { createMocks } from 'node-mocks-http';
-import { POST } from '@/app/api/session/[id]/procesar-votos/route';
+import { procesarVotos } from '@/app/api/session/[id]/procesar-votos/route';
 import { prisma } from '@/lib/prisma';
 import { io } from '@/lib/socket';
 
@@ -1106,13 +913,17 @@ describe('API: procesar-votos', () => {
     });
     
     // Act
-    const response = await POST(req, { params: { id: sessionId } });
-    const data = await response.json();
+    await procesarVotos(req, res);
     
     // Assert
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.accion).toBe('FINALIZAR');
+    expect(res.status).toBe(200);
+    expect(res.json()).toEqual({
+      success: true,
+      accion: 'FINALIZAR',
+      session: expect.objectContaining({
+        status: 'FINISHED'
+      })
+    });
     expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: sessionId },
       data: expect.objectContaining({
@@ -1174,13 +985,18 @@ describe('API: procesar-votos', () => {
     });
     
     // Act
-    const response = await POST(req, { params: { id: sessionId } });
-    const data = await response.json();
+    await procesarVotos(req, res);
     
     // Assert
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.accion).toBe('NUEVA_RONDA');
+    expect(res.status).toBe(200);
+    expect(res.json()).toEqual({
+      success: true,
+      accion: 'NUEVA_RONDA',
+      session: expect.objectContaining({
+        status: 'REVOTING',
+        currentRound: 2
+      })
+    });
     expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: sessionId },
       data: expect.objectContaining({
