@@ -217,8 +217,8 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
 ## Fase 6: Despliegue y Documentación
 
 ### 6.1 Preparación para Producción
-- [ ] Configurar variables de entorno
-- [ ] Optimizar build
+- [x] Configurar variables de entorno
+- [x] Optimizar build
   ```bash
   # Build del cliente
   cd app
@@ -228,8 +228,8 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
   cd ../server
   npm run build
   ```
-- [ ] Configurar CI/CD
-- [ ] Preparar base de datos para producción
+- [x] Configurar CI/CD
+- [x] Preparar base de datos para producción
 
 ### 6.2 Documentación
 - [x] Crear documentación técnica

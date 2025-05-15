@@ -1,9 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { authMiddleware, sessionMemberMiddleware, sessionOwnerMiddleware } from '../../../../middleware/auth';
-import { PrismaClient } from '../../../../generated/prisma';
+import { PrismaClient } from '@prisma/client';
+
+// Define custom request interface with user and session properties
+interface CustomRequest extends Request {
+  user?: any;
+  session?: any;
+}
 
 // Mock PrismaClient
-jest.mock('../../../../server/generated/prisma', () => {
+jest.mock('@prisma/client', () => {
   // Create mock implementation
   const mockPrismaClient = {
     user: {
@@ -21,7 +27,7 @@ jest.mock('../../../../server/generated/prisma', () => {
 });
 
 describe('Auth Middleware', () => {
-  let mockReq: Partial<Request>;
+  let mockReq: Partial<CustomRequest>;
   let mockRes: Partial<Response>;
   let nextFunction: jest.Mock;
   let prisma: any;
@@ -50,7 +56,7 @@ describe('Auth Middleware', () => {
   describe('authMiddleware', () => {
     it('should return 401 if no user ID is provided', async () => {
       // Execute
-      await authMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await authMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(401);
@@ -67,7 +73,7 @@ describe('Auth Middleware', () => {
       prisma.user.findUnique.mockResolvedValue(null);
       
       // Execute
-      await authMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await authMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
@@ -89,7 +95,7 @@ describe('Auth Middleware', () => {
       prisma.user.update.mockResolvedValue(mockUser);
       
       // Execute
-      await authMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await authMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
@@ -109,7 +115,7 @@ describe('Auth Middleware', () => {
       console.error = jest.fn();
       
       // Execute
-      await authMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await authMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500);
@@ -128,7 +134,7 @@ describe('Auth Middleware', () => {
       // No sessionId in params
       
       // Execute
-      await sessionMemberMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await sessionMemberMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400);
@@ -145,7 +151,7 @@ describe('Auth Middleware', () => {
       prisma.session.findFirst.mockResolvedValue(null);
       
       // Execute
-      await sessionMemberMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await sessionMemberMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(prisma.session.findFirst).toHaveBeenCalledWith({
@@ -172,7 +178,7 @@ describe('Auth Middleware', () => {
       prisma.session.findFirst.mockResolvedValue(mockSession);
       
       // Execute
-      await sessionMemberMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await sessionMemberMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(mockReq.session).toEqual(mockSession);
@@ -187,7 +193,7 @@ describe('Auth Middleware', () => {
       // No sessionId in params
       
       // Execute
-      await sessionOwnerMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await sessionOwnerMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400);
@@ -200,7 +206,7 @@ describe('Auth Middleware', () => {
       prisma.session.findFirst.mockResolvedValue(null);
       
       // Execute
-      await sessionOwnerMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await sessionOwnerMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(prisma.session.findFirst).toHaveBeenCalledWith({
@@ -224,7 +230,7 @@ describe('Auth Middleware', () => {
       prisma.session.findFirst.mockResolvedValue(mockSession);
       
       // Execute
-      await sessionOwnerMiddleware(mockReq as Request, mockRes as Response, nextFunction);
+      await sessionOwnerMiddleware(mockReq as CustomRequest, mockRes as Response, nextFunction);
       
       // Assert
       expect(mockReq.session).toEqual(mockSession);

@@ -7,7 +7,7 @@ describe('JoinSessionForm', () => {
     const mockSubmit = jest.fn();
     const mockBack = jest.fn();
     render(<JoinSessionForm onSubmit={mockSubmit} onBack={mockBack} />);
-    
+
     expect(screen.getByText('Unirse a una sesión')).toBeInTheDocument();
     expect(screen.getByLabelText('Código de sesión')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Introduce el código de la sesión')).toBeInTheDocument();
@@ -19,7 +19,7 @@ describe('JoinSessionForm', () => {
     const mockSubmit = jest.fn();
     const mockBack = jest.fn();
     render(<JoinSessionForm onSubmit={mockSubmit} onBack={mockBack} />);
-    
+
     fireEvent.click(screen.getByRole('button', { name: 'Volver' }));
     expect(mockBack).toHaveBeenCalledTimes(1);
   });
@@ -28,7 +28,7 @@ describe('JoinSessionForm', () => {
     const mockSubmit = jest.fn();
     const mockBack = jest.fn();
     render(<JoinSessionForm onSubmit={mockSubmit} onBack={mockBack} />);
-    
+
     fireEvent.click(screen.getByRole('button', { name: 'Unirse' }));
     expect(screen.getByText('Por favor, introduce el código de la sesión')).toBeInTheDocument();
     expect(mockSubmit).not.toHaveBeenCalled();
@@ -38,11 +38,11 @@ describe('JoinSessionForm', () => {
     const mockSubmit = jest.fn();
     const mockBack = jest.fn();
     render(<JoinSessionForm onSubmit={mockSubmit} onBack={mockBack} />);
-    
+
     const codeInput = screen.getByLabelText('Código de sesión');
     fireEvent.change(codeInput, { target: { value: '  ABC123  ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Unirse' }));
-    
+
     expect(mockSubmit).toHaveBeenCalledWith('ABC123');
   });
 
@@ -50,9 +50,9 @@ describe('JoinSessionForm', () => {
     const mockSubmit = jest.fn();
     const mockBack = jest.fn();
     render(<JoinSessionForm onSubmit={mockSubmit} onBack={mockBack} isLoading={true} />);
-    
+
     expect(screen.getByRole('button', { name: 'Uniendo...' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Volver' })).toBeDisabled();
     expect(screen.getByLabelText('Código de sesión')).toBeDisabled();
   });
-}); 
+});

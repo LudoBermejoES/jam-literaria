@@ -48,10 +48,10 @@ const useAuth = () => {
     try {
       const newUser = await registerUser(name);
       setUser(newUser);
-      
+
       // Store user in localStorage
       localStorage.setItem('user', JSON.stringify(newUser));
-      
+
       return newUser;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'Error registering user';
@@ -74,10 +74,10 @@ const useAuth = () => {
     try {
       const newSession = await createSession(user.id);
       setSession(newSession);
-      
+
       // Store session in localStorage
       localStorage.setItem('session', JSON.stringify(newSession));
-      
+
       return newSession;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'Error creating session';
@@ -100,10 +100,10 @@ const useAuth = () => {
     try {
       const joinedSession = await joinSession(user.id, code);
       setSession(joinedSession);
-      
+
       // Store session in localStorage
       localStorage.setItem('session', JSON.stringify(joinedSession));
-      
+
       return joinedSession;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'Error joining session';
@@ -118,7 +118,7 @@ const useAuth = () => {
     setUser(null);
     setSession(null);
     setError(null);
-    
+
     // Clear stored data
     localStorage.removeItem('user');
     localStorage.removeItem('session');
@@ -132,8 +132,8 @@ const useAuth = () => {
     registerUser: handleRegisterUser,
     createSession: handleCreateSession,
     joinSession: handleJoinSession,
-    logout: handleLogout
+    logout: handleLogout,
   };
 };
 
-export default useAuth; 
+export default useAuth;

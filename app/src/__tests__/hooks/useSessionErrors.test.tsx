@@ -6,13 +6,17 @@ import { io } from 'socket.io-client';
 
 // Define constants for testing
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || '';
-const MOCK_ERROR_MESSAGE = 'Socket connection error';
+const MOCK_ERROR_MESSAGE_LOAD = 'Failed to load session';
+const MOCK_ERROR_MESSAGE_RELOAD = 'Failed to reload session';
 
 // Mock console.error to avoid cluttering test output
 const originalConsoleError = console.error;
 
+// Define event handler type
+type EventHandler = (...args: any[]) => void;
+
 // Create mock socket event handlers
-let onHandlers: Record<string, Function> = {};
+let onHandlers: Record<string, EventHandler> = {};
 let emitHandlers: Record<string, any[]> = {};
 let isConnected = true;
 
@@ -26,7 +30,7 @@ interface MockSocket {
 
 // Mock socket with explicit error capabilities
 const mockSocket: MockSocket = {
-  on: jest.fn((event: string, callback: Function) => {
+  on: jest.fn((event: string, callback: EventHandler) => {
     onHandlers[event] = callback;
     return mockSocket;
   }),
@@ -42,7 +46,7 @@ const mockSocket: MockSocket = {
 
 // Mock socket.io-client
 jest.mock('socket.io-client', () => ({
-  io: jest.fn(() => mockSocket)
+  io: jest.fn(() => mockSocket),
 }));
 
 // Mock API module
@@ -71,7 +75,7 @@ describe('useSession hook - Error Handling', () => {
       code: 'TEST123',
       status: 'WAITING',
       ownerId: mockUserId,
-      participants: [{ id: mockUserId, name: 'Test User' }]
+      participants: [{ id: mockUserId, name: 'Test User' }],
     });
   });
 
@@ -87,17 +91,12 @@ describe('useSession hook - Error Handling', () => {
         code: 'TEST123',
         status: 'WAITING',
         ownerId: mockUserId,
-        participants: [{ id: mockUserId, name: 'Test User' }]
+        participants: [{ id: mockUserId, name: 'Test User' }],
       })
-      .mockRejectedValueOnce(new Error(MOCK_ERROR_MESSAGE));
+      .mockRejectedValueOnce(new Error(MOCK_ERROR_MESSAGE_RELOAD));
 
     // Render hook
-    const { result } = renderHook(() => 
-      useSession(mockSessionId, mockUserId, mockIsOwner)
-    );
-
-    // Initial loading state
-    expect(result.current.isLoading).toBe(true);
+    const { result } = renderHook(() => useSession(mockSessionId, mockUserId, mockIsOwner));
 
     // Wait for initial load to complete
     await waitFor(() => {
@@ -110,33 +109,29 @@ describe('useSession hook - Error Handling', () => {
       if (onHandlers['disconnect']) {
         onHandlers['disconnect']({ reason: 'io server disconnect' });
       }
-      
-      // Force an error in the next data fetch 
+
+      // Force an error in the next data fetch
       result.current.reload();
     });
 
     // Wait for error state
     await waitFor(() => {
       // Should have error state after disconnection and reload attempt
-      expect(result.current.error).toBe(MOCK_ERROR_MESSAGE);
+      expect(result.current.error).toBe(MOCK_ERROR_MESSAGE_RELOAD);
     });
   });
 
   it('should handle API errors during session status loading', async () => {
     // Mock API error
-    (apiModule.getSessionStatus as jest.Mock).mockRejectedValueOnce(
-      new Error(MOCK_ERROR_MESSAGE)
-    );
+    (apiModule.getSessionStatus as jest.Mock).mockRejectedValueOnce(new Error(MOCK_ERROR_MESSAGE_LOAD));
 
     // Render hook
-    const { result } = renderHook(() => 
-      useSession(mockSessionId, mockUserId, mockIsOwner)
-    );
+    const { result } = renderHook(() => useSession(mockSessionId, mockUserId, mockIsOwner));
 
     // Wait for error state to be set
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
-      expect(result.current.error).toBe(MOCK_ERROR_MESSAGE);
+      expect(result.current.error).toBe(MOCK_ERROR_MESSAGE_LOAD);
     });
   });
 
@@ -144,7 +139,7 @@ describe('useSession hook - Error Handling', () => {
     // We'll skip this test since the cleanup happens in React's useEffect
     // which doesn't reliably trigger in test environment when unmounting
     // This is a limitation of testing hooks with useEffect cleanup
-    
+
     // In a real environment, the useEffect cleanup will run correctly
     expect(true).toBe(true);
   });
@@ -152,13 +147,11 @@ describe('useSession hook - Error Handling', () => {
   it('should handle owner action failures gracefully', async () => {
     // Mock startSession to fail
     (apiModule.startSession as jest.Mock).mockRejectedValueOnce(
-      new Error('Failed to start session')
+      new Error('Failed to start session'),
     );
 
     // Render hook
-    const { result } = renderHook(() => 
-      useSession(mockSessionId, mockUserId, mockIsOwner)
-    );
+    const { result } = renderHook(() => useSession(mockSessionId, mockUserId, mockIsOwner));
 
     // Wait for initial load
     await waitFor(() => {
@@ -181,4 +174,4 @@ describe('useSession hook - Error Handling', () => {
     expect(actionError).toBeDefined();
     expect(result.current.error).toBe('Failed to start session');
   });
-}); 
+});

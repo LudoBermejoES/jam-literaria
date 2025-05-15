@@ -158,6 +158,14 @@ const config = {
         "fromEnvVar": null,
         "value": "windows",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "windows"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
@@ -179,13 +187,13 @@ const config = {
   "inlineDatasources": {
     "db": {
       "url": {
-        "fromEnvVar": null,
-        "value": "file:./dev.db"
+        "fromEnvVar": "DATABASE_URL",
+        "value": null
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = \"file:./dev.db\"\n}\n\nmodel User {\n  id            String    @id @default(uuid())\n  name          String\n  sessions      Session[] @relation(\"SessionParticipants\")\n  ownedSessions Session[] @relation(\"SessionOwner\")\n  ideas         Idea[]\n  votes         Vote[]\n  createdAt     DateTime  @default(now())\n  lastActive    DateTime  @default(now()) // Para gestionar reconexiones\n}\n\nmodel Session {\n  id           String   @id @default(uuid())\n  code         String   @unique // Código único para unirse (autor o libro famoso)\n  status       String   @default(\"WAITING\") // WAITING, COLLECTING_IDEAS, VOTING, REVOTING, FINISHED\n  currentRound Int      @default(0)\n  owner        User     @relation(\"SessionOwner\", fields: [ownerId], references: [id])\n  ownerId      String\n  participants User[]   @relation(\"SessionParticipants\")\n  ideas        Idea[]\n  votes        Vote[]\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n\nmodel Idea {\n  id        String   @id @default(uuid())\n  content   String // Sin límite de longitud\n  author    User     @relation(fields: [authorId], references: [id])\n  authorId  String\n  session   Session  @relation(fields: [sessionId], references: [id])\n  sessionId String\n  votes     Vote[]\n  createdAt DateTime @default(now())\n}\n\nmodel Vote {\n  id        String   @id @default(uuid())\n  user      User     @relation(fields: [userId], references: [id])\n  userId    String\n  idea      Idea     @relation(fields: [ideaId], references: [id])\n  ideaId    String\n  session   Session  @relation(fields: [sessionId], references: [id])\n  sessionId String\n  round     Int // Para identificar la ronda de votación\n  createdAt DateTime @default(now())\n\n  @@unique([userId, ideaId, round, sessionId])\n}\n",
-  "inlineSchemaHash": "ae38a6ebc66de225e54884848280be0b8cf0911869c03bc05b251526fb471dd9",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated/prisma\"\n  binaryTargets = [\"native\", \"windows\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id            String    @id @default(uuid())\n  name          String\n  sessions      Session[] @relation(\"SessionParticipants\")\n  ownedSessions Session[] @relation(\"SessionOwner\")\n  ideas         Idea[]\n  votes         Vote[]\n  createdAt     DateTime  @default(now())\n  lastActive    DateTime  @default(now()) // Para gestionar reconexiones\n}\n\nmodel Session {\n  id           String   @id @default(uuid())\n  code         String   @unique // Código único para unirse (autor o libro famoso)\n  status       String   @default(\"WAITING\") // WAITING, COLLECTING_IDEAS, VOTING, REVOTING, FINISHED\n  currentRound Int      @default(0)\n  owner        User     @relation(\"SessionOwner\", fields: [ownerId], references: [id])\n  ownerId      String\n  participants User[]   @relation(\"SessionParticipants\")\n  ideas        Idea[]\n  votes        Vote[]\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n\nmodel Idea {\n  id        String   @id @default(uuid())\n  content   String // Sin límite de longitud\n  author    User     @relation(fields: [authorId], references: [id])\n  authorId  String\n  session   Session  @relation(fields: [sessionId], references: [id])\n  sessionId String\n  votes     Vote[]\n  createdAt DateTime @default(now())\n}\n\nmodel Vote {\n  id        String   @id @default(uuid())\n  user      User     @relation(fields: [userId], references: [id])\n  userId    String\n  idea      Idea     @relation(fields: [ideaId], references: [id])\n  ideaId    String\n  session   Session  @relation(fields: [sessionId], references: [id])\n  sessionId String\n  round     Int // Para identificar la ronda de votación\n  createdAt DateTime @default(now())\n\n  @@unique([userId, ideaId, round, sessionId])\n}\n",
+  "inlineSchemaHash": "0dc70786d80a0761c64d88dae8f4c81a297079504555c9aa15c15de193739054",
   "copyEngine": true
 }
 
@@ -226,6 +234,10 @@ Object.assign(exports, Prisma)
 // file annotations for bundling tools to include these files
 path.join(__dirname, "query_engine-windows.dll.node");
 path.join(process.cwd(), "generated/prisma/query_engine-windows.dll.node")
+
+// file annotations for bundling tools to include these files
+path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");
+path.join(process.cwd(), "generated/prisma/libquery_engine-debian-openssl-3.0.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "generated/prisma/schema.prisma")

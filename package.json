@@ -7,13 +7,25 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"No tests yet\"",
+    "test": "npm run test:client && npm run test:server",
+    "test:client": "cd app && npm test",
+    "test:server": "cd server && npm test",
+    "dev:client": "cd app && npm start",
+    "dev:server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build:client": "cd app && npm run build",
+    "build:server": "cd server && npm run build",
+    "build": "npm run build:server && npm run build:client",
+    "start:server": "cd server && npm run start",
+    "start:prod": "npm run build && npm run start:server",
+    "postinstall": "cd app && npm install && cd ../server && npm install",
     "prepare": "husky"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.2"
   },

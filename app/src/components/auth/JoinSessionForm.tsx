@@ -16,7 +16,7 @@ const JoinSessionForm: React.FC<JoinSessionFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate code
     if (!code || code.trim().length === 0) {
       setError('Por favor, introduce el código de la sesión');
@@ -25,16 +25,14 @@ const JoinSessionForm: React.FC<JoinSessionFormProps> = ({
 
     // Clear any previous error
     setError(null);
-    
+
     // Call the onSubmit handler with the code
     onSubmit(code.trim());
   };
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Unirse a una sesión
-      </h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Unirse a una sesión</h2>
       <p className="mb-6 text-gray-600 text-center">
         Introduce el código para unirte a una sesión existente
       </p>
@@ -80,4 +78,4 @@ const JoinSessionForm: React.FC<JoinSessionFormProps> = ({
   );
 };
 
-export default JoinSessionForm; 
+export default JoinSessionForm;

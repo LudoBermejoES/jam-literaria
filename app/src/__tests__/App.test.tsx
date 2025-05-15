@@ -12,8 +12,8 @@ jest.mock('../hooks/useAuth', () => ({
     registerUser: jest.fn(),
     createSession: jest.fn(),
     joinSession: jest.fn(),
-    logout: jest.fn()
-  })
+    logout: jest.fn(),
+  }),
 }));
 
 describe('App', () => {
@@ -21,4 +21,4 @@ describe('App', () => {
     render(<App />);
     expect(screen.getByText(/bienvenido a la jam literaria/i)).toBeInTheDocument();
   });
-}); 
+});

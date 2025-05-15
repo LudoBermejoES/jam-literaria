@@ -1,162 +1,199 @@
-// Base API URL
-const API_URL = process.env.REACT_APP_API_URL || '/api';
+import { User, Session, Idea } from '../hooks/useSession';
 
-// User API
+// Usar la variable de entorno para la URL de la API
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 
-interface User {
-  id: string;
-  name: string;
-}
-
+// User Auth
 export const registerUser = async (name: string): Promise<User> => {
-  const response = await fetch(`${API_URL}/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name })
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to register user');
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to register user:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
-// Session API
-
-interface Session {
-  id: string;
-  code: string;
-  status: string;
-  ownerId: string;
-  participants?: User[];
-  ideas?: Idea[];
-}
-
-interface Idea {
-  id: string;
-  content: string;
-  authorId: string;
-}
-
+// Session Management
 export const createSession = async (userId: string): Promise<Session> => {
-  const response = await fetch(`${API_URL}/sessions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId })
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to create session');
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to create session:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
-export const joinSession = async (userId: string, code: string): Promise<Session> => {
-  const response = await fetch(`${API_URL}/sessions/join`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, code })
-  });
+export const joinSession = async (userId: string, sessionCode: string): Promise<Session> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/join`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, code: sessionCode }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to join session');
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to join session:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
 export const getSessionStatus = async (sessionId: string): Promise<Session> => {
-  const response = await fetch(`${API_URL}/sessions/${sessionId}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/status`);
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to get session status');
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to get session status:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
 export const startSession = async (sessionId: string): Promise<Session> => {
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/start`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to start session');
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to start session:', error);
+    throw error;
   }
-
-  return response.json();
 };
-
-// Ideas API
-
-export const submitIdeas = async (sessionId: string, userId: string, ideas: string[]): Promise<{success: boolean}> => {
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/ideas`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, ideas })
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to submit ideas');
-  }
-
-  return response.json();
-};
-
-// Voting API
 
 export const startVoting = async (sessionId: string): Promise<Session> => {
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/voting`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/voting`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to start voting');
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to start voting:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
-export const submitVotes = async (sessionId: string, userId: string, ideaIds: string[]): Promise<{success: boolean}> => {
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/votes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, ideaIds })
-  });
+// Ideas Management
+export const submitIdeas = async (
+  sessionId: string,
+  userId: string,
+  ideas: string[],
+): Promise<{ success: boolean }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/ideas/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sessionId, userId, ideas }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to submit votes');
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to submit ideas:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
-export const processVotes = async (sessionId: string): Promise<{
-  action: 'FINALIZAR' | 'NUEVA_RONDA';
-  elegidas?: Idea[];
-  candidatas?: Idea[];
+// Voting Management
+export const submitVotes = async (
+  sessionId: string,
+  userId: string,
+  ideaIds: string[],
+): Promise<{ success: boolean }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/votes/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sessionId, userId, ideaIds }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to submit votes:', error);
+    throw error;
+  }
+};
+
+// Results Management
+export const getResults = async (
+  sessionId: string,
+): Promise<{
+  status: string;
+  ideas: Idea[];
+  selectedIdeas?: Idea[];
+  candidateIdeas?: Idea[];
 }> => {
-  const response = await fetch(`${API_URL}/sessions/${sessionId}/process-votes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/results`);
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to process votes');
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to get results:', error);
+    throw error;
   }
-
-  return response.json();
-}; 
+}

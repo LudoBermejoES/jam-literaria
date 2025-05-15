@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node --transpile-only index.ts",
+    "start": "node dist/index.js",
     "start:dev": "ts-node --transpile-only index.ts",
     "start:prod": "npm run build && node dist/index.js",
     "dev": "nodemon --exec ts-node --transpile-only index.ts",
@@ -11,8 +11,9 @@
     "test:nocov": "jest --no-coverage",
     "test:js": "NODE_OPTIONS=--unhandled-rejections=strict jest --testMatch='**/*.test.js' --no-coverage",
     "build": "tsc && npm run copy-prisma",
-    "copy-prisma": "node -e \"require('fs-extra').copySync('generated', 'dist/generated')\"",
-    "test:watch": "jest --watch"
+    "copy-prisma": "node -e \"require('fs-extra').copySync('prisma', 'dist/prisma')\" && node -e \"require('fs-extra').copySync('generated', 'dist/generated')\"",
+    "test:watch": "jest --watch",
+    "generate-prisma": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -20,17 +21,20 @@
   "dependencies": {
     "@prisma/client": "^6.7.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
     "prisma": "^6.7.0",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/dotenv": "^8.2.0",
     "@types/express": "^5.0.1",
     "@types/fs-extra": "^11.0.4",
     "@types/jest": "^29.5.14",
     "@types/supertest": "^6.0.3",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.5",
-    "express": "^5.1.0",
     "fs-extra": "^11.3.0",
     "husky": "^9.1.7",
     "jest": "^29.7.0",

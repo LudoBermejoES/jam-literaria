@@ -1,8 +1,7 @@
 import request from 'supertest';
 import express from 'express';
-import { PrismaClient } from '../../../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import authRouter from '../../../routes/auth';
-import '@types/jest';
 
 // Define mock types to match what our middleware expects
 interface MockUser {
@@ -20,7 +19,7 @@ declare global {
 }
 
 // Mock PrismaClient
-jest.mock('../../../generated/prisma', () => {
+jest.mock('@prisma/client', () => {
   const mockPrismaClient = {
     user: {
       create: jest.fn(),

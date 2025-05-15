@@ -14,11 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const supertest_1 = __importDefault(require("supertest"));
 const express_1 = __importDefault(require("express"));
-const prisma_1 = require("../../../generated/prisma");
+const client_1 = require("@prisma/client");
 const auth_1 = __importDefault(require("../../../routes/auth"));
-require("@types/jest");
 // Mock PrismaClient
-jest.mock('../../../generated/prisma', () => {
+jest.mock('@prisma/client', () => {
     const mockPrismaClient = {
         user: {
             create: jest.fn(),
@@ -62,7 +61,7 @@ describe('Auth API Routes', () => {
         app.use(express_1.default.json());
         app.use('/api/auth', auth_1.default);
         // Get Prisma instance
-        prisma = new prisma_1.PrismaClient();
+        prisma = new client_1.PrismaClient();
     });
     describe('POST /api/auth/register', () => {
         it('should return 400 if name is not provided', () => __awaiter(void 0, void 0, void 0, function* () {

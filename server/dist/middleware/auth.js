@@ -10,8 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sessionOwnerMiddleware = exports.sessionMemberMiddleware = exports.authMiddleware = void 0;
-const prisma_1 = require("../generated/prisma");
-const prisma = new prisma_1.PrismaClient();
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 /**
  * Middleware to check if user is authenticated with a valid session
  *

@@ -13,12 +13,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 }) => {
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        ¡Hola, {userName}!
-      </h2>
-      <p className="mb-6 text-gray-600 text-center">
-        ¿Qué te gustaría hacer?
-      </p>
+      <h2 className="text-2xl font-bold mb-4 text-center">¡Hola, {userName}!</h2>
+      <p className="mb-6 text-gray-600 text-center">¿Qué te gustaría hacer?</p>
 
       <div className="space-y-4">
         <button
@@ -59,4 +55,4 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   );
 };
 
-export default WelcomeScreen; 
+export default WelcomeScreen;

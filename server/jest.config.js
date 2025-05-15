@@ -21,7 +21,11 @@ module.exports = {
     '**/*.{spec,test}.{js,jsx,ts,tsx}',
   ],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-  // Ignore TypeScript errors
+  // Use ts-jest for TypeScript files
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest'
+  },
+  // Ignore TypeScript errors for tests
   globals: {
     'ts-jest': {
       isolatedModules: true
@@ -33,9 +37,16 @@ module.exports = {
       displayName: 'server',
       testEnvironment: 'node',
       testMatch: [
-        '<rootDir>/__tests__/integration/**/*.test.js',
-        '<rootDir>/__tests__/unit/server/**/*.test.js'
+        '<rootDir>/__tests__/integration/**/*.test.{js,ts}',
+        '<rootDir>/__tests__/unit/server/**/*.test.{js,ts}'
       ],
+      testPathIgnorePatterns: [
+        '/node_modules/',
+        '/__tests__/unit/server/api/compiled/'
+      ],
+      transform: {
+        '^.+\\.(ts|tsx)$': 'ts-jest'
+      },
       // Skip TypeScript errors for these tests
       globals: {
         'ts-jest': {
@@ -48,7 +59,10 @@ module.exports = {
       testEnvironment: 'jsdom',
       testMatch: [
         '<rootDir>/__tests__/unit/client/**/*.test.{js,jsx,ts,tsx}'
-      ]
+      ],
+      transform: {
+        '^.+\\.(ts|tsx)$': 'ts-jest'
+      }
     }
   ]
 }; 

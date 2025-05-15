@@ -10,9 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const auth_1 = require("../../../../middleware/auth");
-const prisma_1 = require("../../../../generated/prisma");
+const client_1 = require("@prisma/client");
 // Mock PrismaClient
-jest.mock('../../../../server/generated/prisma', () => {
+jest.mock('@prisma/client', () => {
     // Create mock implementation
     const mockPrismaClient = {
         user: {
@@ -36,7 +36,7 @@ describe('Auth Middleware', () => {
         // Reset mocks
         jest.clearAllMocks();
         // Get Prisma instance
-        prisma = new prisma_1.PrismaClient();
+        prisma = new client_1.PrismaClient();
         // Setup request and response mocks
         mockReq = {
             headers: {},

@@ -19,17 +19,17 @@ interface MockSocket {
 // Create properly typed mock socket object with additional functionality for testing
 const createMockSocket = (): MockSocket => {
   const eventHandlers = new Map<string, EventHandler[]>();
-  
+
   // Socket connection state
   let isConnected = true;
-  
-  const mockSocket = {
+
+  const mockSocketObject: MockSocket = {
     on: jest.fn((event: string, callback: EventHandler) => {
       if (!eventHandlers.has(event)) {
         eventHandlers.set(event, []);
       }
       eventHandlers.get(event)?.push(callback);
-      return mockSocket;
+      return mockSocketObject;
     }),
     off: jest.fn(),
     disconnect: jest.fn(),
@@ -37,19 +37,19 @@ const createMockSocket = (): MockSocket => {
     // Utility methods for testing
     triggerEvent: (event: string, ...args: any[]) => {
       const handlers = eventHandlers.get(event) || [];
-      handlers.forEach(handler => handler(...args));
+      handlers.forEach((handler) => handler(...args));
     },
     setConnected: (connected: boolean) => {
       isConnected = connected;
       if (!connected) {
-        mockSocket.triggerEvent('disconnect', { reason: 'io client disconnect' });
+        mockSocketObject.triggerEvent('disconnect', { reason: 'io client disconnect' });
       } else {
-        mockSocket.triggerEvent('connect');
+        mockSocketObject.triggerEvent('connect');
       }
-    }
+    },
   };
-  
-  return mockSocket;
+
+  return mockSocketObject;
 };
 
 // Create a mock socket
@@ -57,7 +57,7 @@ const mockSocket = createMockSocket();
 
 // Mock socket.io-client
 jest.mock('socket.io-client', () => ({
-  io: jest.fn(() => mockSocket)
+  io: jest.fn(() => mockSocket),
 }));
 
 // Mock API module
@@ -71,82 +71,75 @@ describe('useSession hook - Reconnection and Error Handling', () => {
   const mockSessionId = 'session123';
   const mockUserId = 'user456';
   const mockIsOwner = true;
-  
+
   // Save original console methods
   const originalConsoleError = console.error;
-  
+
   beforeEach(() => {
     // Reset mocks and handlers
     jest.clearAllMocks();
     console.error = jest.fn();
-    
+
     // Mock successful API response
     (apiModule.getSessionStatus as jest.Mock).mockResolvedValue({
       id: mockSessionId,
       code: 'TEST123',
       status: 'WAITING',
       ownerId: mockUserId,
-      participants: [{ id: mockUserId, name: 'Test User' }]
+      participants: [{ id: mockUserId, name: 'Test User' }],
     });
   });
-  
+
   afterEach(() => {
     console.error = originalConsoleError;
   });
-  
+
   it('should handle socket connection errors', async () => {
     // Spy on console.error
     const consoleSpy = jest.spyOn(console, 'error');
-    
+
     // Mock API to succeed but socket to fail after initialization
     (apiModule.getSessionStatus as jest.Mock).mockResolvedValue({
       id: mockSessionId,
       status: 'WAITING',
       ownerId: mockUserId,
     });
-    
+
     // Render hook
-    const { result } = renderHook(() => 
-      useSession(mockSessionId, mockUserId, mockIsOwner)
-    );
-    
+    const { result } = renderHook(() => useSession(mockSessionId, mockUserId, mockIsOwner));
+
     // Wait for initial load
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
-    
+
     // Trigger socket error manually
     act(() => {
       mockSocket.triggerEvent('connect_error', new Error('Connection error'));
       // Force console.error to be called with an error
       console.error('Error connecting to socket:', new Error('Connection error'));
     });
-    
+
     // Verify error was logged
     expect(consoleSpy).toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Error'),
-      expect.any(Error)
-    );
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Error'), expect.any(Error));
   });
-  
+
   it('should attempt to reload data when reconnected', async () => {
     // Create spy on getSessionStatus
     const getSessionSpy = jest.spyOn(apiModule, 'getSessionStatus');
-    
+
     // Render hook
-    const { result } = renderHook(() => 
-      useSession(mockSessionId, mockUserId, mockIsOwner)
-    );
-    
+    const { result } = renderHook(() => useSession(mockSessionId, mockUserId, mockIsOwner));
+
     // Wait for initial load
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
-    
+
     // Clear the mock to track new calls
     getSessionSpy.mockClear();
-    
+
     // Mock the API to return data again
     (apiModule.getSessionStatus as jest.Mock).mockResolvedValue({
       id: mockSessionId,
@@ -154,26 +147,26 @@ describe('useSession hook - Reconnection and Error Handling', () => {
       status: 'COLLECTING_IDEAS',
       ownerId: mockUserId,
     });
-    
+
     // Manually call reload which should trigger API call
     act(() => {
       result.current.reload();
     });
-    
+
     // Wait for reload to complete
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
-    
+
     // Verify that the session data was reloaded
     expect(getSessionSpy).toHaveBeenCalledWith(mockSessionId);
   });
-  
+
   it('should handle multiple rapid socket events correctly', async () => {
     // This test directly manipulates the session state via the mock
     // Create participants with the initial user
     const initialParticipant = { id: mockUserId, name: 'Test User' };
-    
+
     // Pre-define a session with multiple participants to be returned from the API
     const participantsWithMultipleUsers = [
       initialParticipant,
@@ -181,35 +174,37 @@ describe('useSession hook - Reconnection and Error Handling', () => {
       { id: 'user11', name: 'User 11' },
       { id: 'user12', name: 'User 12' },
       { id: 'user13', name: 'User 13' },
-      { id: 'user14', name: 'User 14' }
+      { id: 'user14', name: 'User 14' },
     ];
-    
-    // Mock API to return a session with the participants
-    (apiModule.getSessionStatus as jest.Mock).mockResolvedValue({
+
+    const mockSessionData = {
       id: mockSessionId,
       code: 'TEST123',
       status: 'WAITING',
       ownerId: mockUserId,
-      participants: participantsWithMultipleUsers
-    });
+      participants: participantsWithMultipleUsers,
+    };
+
+    // Mock API to return a session with the participants
+    (apiModule.getSessionStatus as jest.Mock).mockResolvedValue(mockSessionData);
 
     // Render hook
-    const { result } = renderHook(() => 
-      useSession(mockSessionId, mockUserId, mockIsOwner)
-    );
-    
+    const { result } = renderHook(() => useSession(mockSessionId, mockUserId, mockIsOwner));
+
     // Wait for initial load with multiple users
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
+      expect(result.current.session).not.toBeNull();
+      expect(result.current.session?.participants).toBeDefined();
     });
-    
+
     // Verify the multiple participants are in the session
     expect(result.current.session?.participants?.length).toBe(6);
   });
-  
+
   it('should handle out-of-order socket events gracefully', async () => {
     // Initialize with simple session data
-    (apiModule.getSessionStatus as jest.Mock).mockResolvedValue({
+    const mockSessionData = {
       id: mockSessionId,
       code: 'TEST123',
       status: 'VOTING',
@@ -218,23 +213,27 @@ describe('useSession hook - Reconnection and Error Handling', () => {
       ideas: [
         { id: 'idea1', content: 'Idea 1', authorId: 'user1' },
         { id: 'idea2', content: 'Idea 2', authorId: 'user2' },
-      ]
-    });
+      ],
+    };
+    
+    // Mock API to return the session data with ideas
+    (apiModule.getSessionStatus as jest.Mock).mockResolvedValue(mockSessionData);
 
     // Render hook
-    const { result } = renderHook(() => 
-      useSession(mockSessionId, mockUserId, mockIsOwner)
-    );
-    
+    const { result } = renderHook(() => useSession(mockSessionId, mockUserId, mockIsOwner));
+
     // Wait for initial load
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
+      expect(result.current.session).not.toBeNull();
+      expect(result.current.session?.status).toBe('VOTING');
+      expect(result.current.session?.ideas).toBeDefined();
     });
-    
+
     // Check that session data is correct
     expect(result.current.session?.status).toBe('VOTING');
-    
+
     // Should have ideas available
     expect(result.current.session?.ideas?.length).toBe(2);
   });
-}); 
+});

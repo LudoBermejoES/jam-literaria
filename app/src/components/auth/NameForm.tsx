@@ -11,7 +11,7 @@ const NameForm: React.FC<NameFormProps> = ({ onSubmit, isLoading = false }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate name
     if (!name || name.trim().length === 0) {
       setError('Por favor, introduce tu nombre');
@@ -20,7 +20,7 @@ const NameForm: React.FC<NameFormProps> = ({ onSubmit, isLoading = false }) => {
 
     // Clear any previous error
     setError(null);
-    
+
     // Call the onSubmit handler with the name
     onSubmit(name.trim());
   };
@@ -28,9 +28,7 @@ const NameForm: React.FC<NameFormProps> = ({ onSubmit, isLoading = false }) => {
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4 text-center">¡Bienvenido a la Jam Literaria!</h2>
-      <p className="mb-6 text-gray-600 text-center">
-        Introduce tu nombre para comenzar
-      </p>
+      <p className="mb-6 text-gray-600 text-center">Introduce tu nombre para comenzar</p>
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -63,4 +61,4 @@ const NameForm: React.FC<NameFormProps> = ({ onSubmit, isLoading = false }) => {
   );
 };
 
-export default NameForm; 
+export default NameForm;

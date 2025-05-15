@@ -43,112 +43,113 @@ export function agruparIdeasPorVotos(ideas: Idea[]): Record<string, Idea[]> {
 export function determinarAccionSiguiente(ideas: Idea[]): ResultadoVotacion {
   // Ordenar ideas por número de votos (descendente)
   const ideasOrdenadas = [...ideas].sort((a, b) => b.votos - a.votos);
-  
+
   // Agrupar ideas por cantidad de votos
   const gruposPorVotos = agruparIdeasPorVotos(ideasOrdenadas);
-  
+
   // Array con los grupos de votos en orden descendente
   const gruposOrdenados = Object.entries(gruposPorVotos)
     .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
-    .map(entry => ({
+    .map((entry) => ({
       votos: parseInt(entry[0]),
-      ideas: entry[1]
+      ideas: entry[1],
     }));
-  
+
   // CASO 1: Hay exactamente 3 ideas con la mayor cantidad de votos (empatadas)
   if (gruposOrdenados[0]?.ideas.length === 3) {
-    return { 
-      accion: 'FINALIZAR', 
+    return {
+      accion: 'FINALIZAR',
       elegidas: gruposOrdenados[0].ideas,
-      mensaje: 'Tres ideas con la mayor cantidad de votos y empatadas.'
+      mensaje: 'Tres ideas con la mayor cantidad de votos y empatadas.',
     };
   }
-  
+
   // CASO 2: Hay exactamente 2 ideas con la mayor cantidad de votos
   // y una o más ideas empatadas en la segunda posición
   if (gruposOrdenados[0]?.ideas.length === 2 && gruposOrdenados[1]?.ideas.length > 0) {
     const ideasElegidas = [...gruposOrdenados[0].ideas];
-    
+
     // Si solo hay 1 idea en segunda posición, tenemos las 3 elegidas
     if (gruposOrdenados[1].ideas.length === 1) {
       return {
         accion: 'FINALIZAR',
         elegidas: [...ideasElegidas, gruposOrdenados[1].ideas[0]],
-        mensaje: 'Dos ideas con mayor cantidad de votos y una segunda con menos votos.'
+        mensaje: 'Dos ideas con mayor cantidad de votos y una segunda con menos votos.',
       };
     }
-    
+
     // Si hay múltiples ideas empatadas en segunda posición, necesitamos desempatar
     return {
       accion: 'NUEVA_RONDA',
       elegidas: ideasElegidas,
       candidatas: gruposOrdenados[1].ideas,
-      mensaje: 'Dos ideas con mayor cantidad de votos, múltiples empatadas en segundo lugar.'
+      mensaje: 'Dos ideas con mayor cantidad de votos, múltiples empatadas en segundo lugar.',
     };
   }
-  
+
   // CASO 3: Hay exactamente 1 idea con la mayor cantidad de votos
   if (gruposOrdenados[0]?.ideas.length === 1) {
     const ideaConMasVotos = gruposOrdenados[0].ideas[0];
-    
+
     // Subcaso 3.1: En segunda posición hay exactamente 2 ideas empatadas
     if (gruposOrdenados[1]?.ideas.length === 2) {
       return {
         accion: 'FINALIZAR',
         elegidas: [ideaConMasVotos, ...gruposOrdenados[1].ideas],
-        mensaje: 'Una idea con mayor cantidad de votos, dos empatadas en segundo lugar.'
+        mensaje: 'Una idea con mayor cantidad de votos, dos empatadas en segundo lugar.',
       };
     }
-    
+
     // Subcaso 3.2: En segunda posición hay exactamente 1 idea
     if (gruposOrdenados[1]?.ideas.length === 1) {
       const ideaSegundoLugar = gruposOrdenados[1].ideas[0];
-      
+
       // Si en tercera posición hay exactamente 1 idea, tenemos las 3 elegidas
       if (gruposOrdenados[2]?.ideas.length === 1) {
         return {
           accion: 'FINALIZAR',
           elegidas: [ideaConMasVotos, ideaSegundoLugar, gruposOrdenados[2].ideas[0]],
-          mensaje: 'Una idea con mayor cantidad de votos, una segunda, una tercera.'
+          mensaje: 'Una idea con mayor cantidad de votos, una segunda, una tercera.',
         };
       }
-      
+
       // Si en tercera posición hay múltiples ideas empatadas, necesitamos desempatar
       if (gruposOrdenados[2]?.ideas.length > 1) {
         return {
           accion: 'NUEVA_RONDA',
           elegidas: [ideaConMasVotos, ideaSegundoLugar],
           candidatas: gruposOrdenados[2].ideas,
-          mensaje: 'Una idea con mayor cantidad de votos, una segunda, múltiples empatadas en tercera posición.'
+          mensaje:
+            'Una idea con mayor cantidad de votos, una segunda, múltiples empatadas en tercera posición.',
         };
       }
     }
-    
+
     // Subcaso 3.3: En segunda posición hay más de 2 ideas empatadas
     if (gruposOrdenados[1]?.ideas.length > 2) {
       return {
         accion: 'NUEVA_RONDA',
         elegidas: [ideaConMasVotos],
         candidatas: gruposOrdenados[1].ideas,
-        mensaje: 'Una idea con mayor cantidad de votos, más de dos empatadas en segunda posición.'
+        mensaje: 'Una idea con mayor cantidad de votos, más de dos empatadas en segunda posición.',
       };
     }
   }
-  
+
   // CASO 4: Hay más de 3 ideas con la mayor cantidad de votos (todas empatadas)
   if (gruposOrdenados[0]?.ideas.length > 3) {
     return {
       accion: 'NUEVA_RONDA',
       elegidas: [],
       candidatas: gruposOrdenados[0].ideas,
-      mensaje: 'Más de tres ideas empatadas con la mayor cantidad de votos.'
+      mensaje: 'Más de tres ideas empatadas con la mayor cantidad de votos.',
     };
   }
-  
+
   // CASO 5: No hay votos suficientes o situación no contemplada
-  return { 
-    accion: 'ERROR', 
-    mensaje: 'Situación no contemplada en las reglas o no hay suficientes votos.'
+  return {
+    accion: 'ERROR',
+    mensaje: 'Situación no contemplada en las reglas o no hay suficientes votos.',
   };
 }
 
@@ -160,12 +161,12 @@ export function determinarAccionSiguiente(ideas: Idea[]): ResultadoVotacion {
  * @returns - Nueva configuración de la sesión
  */
 export function prepararNuevaRonda(
-  ideasElegidas: Idea[], 
-  ideasCandidatas: Idea[], 
-  session: Session
+  ideasElegidas: Idea[],
+  ideasCandidatas: Idea[],
+  session: Session,
 ): Session {
   const nuevaRonda = session.currentRound + 1;
-  
+
   return {
     ...session,
     currentRound: nuevaRonda,
@@ -173,7 +174,7 @@ export function prepararNuevaRonda(
     ideasElegidas,
     ideasCandidatas,
     // Reiniciar votos para la nueva ronda
-    votosNuevaRonda: {}
+    votosNuevaRonda: {},
   };
 }
 
@@ -188,6 +189,6 @@ export function finalizarSeleccion(ideasElegidas: Idea[], session: Session): Ses
     ...session,
     status: 'FINISHED',
     ideasFinales: ideasElegidas,
-    fechaFinalizacion: new Date()
+    fechaFinalizacion: new Date(),
   };
-} 
+}
