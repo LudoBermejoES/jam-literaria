@@ -1,4 +1,0 @@
-#!/bin/sh
-# Husky pre-commit hook
-echo "Pre-commit hook executed"
-exit 0

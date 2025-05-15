@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { PrismaClient } from '../../generated/prisma';
 import { authMiddleware } from '../../middleware/auth';
 
@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
  * @param {string} name - The user's display name
  * @returns {Object} Object containing user ID and name
  */
-router.post('/register', async (req, res) => {
+router.post('/register', async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
 
@@ -53,7 +53,7 @@ router.post('/register', async (req, res) => {
  * @param {string} x-user-id - The user's ID (header)
  * @returns {Object} User object if valid
  */
-router.get('/validate', authMiddleware, async (req, res) => {
+router.get('/validate', authMiddleware, async (req: Request, res: Response) => {
   try {
     // User is already validated by authMiddleware
     return res.status(200).json({

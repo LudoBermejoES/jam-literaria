@@ -1,4 +1,4 @@
-import { User, Session } from '../generated/prisma';
+import { User, Session } from '@prisma/client';
 
 declare global {
   namespace Express {
@@ -7,4 +7,6 @@ declare global {
       session?: Session;
     }
   }
-} 
+}
+
+export {}; 
