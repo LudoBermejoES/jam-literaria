@@ -40,7 +40,7 @@ describe('Auth Middleware', () => {
     };
     
     mockRes = {
-      status: jest.fn(() => mockRes),
+      status: jest.fn().mockReturnThis(),
       json: jest.fn()
     };
     
