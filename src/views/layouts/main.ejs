@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | Jam Literaria</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Jam Literaria</h1>
+      <% if (locals.user) { %>
+        <div class="user-info">
+          <span>Hola, <%= user.name %></span>
+          <a href="/auth/logout" class="btn btn-sm">Salir</a>
+        </div>
+      <% } %>
+    </header>
+    
+    <main>
+      <%- body %>
+    </main>
+    
+    <footer>
+      <p>&copy; <%= new Date().getFullYear() %> Jam Literaria</p>
+    </footer>
+  </div>
+  
+  <% if (locals.scripts) { %>
+    <% scripts.forEach(function(script) { %>
+      <script src="<%= script %>"></script>
+    <% }); %>
+  <% } %>
+</body>
+</html> 
