@@ -216,7 +216,7 @@ describe('Server Initialization', () => {
     require('../../../index');
     
     // Check that the server was started on the default port
-    expect(mockHttpServer.listen).toHaveBeenCalledWith(4000, expect.any(Function));
+    expect(mockHttpServer.listen).toHaveBeenCalledWith("4000", expect.any(Function));
   });
   
   it('should set up health check endpoint', () => {

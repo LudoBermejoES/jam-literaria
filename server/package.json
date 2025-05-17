@@ -13,7 +13,8 @@
     "build": "tsc && npm run copy-prisma",
     "copy-prisma": "node -e \"require('fs-extra').copySync('prisma', 'dist/prisma')\" && node -e \"require('fs-extra').copySync('generated', 'dist/generated')\"",
     "test:watch": "jest --watch",
-    "generate-prisma": "prisma generate"
+    "generate-prisma": "prisma generate",
+    "prisma:seed": "ts-node --transpile-only prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +28,7 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^5.0.1",
@@ -47,5 +49,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
-  "description": ""
+  "description": "",
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
+  }
 }

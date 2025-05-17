@@ -2,6 +2,8 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: false,
+  resetMocks: false,
+  restoreMocks: false,
   collectCoverageFrom: [
     '**/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
@@ -23,14 +25,10 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   // Use ts-jest for TypeScript files
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest'
+    '^.+\\.(ts|tsx)$': ['ts-jest', { isolatedModules: true }]
   },
   // Ignore TypeScript errors for tests
-  globals: {
-    'ts-jest': {
-      isolatedModules: true
-    }
-  },
+  globals: {},
   // Configure different test environments for different paths
   projects: [
     {
@@ -38,21 +36,18 @@ module.exports = {
       testEnvironment: 'node',
       testMatch: [
         '<rootDir>/__tests__/integration/**/*.test.{js,ts}',
-        '<rootDir>/__tests__/unit/server/**/*.test.{js,ts}'
+        '<rootDir>/__tests__/unit/server/**/*.test.{js,ts}',
+        '<rootDir>/__tests__/unit/lib/**/*.test.{js,ts}'
       ],
       testPathIgnorePatterns: [
         '/node_modules/',
         '/__tests__/unit/server/api/compiled/'
       ],
       transform: {
-        '^.+\\.(ts|tsx)$': 'ts-jest'
+        '^.+\\.(ts|tsx)$': ['ts-jest', { isolatedModules: true }]
       },
       // Skip TypeScript errors for these tests
-      globals: {
-        'ts-jest': {
-          isolatedModules: true
-        }
-      }
+      globals: {}
     },
     {
       displayName: 'client',

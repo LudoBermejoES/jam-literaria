@@ -1,9 +1,8 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../lib/prisma';
 import { authMiddleware } from '../../middleware/auth';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Handler functions
 const registerUser = async (req: Request, res: Response) => {

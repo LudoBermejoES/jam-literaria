@@ -1,61 +1,224 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+// Remove PrismaClient import
+// import { PrismaClient } from '@prisma/client';
 
-// Mock PrismaClient
-jest.mock('@prisma/client', () => {
-  const mockPrismaClient = {
-    session: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      findFirst: jest.fn(),
-      update: jest.fn()
-    },
-    user: {
-      findUnique: jest.fn()
-    },
-    idea: {
-      findMany: jest.fn()
-    },
-    vote: {
-      findMany: jest.fn(),
-      groupBy: jest.fn()
-    }
-  };
-  
-  return {
-    PrismaClient: jest.fn(() => mockPrismaClient)
-  };
-});
+// Mock objects for Socket.io and Prisma
+const mockIo = {
+  to: jest.fn().mockReturnThis(),
+  emit: jest.fn()
+};
 
-// Mock Socket.io
-jest.mock('../../../../index', () => ({
-  io: {
-    to: jest.fn().mockReturnThis(),
-    emit: jest.fn()
+const mockPrismaClient = {
+  session: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn()
+  },
+  user: {
+    findUnique: jest.fn()
+  },
+  idea: {
+    findMany: jest.fn()
+  },
+  vote: {
+    findMany: jest.fn(),
+    groupBy: jest.fn()
   }
+};
+
+// Setup mocks before requiring original modules
+jest.mock('../../../../index', () => ({
+  io: mockIo
+}), { virtual: true });
+
+// Mock prisma from lib/prisma instead of @prisma/client
+jest.mock('../../../../lib/prisma', () => ({
+  __esModule: true,
+  default: mockPrismaClient
 }));
 
+// Now we can import the modules that depend on our mocks
+const routes = require('../../../../routes/sessions');
+
 describe('Session Routes', () => {
-  let prisma: any;
-  
   beforeEach(() => {
     jest.clearAllMocks();
-    // Get mock prisma instance
-    const { PrismaClient: MockPrismaClient } = require('@prisma/client');
-    prisma = new MockPrismaClient();
+    // Reset mock implementations
+    Object.keys(mockPrismaClient).forEach(model => {
+      Object.keys(mockPrismaClient[model]).forEach(method => {
+        mockPrismaClient[model][method].mockReset();
+      });
+    });
+    
+    // Reset io mock
+    mockIo.to.mockClear();
+    mockIo.emit.mockClear();
   });
 
-  // Existing tests
-  test('PrismaClient is properly mocked', () => {
-    expect(prisma.session.create).toBeDefined();
-    expect(prisma.session.findUnique).toBeDefined();
-    expect(prisma.session.update).toBeDefined();
+  test('Prisma is properly mocked', () => {
+    const prisma = require('../../../../lib/prisma').default;
+    expect(prisma).toBe(mockPrismaClient);
   });
-
+  
   test('Socket.io is properly mocked', () => {
     const { io } = require('../../../../index');
-    expect(io.to).toBeDefined();
-    expect(io.emit).toBeDefined();
+    expect(io).toBe(mockIo);
+  });
+  
+  test('startSession should validate session ownership', async () => {
+    const mockReq = {
+      params: { sessionId: 'test-session' },
+      body: { userId: 'different-user' }
+    } as unknown as Request;
+    
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    } as unknown as Response;
+    
+    // Mock session with different owner
+    mockPrismaClient.session.findUnique.mockResolvedValueOnce({
+      id: 'test-session',
+      ownerId: 'owner-id', // This differs from userId in the request
+      participants: []
+    });
+    
+    // Call the function
+    await routes.startSession(mockReq, mockRes);
+    
+    // Verify response uses the correct status code
+    expect(mockRes.status).toHaveBeenCalledWith(403);
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      error: 'Only session owner can start the session'
+    }));
+  });
+  
+  test('startSession should update session status and notify participants', async () => {
+    const mockReq = {
+      params: { sessionId: 'test-session' },
+      body: { userId: 'owner-id' }
+    } as unknown as Request;
+    
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    } as unknown as Response;
+    
+    // Mock session with matching owner
+    mockPrismaClient.session.findUnique.mockResolvedValueOnce({
+      id: 'test-session',
+      ownerId: 'owner-id', // Matches userId in the request
+      participants: [{ id: 'owner-id' }, { id: 'participant-id' }]
+    });
+    
+    // Mock updated session
+    mockPrismaClient.session.update.mockResolvedValueOnce({
+      id: 'test-session',
+      ownerId: 'owner-id',
+      status: 'COLLECTING_IDEAS',
+      participants: [{ id: 'owner-id' }, { id: 'participant-id' }]
+    });
+    
+    // Call the function
+    await routes.startSession(mockReq, mockRes);
+    
+    // Verify session update was called
+    expect(mockPrismaClient.session.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'test-session' },
+      data: { status: 'COLLECTING_IDEAS' }
+    }));
+    
+    // Verify socket.io notification was sent
+    expect(mockIo.to).toHaveBeenCalledWith('session-test-session');
+    expect(mockIo.emit).toHaveBeenCalledWith('session-started', expect.objectContaining({
+      status: 'COLLECTING_IDEAS'
+    }));
+    
+    // Verify response was 200 OK
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+  });
+  
+  // Tests for startVoting
+  test('startVoting should require ideas to be present', async () => {
+    const mockReq = {
+      params: { sessionId: 'test-session' },
+      body: { userId: 'owner-id' }
+    } as unknown as Request;
+    
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    } as unknown as Response;
+    
+    // Mock session with matching owner but no ideas
+    mockPrismaClient.session.findUnique.mockResolvedValueOnce({
+      id: 'test-session',
+      ownerId: 'owner-id', // Matches userId for ownership check
+      participants: [{ id: 'owner-id' }],
+      ideas: [] // Empty ideas array triggers our validation
+    });
+    
+    // Call the function
+    await routes.startVoting(mockReq, mockRes);
+    
+    // Verify validation status code
+    expect(mockRes.status).toHaveBeenCalledWith(400);
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      error: 'No ideas submitted for voting'
+    }));
+  });
+  
+  test('startVoting should update session status and start round 1', async () => {
+    const mockReq = {
+      params: { sessionId: 'test-session' },
+      body: { userId: 'owner-id' }
+    } as unknown as Request;
+    
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    } as unknown as Response;
+    
+    // Mock session with matching owner and ideas
+    mockPrismaClient.session.findUnique.mockResolvedValueOnce({
+      id: 'test-session',
+      ownerId: 'owner-id', // Matches userId in request
+      participants: [{ id: 'owner-id' }],
+      ideas: [{ id: 'idea-1' }, { id: 'idea-2' }] // Has ideas
+    });
+    
+    // Mock updated session
+    mockPrismaClient.session.update.mockResolvedValueOnce({
+      id: 'test-session',
+      ownerId: 'owner-id',
+      status: 'VOTING',
+      currentRound: 1,
+      participants: [{ id: 'owner-id' }],
+      ideas: [{ id: 'idea-1' }, { id: 'idea-2' }]
+    });
+    
+    // Call the function
+    await routes.startVoting(mockReq, mockRes);
+    
+    // Verify session update
+    expect(mockPrismaClient.session.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'test-session' },
+      data: { 
+        status: 'VOTING',
+        currentRound: 1
+      }
+    }));
+    
+    // Verify socket.io notification
+    expect(mockIo.to).toHaveBeenCalledWith('session-test-session');
+    expect(mockIo.emit).toHaveBeenCalledWith('voting-started', expect.objectContaining({
+      status: 'VOTING',
+      round: 1
+    }));
+    
+    // Verify response
+    expect(mockRes.status).toHaveBeenCalledWith(200);
   });
   
   // Test session creation validation
@@ -118,7 +281,7 @@ describe('Session Routes', () => {
     } as unknown as Response;
     
     // Mock session not found
-    prisma.session.findUnique.mockResolvedValueOnce(null);
+    mockPrismaClient.session.findUnique.mockResolvedValueOnce(null);
     
     // Import the function directly
     const { getSessionStatus } = require('../../../../routes/sessions');
@@ -133,176 +296,6 @@ describe('Session Routes', () => {
     }));
   });
   
-  // New tests for startSession
-  test('startSession should validate session ownership', async () => {
-    const mockReq = {
-      params: { sessionId: 'test-session' },
-      body: { userId: 'non-owner-id' }
-    } as unknown as Request;
-    
-    const mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    } as unknown as Response;
-    
-    // Mock session with different owner
-    prisma.session.findUnique.mockResolvedValueOnce({
-      id: 'test-session',
-      ownerId: 'owner-id',
-      participants: []
-    });
-    
-    // Import the function directly
-    const { startSession } = require('../../../../routes/sessions');
-    
-    // Call the function
-    await startSession(mockReq, mockRes);
-    
-    // Verify validation
-    expect(mockRes.status).toHaveBeenCalledWith(403);
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      error: 'Only session owner can start the session'
-    }));
-  });
-  
-  test('startSession should update session status and notify participants', async () => {
-    const mockReq = {
-      params: { sessionId: 'test-session' },
-      body: { userId: 'owner-id' }
-    } as unknown as Request;
-    
-    const mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    } as unknown as Response;
-    
-    // Mock session with matching owner
-    prisma.session.findUnique.mockResolvedValueOnce({
-      id: 'test-session',
-      ownerId: 'owner-id',
-      participants: [{ id: 'owner-id' }, { id: 'participant-id' }]
-    });
-    
-    // Mock updated session
-    prisma.session.update.mockResolvedValueOnce({
-      id: 'test-session',
-      ownerId: 'owner-id',
-      status: 'COLLECTING_IDEAS',
-      participants: [{ id: 'owner-id' }, { id: 'participant-id' }]
-    });
-    
-    // Import the function directly
-    const { startSession } = require('../../../../routes/sessions');
-    const { io } = require('../../../../index');
-    
-    // Call the function
-    await startSession(mockReq, mockRes);
-    
-    // Verify session update
-    expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: 'test-session' },
-      data: { status: 'COLLECTING_IDEAS' }
-    }));
-    
-    // Verify socket.io notification
-    expect(io.to).toHaveBeenCalledWith('session-test-session');
-    expect(io.emit).toHaveBeenCalledWith('session-started', expect.objectContaining({
-      status: 'COLLECTING_IDEAS'
-    }));
-    
-    // Verify response
-    expect(mockRes.status).toHaveBeenCalledWith(200);
-  });
-  
-  // Tests for startVoting
-  test('startVoting should require ideas to be present', async () => {
-    const mockReq = {
-      params: { sessionId: 'test-session' },
-      body: { userId: 'owner-id' }
-    } as unknown as Request;
-    
-    const mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    } as unknown as Response;
-    
-    // Mock session with matching owner but no ideas
-    prisma.session.findUnique.mockResolvedValueOnce({
-      id: 'test-session',
-      ownerId: 'owner-id',
-      participants: [{ id: 'owner-id' }],
-      ideas: []
-    });
-    
-    // Import the function directly
-    const { startVoting } = require('../../../../routes/sessions');
-    
-    // Call the function
-    await startVoting(mockReq, mockRes);
-    
-    // Verify validation
-    expect(mockRes.status).toHaveBeenCalledWith(400);
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      error: 'No ideas submitted for voting'
-    }));
-  });
-  
-  test('startVoting should update session status and start round 1', async () => {
-    const mockReq = {
-      params: { sessionId: 'test-session' },
-      body: { userId: 'owner-id' }
-    } as unknown as Request;
-    
-    const mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    } as unknown as Response;
-    
-    // Mock session with matching owner and ideas
-    prisma.session.findUnique.mockResolvedValueOnce({
-      id: 'test-session',
-      ownerId: 'owner-id',
-      participants: [{ id: 'owner-id' }],
-      ideas: [{ id: 'idea-1' }, { id: 'idea-2' }]
-    });
-    
-    // Mock updated session
-    prisma.session.update.mockResolvedValueOnce({
-      id: 'test-session',
-      ownerId: 'owner-id',
-      status: 'VOTING',
-      currentRound: 1,
-      participants: [{ id: 'owner-id' }],
-      ideas: [{ id: 'idea-1' }, { id: 'idea-2' }]
-    });
-    
-    // Import the function directly
-    const { startVoting } = require('../../../../routes/sessions');
-    const { io } = require('../../../../index');
-    
-    // Call the function
-    await startVoting(mockReq, mockRes);
-    
-    // Verify session update
-    expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: 'test-session' },
-      data: { 
-        status: 'VOTING',
-        currentRound: 1
-      }
-    }));
-    
-    // Verify socket.io notification
-    expect(io.to).toHaveBeenCalledWith('session-test-session');
-    expect(io.emit).toHaveBeenCalledWith('voting-started', expect.objectContaining({
-      status: 'VOTING',
-      round: 1
-    }));
-    
-    // Verify response
-    expect(mockRes.status).toHaveBeenCalledWith(200);
-  });
-  
   // Tests for getSessionResults
   test('getSessionResults should handle non-existant session gracefully', async () => {
     const mockReq = {
@@ -315,7 +308,7 @@ describe('Session Routes', () => {
     } as unknown as Response;
     
     // Mock session not found
-    prisma.session.findUnique.mockResolvedValueOnce(null);
+    mockPrismaClient.session.findUnique.mockResolvedValueOnce(null);
     
     // Import the function directly
     const { getSessionResults } = require('../../../../routes/sessions');
@@ -352,7 +345,7 @@ describe('Session Routes', () => {
     };
     
     // This time, make sure we're mocking in the correct order and with all required objects
-    prisma.session.findUnique.mockImplementation(() => {
+    mockPrismaClient.session.findUnique.mockImplementation(() => {
       return {
         ...mockSession,
         include: jest.fn().mockReturnThis()
@@ -367,7 +360,7 @@ describe('Session Routes', () => {
     ];
     
     // Make sure vote.findMany exists and is properly mocked
-    prisma.vote.findMany.mockResolvedValueOnce(mockVotes);
+    mockPrismaClient.vote.findMany.mockResolvedValueOnce(mockVotes);
     
     // Skip assertions on the complex test for now to fix the failing tests
     jest.spyOn(console, 'error').mockImplementation();

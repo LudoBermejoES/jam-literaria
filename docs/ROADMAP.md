@@ -257,6 +257,83 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
 - [ ] Optimizar rendimiento
 - [ ] Actualizar dependencias
 
+## Fase 8: Reestructuración y Mejoras de Código
+
+### 8.1 Optimización de la Estructura del Proyecto
+- [x] Reorganizar la estructura de directorios
+- [x] Asegurar que el cliente React esté en el directorio root\app
+- [x] Asegurar que el servidor Node.js esté en el directorio root\server
+- [x] Asegurar que todas las dependencias estén correctamente configuradas
+- [x] Validar que la aplicación funciona correctamente tras la reestructuración
+
+### 8.2 Mejora de Tests
+- [x] Implementar tests unitarios para componentes principales
+- [x] Implementar tests unitarios para funcionalidades de autenticación
+- [x] Implementar tests unitarios para gestión de sesiones
+- [x] Implementar tests unitarios para la lógica de Socket.io
+- [x] Implementar tests de integración para flujos completos
+
+## Fase 9: Pruebas Exhaustivas del Algoritmo de Votación
+
+### 9.1 Implementación Completa del Algoritmo
+- [x] Desarrollar la función determinarAccionSiguiente() según la documentación
+- [x] Implementar la función agruparIdeasPorVotos()
+- [x] Crear función prepararNuevaRonda() para manejo de desempates
+- [x] Desarrollar función finalizarSeleccion() para finalizar el proceso
+
+### 9.2 Testing Exhaustivo de Casos de Votación
+- [x] Implementar tests para todos los escenarios de la tabla de casos de prueba:
+  - [x] T01: 3 ideas con mismo número de votos (empatadas)
+  - [x] T02: 2 ideas con más votos, 1 idea en segunda posición
+  - [x] T03: 2 ideas con más votos, múltiples empatadas en segunda posición
+  - [x] T04: 1 idea con más votos, 2 empatadas en segunda posición
+  - [x] T05: 1 idea con más votos, 1 en segunda, 1 en tercera
+  - [x] T06: 1 idea con más votos, 1 en segunda, múltiples en tercera
+  - [x] T07: 1 idea con más votos, múltiples (>2) en segunda
+  - [x] T08: Más de 3 ideas empatadas con mayor número de votos
+  - [x] T09: Segunda ronda con ideas previamente elegidas
+  - [x] T10: Tercera ronda para desempate final
+
+### 9.3 Integración con Socket.io para Notificaciones
+- [x] Implementar eventos para notificar nueva ronda de votación
+- [x] Crear eventos para comunicar resultados finales
+- [x] Desarrollar sistema para sincronizar estado de votación entre usuarios
+- [x] Manejar reconexiones durante el proceso de votación
+
+### 9.4 Pruebas de Integración End-to-End
+- [ ] Crear test que simule el flujo completo:
+  - [ ] Creación de sesión
+  - [ ] Unión de múltiples participantes
+  - [ ] Envío de ideas por cada participante
+  - [ ] Proceso de votación con diferentes patrones de voto
+  - [ ] Proceso de desempate si es necesario
+  - [ ] Finalización y visualización de resultados
+- [ ] Probar casos de error y reconexión durante el proceso
+
+## Fase 10: Accesibilidad e Internacionalización
+
+### 10.1 Implementación de Accesibilidad
+- [ ] Auditar la aplicación con herramientas de accesibilidad (Lighthouse, axe)
+- [ ] Implementar atributos ARIA apropiados en todos los componentes
+- [ ] Asegurar navegación por teclado en toda la aplicación
+- [ ] Verificar contraste de colores según WCAG
+- [ ] Implementar textos alternativos para elementos visuales
+- [ ] Probar con lectores de pantalla (NVDA, VoiceOver)
+
+### 10.2 Internacionalización
+- [ ] Configurar sistema de i18n (react-intl o similar)
+- [ ] Extraer todos los textos a archivos de traducción
+- [ ] Implementar soporte para múltiples idiomas
+- [ ] Adaptar componentes para manejar diferentes longitudes de texto
+- [ ] Crear sistema para detección automática de idioma
+- [ ] Probar la aplicación en diferentes idiomas
+
+### 10.3 Pruebas de Usabilidad
+- [ ] Realizar pruebas con usuarios reales
+- [ ] Documentar hallazgos y áreas de mejora
+- [ ] Implementar mejoras basadas en feedback
+- [ ] Repetir proceso de pruebas para validar cambios
+
 ## Notas Importantes
 
 ### Consideraciones de Seguridad
@@ -347,20 +424,18 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
 - Mejoras
 - Mantenimiento
 
-Total estimado: 8 semanas para versión inicial 
+### Fase 8: 1 semana
+- Reestructuración del código
+- Mejora de tests
 
-## Fase 8: Reestructuración y Mejoras de Código
+### Fase 9: 2 semanas
+- Implementación del algoritmo de votación
+- Tests exhaustivos
+- Integración con tiempo real
 
-### 8.1 Optimización de la Estructura del Proyecto
-- [x] Reorganizar la estructura de directorios
-- [x] Asegurar que el cliente React esté en el directorio root\app
-- [x] Asegurar que el servidor Node.js esté en el directorio root\server
-- [x] Asegurar que todas las dependencias estén correctamente configuradas
-- [x] Validar que la aplicación funciona correctamente tras la reestructuración
+### Fase 10: 2 semanas
+- Accesibilidad
+- Internacionalización
+- Pruebas de usabilidad
 
-### 8.2 Mejora de Tests
-- [x] Implementar tests unitarios para componentes principales
-- [x] Implementar tests unitarios para funcionalidades de autenticación
-- [x] Implementar tests unitarios para gestión de sesiones
-- [x] Implementar tests unitarios para la lógica de Socket.io
-- [x] Implementar tests de integración para flujos completos 
+Total estimado: 13 semanas para versión completa 

@@ -195,10 +195,12 @@ describe('useSession hook - Reconnection and Error Handling', () => {
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
       expect(result.current.session).not.toBeNull();
-      expect(result.current.session?.participants).toBeDefined();
     });
 
-    // Verify the multiple participants are in the session
+    // Verify the session is loaded before checking participants
+    expect(result.current.session).not.toBeNull();
+    // Now safely check if participants exist and have the expected length
+    expect(result.current.session?.participants).toBeDefined();
     expect(result.current.session?.participants?.length).toBe(6);
   });
 
@@ -226,14 +228,13 @@ describe('useSession hook - Reconnection and Error Handling', () => {
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
       expect(result.current.session).not.toBeNull();
-      expect(result.current.session?.status).toBe('VOTING');
-      expect(result.current.session?.ideas).toBeDefined();
     });
 
-    // Check that session data is correct
+    // Check that session is loaded
+    expect(result.current.session).not.toBeNull();
+    // Now safely check session status and ideas
     expect(result.current.session?.status).toBe('VOTING');
-
-    // Should have ideas available
+    expect(result.current.session?.ideas).toBeDefined();
     expect(result.current.session?.ideas?.length).toBe(2);
   });
 });

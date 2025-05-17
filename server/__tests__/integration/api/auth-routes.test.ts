@@ -1,7 +1,7 @@
 import request from 'supertest';
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import authRouter from '../../../routes/auth';
+// import { PrismaClient } from '@prisma/client'; // Remove this
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
 // Define mock types to match what our middleware expects
 interface MockUser {
@@ -18,25 +18,28 @@ declare global {
   }
 }
 
-// Mock PrismaClient
-jest.mock('@prisma/client', () => {
-  const mockPrismaClient = {
-    user: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn()
-    }
-  };
-  
-  return {
-    PrismaClient: jest.fn(() => mockPrismaClient)
-  };
-});
+// Create mock objects first
+const mockUserObj = {
+  create: jest.fn(),
+  findUnique: jest.fn(),
+  update: jest.fn()
+};
+
+// Create the mock Prisma client
+const mockPrisma = {
+  user: mockUserObj
+};
+
+// Mock Prisma from lib/prisma
+jest.mock('../../../lib/prisma', () => ({
+  __esModule: true,
+  default: mockPrisma
+}));
 
 // Mock auth middleware
 jest.mock('../../../middleware/auth', () => {
   return {
-    authMiddleware: jest.fn((req, res, next) => {
+    authMiddleware: jest.fn((req: any, res: any, next: any) => {
       const userId = req.headers['x-user-id'];
       
       if (userId === 'valid-user-id') {
@@ -55,9 +58,12 @@ jest.mock('../../../middleware/auth', () => {
   };
 });
 
+// Import after mocking
+import authRouter from '../../../routes/auth';
+
 describe('Auth API Routes', () => {
   let app: express.Application;
-  let prisma: any;
+  let prismaMock: any;
   
   beforeEach(() => {
     // Reset mocks
@@ -69,7 +75,7 @@ describe('Auth API Routes', () => {
     app.use('/api/auth', authRouter);
     
     // Get Prisma instance
-    prisma = new PrismaClient();
+    prismaMock = require('../../../lib/prisma').default;
   });
   
   describe('POST /api/auth/register', () => {
@@ -99,13 +105,13 @@ describe('Auth API Routes', () => {
         name: 'Test User'
       };
       
-      prisma.user.create.mockResolvedValue(mockUser);
+      prismaMock.user.create.mockResolvedValue(mockUser);
       
       const response = await request(app)
         .post('/api/auth/register')
         .send({ name: 'Test User' });
       
-      expect(prisma.user.create).toHaveBeenCalledWith({
+      expect(prismaMock.user.create).toHaveBeenCalledWith({
         data: { name: 'Test User' }
       });
       expect(response.status).toBe(201);
@@ -116,7 +122,7 @@ describe('Auth API Routes', () => {
     });
     
     it('should handle database errors', async () => {
-      prisma.user.create.mockRejectedValue(new Error('Database error'));
+      prismaMock.user.create.mockRejectedValue(new Error('Database error'));
       
       // Mock console.error
       console.error = jest.fn();

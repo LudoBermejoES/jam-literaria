@@ -1,9 +1,8 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../lib/prisma';
 import { io } from '../../index';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Define handler type that allows returning responses
 type RouteHandler = (req: Request, res: Response) => Promise<any>;
