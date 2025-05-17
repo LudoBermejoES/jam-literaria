@@ -7,235 +7,200 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
 ## Fase 1: Configuración Inicial y Estructura del Proyecto
 
 ### 1.1 Configuración del Entorno de Desarrollo
-- [x] Instalar Node.js (versión LTS recomendada)
-- [x] Instalar Git para control de versiones
-- [x] Configurar un editor de código (VS Code recomendado)
-- [x] Configurar estructura de directorios según arquitectura:
+- [ ] Instalar Node.js (versión LTS recomendada)
+- [ ] Instalar Git para control de versiones
+- [ ] Configurar un editor de código (VS Code recomendado)
+- [ ] Configurar estructura de directorios según arquitectura:
   ```
   /
-  ├── app/           # Cliente React
-  ├── server/        # Servidor Node.js
-  ├── prisma/        # Configuración y modelos de Prisma
-  ├── public/        # Archivos estáticos
-  ├── __tests__/     # Tests
-  └── .vscode/       # Configuración de VS Code
+  ├── src/                    # Código fuente
+  │   ├── routes/             # Rutas y controladores
+  │   ├── middleware/         # Middleware Express
+  │   ├── models/             # Modelos de datos
+  │   ├── views/              # Plantillas EJS
+  │   ├── public/             # Archivos estáticos
+  │   ├── lib/                # Utilidades
+  │   └── app.js              # Punto de entrada
+  ├── tests/                  # Tests con Jest
+  ├── database/               # Archivos de base de datos
+  └── config/                 # Configuración
   ```
-- [x] Instalar extensiones recomendadas:
+- [ ] Instalar extensiones recomendadas:
   - ESLint
   - Prettier
-  - TypeScript
-  - Tailwind CSS IntelliSense
+  - EJS Language Support
 
 ### 1.2 Inicialización del Proyecto
-- [x] Crear nuevo proyecto React con TypeScript en directorio app/:
+- [ ] Inicializar proyecto Node.js:
   ```bash
-  cd app
-  npx create-react-app . --template typescript
-  # Instalar dependencias adicionales
-  npm install tailwindcss postcss autoprefixer --save
-  npm install @tailwindcss/cli --save
-  ```
-- [x] Configurar servidor Express en directorio server/:
-  ```bash
-  cd server
   npm init -y
-  npm install express cors socket.io --save
   ```
-- [x] Configurar ESLint y Prettier. Ten en cuenta que tenemos dos proyectos, uno de react en el directorio "app" y otro de nodejs en el directorio "server"
-- [x] Configurar husky para pre-commit hooks
+- [ ] Instalar dependencias principales:
+  ```bash
+  npm install express ejs socket.io better-sqlite3 express-session uuid
+  npm install --save-dev nodemon jest supertest
+  ```
+- [ ] Configurar ESLint y Prettier
+- [ ] Configurar Nodemon para recarga en desarrollo
+- [ ] Configurar scripts en package.json:
+  ```json
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js",
+    "test": "jest",
+    "lint": "eslint ."
+  }
+  ```
 
 ### 1.3 Configuración de Base de Datos
-- [x] Instalar Prisma en directorio server/:
-  ```bash
-  cd server
-  npm install prisma @prisma/client --save
-  ```
-- [x] Inicializar Prisma con SQLite:
-  ```bash
-  cd server
-  npx prisma init
-  ```
-- [x] Implementar esquema de Prisma (prisma/schema.prisma)
-- [x] Crear migración inicial:
-  ```bash
-  cd server
-  npx prisma migrate dev --name init
-  ```
+- [ ] Crear directorio para base de datos
+- [ ] Instalar better-sqlite3
+- [ ] Crear esquema SQL inicial en database/schema.sql
+- [ ] Implementar script de inicialización de base de datos
+- [ ] Crear módulo de conexión en src/lib/db.js
 
 ### 1.4 Configuración de Testing
-- [x] Instalar dependencias de testing:
-  ```bash
-  # Para el cliente React
-  cd app
-  npm install --save-dev jest @testing-library/react @testing-library/jest-dom jest-environment-jsdom
-  
-  # Para el servidor
-  cd ../server
-  npm install --save-dev jest supertest
-  ```
-- [x] Configurar Jest para el cliente (app/jest.config.js)
-- [x] Configurar Jest para el servidor (server/jest.config.js)
-- [x] Configurar setup de testing para cada parte
-- [x] Organizar estructura de tests en directorio __tests__/
+- [ ] Instalar Jest y SuperTest
+- [ ] Configurar Jest para tests de servidor
+- [ ] Crear archivo de configuración jest.config.js
+- [ ] Preparar base de datos de prueba
+- [ ] Crear helpers para tests
 
 ## Fase 2: Implementación de Funcionalidades Core
 
 ### 2.1 Sistema de Autenticación y Gestión de Usuarios
-- [x] Implementar modelo de Usuario en prisma/schema.prisma
-- [x] Crear API routes en server/ para:
+- [ ] Implementar modelo de Usuario en src/models/User.js
+- [ ] Crear rutas de autenticación en src/routes/auth.js:
   - Registro de nombre de usuario
   - Validación de sesión
-- [x] Implementar middleware de autenticación en server/middleware/
-- [x] Crear componentes de UI en app/src/components/:
+- [ ] Implementar middleware de autenticación en src/middleware/auth.js
+- [ ] Crear vistas EJS para autenticación:
   - Formulario de ingreso de nombre
   - Pantalla de bienvenida
-- [x] Implementar tests unitarios en __tests__/auth/
+- [ ] Implementar tests unitarios en tests/unit/models/user.test.js
+- [ ] Implementar tests de integración en tests/integration/routes/auth.test.js
 
 ### 2.2 Sistema de Sesiones
-- [x] Implementar modelo de Sesión en prisma/schema.prisma
-- [x] Crear API routes en server/routes/ para:
+- [ ] Implementar modelo de Sesión en src/models/Session.js
+- [ ] Crear rutas de sesión en src/routes/session.js:
   - Creación de sesión
   - Unión a sesión existente
   - Obtención de estado de sesión
-- [x] Implementar generación de códigos únicos en server/utils/
-- [x] Crear componentes de UI en app/src/components/session/:
+- [ ] Implementar generación de códigos únicos en src/lib/utils.js
+- [ ] Crear vistas EJS para sesiones:
   - Pantalla de creación de sesión
   - Pantalla de unión a sesión 
   - Pantalla de espera
-- [x] Implementar tests para gestión de sesiones en __tests__/session/
+- [ ] Implementar tests para gestión de sesiones
 
 ### 2.3 Sistema de Ideas
-- [x] Implementar modelo de Idea en prisma/schema.prisma
-- [x] Crear API routes en server/routes/ para:
+- [ ] Implementar modelo de Idea en src/models/Idea.js
+- [ ] Crear rutas para ideas en src/routes/ideas.js:
   - Envío de ideas
   - Obtención de ideas por sesión
-- [x] Implementar validaciones en server/validators/:
+- [ ] Implementar validaciones para ideas:
   - Número de ideas según participantes
   - Longitud de ideas
-- [x] Crear componentes de UI en app/src/components/ideas/:
+- [ ] Crear vistas EJS para ideas:
   - Formulario de envío de ideas
   - Lista de ideas
-- [x] Implementar tests en __tests__/ideas/
+- [ ] Implementar tests para sistema de ideas
 
 ### 2.4 Sistema de Votación
-- [x] Implementar modelo de Voto en prisma/schema.prisma
-- [x] Crear API routes en server/routes/ para:
+- [ ] Implementar modelo de Voto en src/models/Vote.js
+- [ ] Crear rutas para votación en src/routes/voting.js:
   - Envío de votos
   - Procesamiento de votos
   - Obtención de resultados
-- [x] Implementar lógica de selección de ideas en server/services/:
+- [ ] Implementar lógica de selección de ideas en src/lib/voting.js:
   - Algoritmo de desempate
   - Gestión de rondas
-- [x] Crear componentes de UI en app/src/components/voting/:
+- [ ] Crear vistas EJS para votación:
   - Pantalla de votación
   - Visualización de resultados
-- [x] Implementar tests en __tests__/voting/
+- [ ] Implementar tests para sistema de votación
 
 ## Fase 3: Implementación de Comunicación en Tiempo Real
 
 ### 3.1 Configuración de Socket.io
-- [x] Instalar dependencias:
-  ```bash
-  # Para el servidor
-  cd server
-  npm install socket.io
-  
-  # Para el cliente
-  cd ../app
-  npm install socket.io-client
-  ```
-- [x] Configurar servidor Socket.io en server/socket/
-- [x] Implementar cliente Socket.io en app/src/services/socket/
-- [x] Crear hooks personalizados para Socket.io en app/src/hooks/
+- [ ] Configurar Socket.io con Express en src/lib/socket.js
+- [ ] Integrar Socket.io en la aplicación principal
 
 ### 3.2 Eventos en Tiempo Real
-- [x] Implementar eventos para:
+- [ ] Implementar eventos para:
   - Unión a sesión
   - Envío de ideas
   - Votación
   - Resultados
-- [x] Implementar manejo de reconexiones y errores de red
-- [x] Desarrollar sistema de sincronización de estado entre clientes
-- [x] Implementar tests para probar:
-  - Manejo de eventos concurrentes y simultáneos
-  - Reconexión automática y recuperación de estado
-  - Manejo de errores en la comunicación en tiempo real
-  - Sincronización de estado entre múltiples clientes
+- [ ] Implementar manejo de reconexiones y errores de red
+- [ ] Crear código cliente para Socket.io en src/public/js/
+- [ ] Integrar Socket.io en las vistas EJS
+- [ ] Implementar tests para comunicación en tiempo real
 
 ## Fase 4: Desarrollo de UI/UX
 
 ### 4.1 Diseño Base
-- [x] Configurar Tailwind CSS
-- [x] Crear sistema de diseño:
-  - Paleta de colores
-  - Tipografía
-  - Espaciado
-  - Componentes base
-- [x] Implementar diseño responsive
-- [x] Crear tests de UI
+- [ ] Crear sistema de diseño básico en CSS
+- [ ] Crear archivos CSS para componentes principales
+- [ ] Implementar diseño responsive
+- [ ] Crear layouts y partials EJS reutilizables
 
 ### 4.2 Componentes Principales
-- [x] Implementar componentes:
-  - Header
-  - Footer
+- [ ] Implementar componentes EJS:
+  - Header y Footer (partials)
   - Formularios
   - Botones
   - Tarjetas
-  - Modales
-- [x] Crear tests de componentes
+  - Mensajes de error/éxito
+- [ ] Crear archivos CSS correspondientes
+- [ ] Desarrollar JavaScript cliente para interactividad
+- [ ] Probar componentes en diferentes navegadores
 
 ### 4.3 Pantallas Principales
-- [x] Implementar pantallas:
+- [ ] Implementar todas las vistas EJS:
   - Introducción
   - Creación/Unión a sesión
   - Envío de ideas
   - Votación
   - Resultados
-- [x] Implementar navegación entre pantallas
-- [x] Crear tests de integración
+- [ ] Asegurar navegación coherente entre vistas
+- [ ] Implementar manejo de errores en cada vista
+- [ ] Asegurar adaptación a diferentes dispositivos
 
 ## Fase 5: Optimización y Testing
 
 ### 5.1 Optimización de Rendimiento
-- [ ] Implementar lazy loading
-- [ ] Optimizar imágenes
-- [ ] Implementar caching
-- [ ] Optimizar queries de base de datos
+- [ ] Optimizar consultas SQL
+- [ ] Implementar cache básico donde sea apropiado
+- [ ] Minificar y comprimir assets (CSS, JS)
+- [ ] Implementar carga diferida de scripts no esenciales
+- [ ] Optimizar tamaño de imágenes
 
 ### 5.2 Testing Completo
-- [x] Ejecutar suite de tests unitarios
-- [x] Ejecutar tests de integración
-- [x] Implementar tests end-to-end
-- [x] Verificar cobertura de tests
+- [ ] Completar tests unitarios para todos los modelos
+- [ ] Completar tests de integración para todas las rutas
+- [ ] Implementar tests end-to-end para flujos completos
+- [ ] Verificar cobertura de tests
 
 ### 5.3 Optimización Mobile
-- [x] Verificar responsive design
-- [x] Optimizar para diferentes dispositivos
-- [x] Implementar gestos táctiles
-- [x] Probar en diferentes navegadores
+- [ ] Verificar responsive design en múltiples dispositivos
+- [ ] Optimizar experiencia táctil
+- [ ] Mejorar tiempos de carga en conexiones lentas
+- [ ] Probar en diferentes navegadores móviles
 
 ## Fase 6: Despliegue y Documentación
 
 ### 6.1 Preparación para Producción
-- [x] Configurar variables de entorno
-- [x] Optimizar build
-  ```bash
-  # Build del cliente
-  cd app
-  npm run build
-  
-  # Build del servidor
-  cd ../server
-  npm run build
-  ```
-- [x] Configurar CI/CD
-- [x] Preparar base de datos para producción
+- [ ] Configurar variables de entorno
+- [ ] Implementar logging apropiado
+- [ ] Configurar manejo de errores para producción
+- [ ] Crear script de inicialización de base de datos para producción
 
 ### 6.2 Documentación
-- [x] Crear documentación técnica
-- [x] Crear guía de usuario
-- [x] Documentar API
-- [x] Crear README completo
+- [ ] Crear documentación técnica
+- [ ] Documentar API y puntos de integración
+- [ ] Crear guía de usuario
+- [ ] Documentar proceso de instalación y configuración
 
 ### 6.3 Despliegue
 - [ ] Elegir plataforma de hosting
@@ -248,149 +213,62 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
 ### 7.1 Monitoreo
 - [ ] Implementar sistema de logging
 - [ ] Configurar monitoreo de errores
-- [ ] Implementar analytics
-- [ ] Crear dashboard de monitoreo
+- [ ] Implementar analytics básicos
+- [ ] Crear dashboard de monitoreo simple
 
 ### 7.2 Mejoras Continuas
 - [ ] Recolectar feedback de usuarios
-- [ ] Implementar mejoras de UI/UX
-- [ ] Optimizar rendimiento
-- [ ] Actualizar dependencias
+- [ ] Implementar mejoras de UI/UX basadas en feedback
+- [ ] Optimizar rendimiento según métricas
+- [ ] Mantener dependencias actualizadas
 
-## Fase 8: Reestructuración y Mejoras de Código
+## Fase 8: Implementación del Algoritmo de Votación
 
-### 8.1 Optimización de la Estructura del Proyecto
-- [x] Reorganizar la estructura de directorios
-- [x] Asegurar que el cliente React esté en el directorio root\app
-- [x] Asegurar que el servidor Node.js esté en el directorio root\server
-- [x] Asegurar que todas las dependencias estén correctamente configuradas
-- [x] Validar que la aplicación funciona correctamente tras la reestructuración
+### 8.1 Implementación Completa del Algoritmo
+- [ ] Desarrollar la función determinarAccionSiguiente() en src/lib/voting.js
+- [ ] Implementar la función agruparIdeasPorVotos()
+- [ ] Crear función prepararNuevaRonda() para manejo de desempates
+- [ ] Desarrollar función finalizarSeleccion() para finalizar el proceso
 
-### 8.2 Mejora de Tests
-- [x] Implementar tests unitarios para componentes principales
-- [x] Implementar tests unitarios para funcionalidades de autenticación
-- [x] Implementar tests unitarios para gestión de sesiones
-- [x] Implementar tests unitarios para la lógica de Socket.io
-- [x] Implementar tests de integración para flujos completos
+### 8.2 Testing Exhaustivo de Casos de Votación
+- [ ] Implementar tests para todos los escenarios de votación:
+  - [ ] T01: 3 ideas con mismo número de votos (empatadas)
+  - [ ] T02: 2 ideas con más votos, 1 idea en segunda posición
+  - [ ] T03: 2 ideas con más votos, múltiples empatadas en segunda posición
+  - [ ] T04: 1 idea con más votos, 2 empatadas en segunda posición
+  - [ ] T05: 1 idea con más votos, 1 en segunda, 1 en tercera
+  - [ ] T06: 1 idea con más votos, 1 en segunda, múltiples en tercera
+  - [ ] T07: 1 idea con más votos, múltiples (>2) en segunda
+  - [ ] T08: Más de 3 ideas empatadas con mayor número de votos
+  - [ ] T09: Segunda ronda con ideas previamente elegidas
+  - [ ] T10: Tercera ronda para desempate final
 
-## Fase 9: Pruebas Exhaustivas del Algoritmo de Votación
+### 8.3 Integración con Socket.io para Notificaciones
+- [ ] Implementar eventos para notificar nueva ronda de votación
+- [ ] Crear eventos para comunicar resultados finales
+- [ ] Desarrollar sistema para sincronizar estado de votación entre usuarios
+- [ ] Manejar reconexiones durante el proceso de votación
 
-### 9.1 Implementación Completa del Algoritmo
-- [x] Desarrollar la función determinarAccionSiguiente() según la documentación
-- [x] Implementar la función agruparIdeasPorVotos()
-- [x] Crear función prepararNuevaRonda() para manejo de desempates
-- [x] Desarrollar función finalizarSeleccion() para finalizar el proceso
+## Fase 9: Accesibilidad e Internacionalización
 
-### 9.2 Testing Exhaustivo de Casos de Votación
-- [x] Implementar tests para todos los escenarios de la tabla de casos de prueba:
-  - [x] T01: 3 ideas con mismo número de votos (empatadas)
-  - [x] T02: 2 ideas con más votos, 1 idea en segunda posición
-  - [x] T03: 2 ideas con más votos, múltiples empatadas en segunda posición
-  - [x] T04: 1 idea con más votos, 2 empatadas en segunda posición
-  - [x] T05: 1 idea con más votos, 1 en segunda, 1 en tercera
-  - [x] T06: 1 idea con más votos, 1 en segunda, múltiples en tercera
-  - [x] T07: 1 idea con más votos, múltiples (>2) en segunda
-  - [x] T08: Más de 3 ideas empatadas con mayor número de votos
-  - [x] T09: Segunda ronda con ideas previamente elegidas
-  - [x] T10: Tercera ronda para desempate final
+### 9.1 Implementación de Accesibilidad
+- [ ] Auditar la aplicación con herramientas de accesibilidad
+- [ ] Implementar atributos ARIA apropiados
+- [ ] Asegurar navegación por teclado
+- [ ] Verificar contraste de colores
+- [ ] Probar con lectores de pantalla
 
-### 9.3 Integración con Socket.io para Notificaciones
-- [x] Implementar eventos para notificar nueva ronda de votación
-- [x] Crear eventos para comunicar resultados finales
-- [x] Desarrollar sistema para sincronizar estado de votación entre usuarios
-- [x] Manejar reconexiones durante el proceso de votación
-
-### 9.4 Pruebas de Integración End-to-End
-- [ ] Crear test que simule el flujo completo:
-  - [ ] Creación de sesión
-  - [ ] Unión de múltiples participantes
-  - [ ] Envío de ideas por cada participante
-  - [ ] Proceso de votación con diferentes patrones de voto
-  - [ ] Proceso de desempate si es necesario
-  - [ ] Finalización y visualización de resultados
-- [ ] Probar casos de error y reconexión durante el proceso
-
-## Fase 10: Accesibilidad e Internacionalización
-
-### 10.1 Implementación de Accesibilidad
-- [ ] Auditar la aplicación con herramientas de accesibilidad (Lighthouse, axe)
-- [ ] Implementar atributos ARIA apropiados en todos los componentes
-- [ ] Asegurar navegación por teclado en toda la aplicación
-- [ ] Verificar contraste de colores según WCAG
-- [ ] Implementar textos alternativos para elementos visuales
-- [ ] Probar con lectores de pantalla (NVDA, VoiceOver)
-
-### 10.2 Internacionalización
-- [ ] Configurar sistema de i18n (react-intl o similar)
-- [ ] Extraer todos los textos a archivos de traducción
-- [ ] Implementar soporte para múltiples idiomas
-- [ ] Adaptar componentes para manejar diferentes longitudes de texto
-- [ ] Crear sistema para detección automática de idioma
+### 9.2 Internacionalización (opcional)
+- [ ] Extraer todos los textos a archivos independientes
+- [ ] Implementar un sistema simple de cambio de idioma
+- [ ] Adaptar vistas para manejar diferentes longitudes de texto
 - [ ] Probar la aplicación en diferentes idiomas
-
-### 10.3 Pruebas de Usabilidad
-- [ ] Realizar pruebas con usuarios reales
-- [ ] Documentar hallazgos y áreas de mejora
-- [ ] Implementar mejoras basadas en feedback
-- [ ] Repetir proceso de pruebas para validar cambios
-
-## Notas Importantes
-
-### Consideraciones de Seguridad
-- Implementar rate limiting
-- Validar todas las entradas
-- Sanitizar datos
-- Implementar CORS
-- Proteger rutas sensibles
-
-### Consideraciones de UX
-- Proporcionar feedback inmediato
-- Implementar estados de carga
-- Manejar errores graciosamente
-- Mantener consistencia en UI
-
-### Consideraciones de Rendimiento
-- Optimizar queries de base de datos
-- Implementar caching donde sea posible
-- Minimizar bundle size
-- Optimizar assets
-
-### Consideraciones de Testing
-- Mantener cobertura de tests > 80%
-- Implementar tests para casos edge
-- Automatizar tests en CI/CD
-- Mantener tests actualizados
-
-## Recursos Necesarios
-
-### Herramientas
-- Node.js
-- Git
-- VS Code
-- Postman/Insomnia
-- SQLite Browser
-
-### Dependencias Principales
-- React
-- Express
-- TypeScript
-- Prisma
-- Socket.io
-- Tailwind CSS
-- Jest
-- Testing Library
-
-### Servicios
-- Hosting (Vercel/Netlify)
-- Base de datos
-- Monitoreo
-- Analytics
 
 ## Timeline Estimado
 
 ### Fase 1: 1 semana
 - Configuración inicial
-- Estructura del proyecto React + Express
+- Estructura del proyecto
 - Base de datos
 
 ### Fase 2: 2 semanas
@@ -404,7 +282,7 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
 - Tiempo real
 - Sincronización
 
-### Fase 4: 2 semanas
+### Fase 4: 1 semana
 - UI/UX
 - Componentes
 - Pantallas
@@ -419,23 +297,9 @@ Todos los comandos deberán ir con --yes o similar para que no se pida nada al u
 - Documentación
 - Despliegue
 
-### Fase 7: Continuo
-- Monitoreo
-- Mejoras
-- Mantenimiento
-
-### Fase 8: 1 semana
-- Reestructuración del código
-- Mejora de tests
-
-### Fase 9: 2 semanas
-- Implementación del algoritmo de votación
-- Tests exhaustivos
-- Integración con tiempo real
-
-### Fase 10: 2 semanas
+### Fase 7-9: 2 semanas
+- Algoritmo de votación
 - Accesibilidad
-- Internacionalización
-- Pruebas de usabilidad
+- Mejoras finales
 
-Total estimado: 13 semanas para versión completa 
+Total estimado: 9 semanas para versión completa 
