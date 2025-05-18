@@ -91,7 +91,9 @@ async function getSessionUpdates(sessionId, since) {
     
     // Check if session was updated after the since time
     const sessionUpdated = new Date(session.updated_at) > new Date(since);
-    const sessionStarted = sessionUpdated && session.status !== 'WAITING';
+    // Session is considered "started" if its status is not WAITING, regardless of when it was updated
+    // This ensures guests who join after the session starts will still get redirected
+    const sessionStarted = session.status !== 'WAITING';
     
     // Get new participants that joined after the specified time
     const newParticipants = await getNewParticipants(sessionId, since);
@@ -137,6 +139,18 @@ async function getSessionUpdates(sessionId, since) {
  */
 async function addParticipant(sessionId, userId) {
   try {
+    // First check if participant already exists
+    const existingParticipant = await db.get(
+      'SELECT 1 FROM session_participants WHERE session_id = ? AND user_id = ?',
+      [sessionId, userId]
+    );
+    
+    // If participant already exists, return success without trying to insert
+    if (existingParticipant) {
+      return true;
+    }
+    
+    // Otherwise, add the participant
     db.run(
       'INSERT INTO session_participants (session_id, user_id) VALUES (?, ?)',
       [sessionId, userId]
