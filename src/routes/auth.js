@@ -31,6 +31,13 @@ router.post('/', requireNoAuth, async (req, res) => {
     // Store user ID in session
     req.session.userId = user.id;
     
+    // Check if there's a pending session code to redirect to
+    if (req.session.pendingSessionCode) {
+      const code = req.session.pendingSessionCode;
+      delete req.session.pendingSessionCode;
+      return res.redirect(`/session/join/${code}`);
+    }
+    
     res.redirect('/session');
   } catch (error) {
     console.error('Login error:', error);

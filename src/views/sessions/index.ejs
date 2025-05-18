@@ -1,0 +1,131 @@
+<div class="session-container">
+  <div class="session-header">
+    <h2>Mis Sesiones</h2>
+    <a href="/session/new" class="btn btn-primary">Crear Nueva Sesión</a>
+  </div>
+  
+  <div class="session-options">
+    <a href="/session/join" class="btn">Unirse a Sesión Existente</a>
+  </div>
+  
+  <% if (sessions && sessions.length > 0) { %>
+    <div class="session-list">
+      <% sessions.forEach(function(session) { %>
+        <div class="session-card card">
+          <div class="card-header">
+            <h3>Sesión: <%= session.code %></h3>
+            <span class="session-status <%= session.status.toLowerCase() %>">
+              <% if (session.status === 'WAITING') { %>
+                Esperando
+              <% } else if (session.status === 'COLLECTING_IDEAS') { %>
+                Recolectando Ideas
+              <% } else if (session.status === 'VOTING') { %>
+                Votación
+              <% } else if (session.status === 'REVOTING') { %>
+                Desempate
+              <% } else if (session.status === 'FINISHED') { %>
+                Finalizada
+              <% } %>
+            </span>
+          </div>
+          <div class="card-body">
+            <p>Creada: <%= new Date(session.created_at).toLocaleDateString('es-ES', { dateStyle: 'medium' }) %> 
+              <%= new Date(session.created_at).toLocaleTimeString('es-ES', { timeStyle: 'short' }) %></p>
+            <% if (session.owner_id === user.id) { %>
+              <p class="session-owner">Eres el maestro de ceremonias</p>
+            <% } %>
+          </div>
+          <div class="card-footer">
+            <a href="/session/<%= session.id %>" class="btn btn-primary">Ver Detalles</a>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div class="no-sessions">
+      <p>No hay sesiones aún. ¡Crea una nueva o únete a una existente!</p>
+    </div>
+  <% } %>
+</div>
+
+<style>
+  .session-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .session-options {
+    margin-bottom: 2rem;
+  }
+  
+  .session-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .session-card {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .session-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  
+  .session-status.waiting {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+  
+  .session-status.collecting_ideas {
+    background-color: var(--accent-color);
+    color: white;
+  }
+  
+  .session-status.voting, .session-status.revoting {
+    background-color: #f39c12;
+    color: white;
+  }
+  
+  .session-status.finished {
+    background-color: #27ae60;
+    color: white;
+  }
+  
+  .session-owner {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  
+  .no-sessions {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    text-align: center;
+    border-radius: var(--border-radius);
+    margin-top: 2rem;
+  }
+  
+  @media (max-width: 768px) {
+    .session-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .session-list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style> 

@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
-const { setupSocket } = require('./lib/socket');
 const { optionalAuth } = require('./middleware/auth');
 const expressLayouts = require('express-ejs-layouts');
 
@@ -31,9 +30,17 @@ app.use(session({
 // Add user to all views if authenticated
 app.use(optionalAuth);
 
+// Add base URL to all views
+app.use((req, res, next) => {
+  const protocol = req.protocol;
+  const host = req.get('host');
+  res.locals.baseUrl = `${protocol}://${host}`;
+  next();
+});
+
 // Routes
 app.use('/auth', require('./routes/auth'));
-// app.use('/session', require('./routes/session'));
+app.use('/session', require('./routes/session'));
 // app.use('/ideas', require('./routes/ideas'));
 // app.use('/voting', require('./routes/voting'));
 
@@ -68,9 +75,6 @@ const startServer = (port = PORT) => {
   const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);
   });
-  
-  // Setup Socket.io
-  setupSocket(server);
   
   return server;
 };
