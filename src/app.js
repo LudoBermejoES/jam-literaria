@@ -41,7 +41,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/auth', require('./routes/auth'));
 app.use('/session', require('./routes/session'));
-// app.use('/ideas', require('./routes/ideas'));
+app.use('/ideas', require('./routes/ideas'));
 // app.use('/voting', require('./routes/voting'));
 
 // Basic route for now

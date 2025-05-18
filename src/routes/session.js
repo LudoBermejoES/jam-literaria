@@ -10,7 +10,8 @@ const {
   isSessionOwner,
   getSessionsByParticipant,
   deleteSession,
-  getSessionUpdates
+  getSessionUpdates,
+  updateSessionRound
 } = require('../models/Session');
 const { requireAuth } = require('../middleware/auth');
 const { updateUserActivity } = require('../models/User');
@@ -233,7 +234,7 @@ router.get('/:id', async (req, res) => {
       session,
       participants,
       isOwner,
-      scripts: ['/js/session.js']
+      scripts: ['/js/session.js', '/js/ideas.js']
     });
   } catch (error) {
     console.error('Error fetching session:', error);
@@ -273,6 +274,54 @@ router.post('/:id/start', async (req, res) => {
   } catch (error) {
     console.error('Error starting session:', error);
     res.status(500).json({ error: 'Error al iniciar la sesión' });
+  }
+});
+
+// Start the voting phase (owner only)
+router.post('/:id/start-voting', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if user is session owner
+    const isOwner = await isSessionOwner(id, req.user.id);
+    if (!isOwner) {
+      return res.status(403).json({ 
+        error: 'Solo el creador de la sesión puede avanzar a la fase de votación' 
+      });
+    }
+    
+    // Get the current session to check status
+    const session = await getSession(id);
+    if (!session) {
+      return res.status(404).json({ error: 'Sesión no encontrada' });
+    }
+    
+    if (session.status !== 'COLLECTING_IDEAS') {
+      return res.status(400).json({ 
+        error: 'La sesión no está en fase de recolección de ideas' 
+      });
+    }
+    
+    // Check if there are any ideas in the session
+    const ideaModel = require('../models/Idea');
+    const ideasCount = await ideaModel.countIdeasInSession(id);
+    
+    if (ideasCount === 0) {
+      return res.status(400).json({ 
+        error: 'Debe haber al menos una idea para avanzar a la votación' 
+      });
+    }
+    
+    // Update session status to voting
+    const updatedSession = await updateSessionStatus(id, 'VOTING');
+    
+    // Set round to 1
+    await updateSessionRound(id, 1);
+    
+    res.json({ success: true, session: updatedSession });
+  } catch (error) {
+    console.error('Error starting voting phase:', error);
+    res.status(500).json({ error: 'Error al iniciar la fase de votación' });
   }
 });
 

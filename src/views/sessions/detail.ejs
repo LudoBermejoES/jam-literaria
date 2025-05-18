@@ -1,7 +1,4 @@
-<div class="session-detail-container">
-  <script>
-    document.body.setAttribute('data-user-id', '<%= user.id %>');
-  </script>
+<div class="session-detail-container" data-session-id="<%= session.id %>">  <script>    document.body.setAttribute('data-user-id', '<%= user.id %>');  </script>
   <div class="session-header">
     <h2>Sesión: <span class="session-code"><%= session.code %></span></h2>
     <div class="session-status <%= session.status.toLowerCase() %>">
@@ -92,15 +89,7 @@
             <% } %>
           </div>
         </div>
-      <% } else if (session.status === 'COLLECTING_IDEAS') { %>
-        <!-- This will be implemented in the next phase -->
-        <div class="card">
-          <div class="card-body">
-            <p>La sesión ha comenzado. ¡Es hora de compartir tus ideas!</p>
-            <p>Esta sección se implementará en la siguiente fase.</p>
-          </div>
-        </div>
-      <% } %>
+            <% } else if (session.status === 'COLLECTING_IDEAS') { %>        <div class="card ideas-card">          <div class="card-header">            <h3>Recolección de Ideas</h3>          </div>          <div class="card-body">            <p>La sesión ha comenzado. ¡Es hora de compartir tus ideas!</p>                        <div class="ideas-container">              <div class="my-ideas-section">                <h4>Mis Ideas <span class="ideas-counter">(<span id="idea-counter">0</span>/<span id="max-idea-count"><%= Math.max(2, Math.floor(10 / participants.length)) %></span>)</span></h4>                                <div id="max-ideas-message" class="hidden alert alert-info">                  Has alcanzado el número máximo de ideas para esta sesión.                </div>                                <form id="ideas-form" class="ideas-form">                  <div class="form-group">                    <label for="idea-content">Escribe tu idea:</label>                    <textarea id="idea-content" class="form-control" rows="3" maxlength="500" placeholder="Comparte una idea interesante..."></textarea>                    <small class="form-text">Máximo 500 caracteres</small>                  </div>                  <button type="submit" class="btn btn-primary">Enviar Idea</button>                </form>                                <ul id="my-ideas-list" class="ideas-list my-ideas-list">                  <!-- Ideas will be loaded here -->                </ul>              </div>                            <% if (isOwner) { %>                <div class="session-control-panel">                  <h4>Panel de Control</h4>                  <p>Como maestro de ceremonias, puedes avanzar a la fase de votación cuando todos hayan enviado sus ideas.</p>                  <button id="start-voting-btn" class="btn btn-primary" data-session-id="<%= session.id %>">                    Iniciar Votación                  </button>                </div>              <% } %>            </div>          </div>        </div>      <% } %>
     </div>
   </div>
 </div>
