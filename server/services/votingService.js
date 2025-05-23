@@ -37,6 +37,10 @@ export async function processVotingRound(sessionId, round) {
     throw new Error('No votes found for this round');
   }
   
+  // Get current accumulated winners from session metadata
+  const currentMetadata = Session.getSessionMetadata(sessionId);
+  const accumulatedWinners = currentMetadata?.ideas_elegidas || [];
+  
   // Transform vote results into the expected format
   const ideas = voteResults.map(result => ({
     id: result.idea_id,
@@ -46,17 +50,20 @@ export async function processVotingRound(sessionId, round) {
   }));
   
   // Process the vote results to determine the next action
-  const action = determinarAccionSiguiente(ideas);
+  const action = determinarAccionSiguiente(ideas, accumulatedWinners.length);
   
   // Update the session metadata based on the action
   if (action.accion === 'FINALIZAR') {
+    // Add the newly selected ideas to accumulated winners
+    const newWinners = [...accumulatedWinners, ...action.ideasElegidas];
+    
     // Get the ideas that were selected
-    const selectedIdeas = Idea.getIdeasByIds(action.ideasElegidas);
+    const selectedIdeas = Idea.getIdeasByIds(newWinners);
     
     // Update session status and metadata
     Session.updateSessionStatus(sessionId, SESSION_STATUS.COMPLETED);
     Session.updateSessionMetadata(sessionId, {
-      ideas_elegidas: action.ideasElegidas,
+      ideas_elegidas: newWinners,
       mensaje_final: 'Las ideas ganadoras han sido seleccionadas'
     });
     
@@ -65,8 +72,11 @@ export async function processVotingRound(sessionId, round) {
       selectedIdeas,
       message: 'Las ideas ganadoras han sido seleccionadas'
     };
-  } else if (action.accion === 'NUEVA_RONDA') {
-    // Prepare for a new voting round
+  } else if (action.accion === 'AGREGAR_GANADORES') {
+    // Add winners from this round and continue to next round
+    const newWinners = [...accumulatedWinners, ...action.ideasElegidas];
+    
+    // Prepare for a new voting round with remaining candidates
     const candidateIdeas = Idea.getIdeasByIds(action.ideasCandidatas);
     const newRound = round + 1;
     
@@ -76,6 +86,7 @@ export async function processVotingRound(sessionId, round) {
     // Update session round and metadata
     Session.updateSessionRound(sessionId, newRound);
     Session.updateSessionMetadata(sessionId, {
+      ideas_elegidas: newWinners, // Store accumulated winners
       ideas_candidatas: action.ideasCandidatas,
       mensaje_ronda: `Ronda ${newRound} de votación para desempate`,
       required_votes: requiredVotes
@@ -86,6 +97,32 @@ export async function processVotingRound(sessionId, round) {
       round: newRound,
       candidateIdeas,
       requiredVotes,
+      accumulatedWinners: newWinners, // Send accumulated winners to frontend
+      message: `Ronda ${newRound} de votación para desempate`
+    };
+  } else if (action.accion === 'NUEVA_RONDA') {
+    // Prepare for a new voting round (tiebreaker)
+    const candidateIdeas = Idea.getIdeasByIds(action.ideasCandidatas);
+    const newRound = round + 1;
+    
+    // Calculate how many votes are needed for this new round
+    const requiredVotes = calculateRequiredVotes(candidateIdeas.length);
+    
+    // Update session round and metadata
+    Session.updateSessionRound(sessionId, newRound);
+    Session.updateSessionMetadata(sessionId, {
+      ideas_elegidas: accumulatedWinners, // Keep accumulated winners
+      ideas_candidatas: action.ideasCandidatas,
+      mensaje_ronda: `Ronda ${newRound} de votación para desempate`,
+      required_votes: requiredVotes
+    });
+    
+    return {
+      action: 'NEW_ROUND',
+      round: newRound,
+      candidateIdeas,
+      requiredVotes,
+      accumulatedWinners, // Send accumulated winners to frontend
       message: `Ronda ${newRound} de votación para desempate`
     };
   }
@@ -96,9 +133,20 @@ export async function processVotingRound(sessionId, round) {
 /**
  * Determines the next action based on voting results
  * @param {Array} ideas - Array of objects with format {id, content, votos, autorId}
+ * @param {number} currentWinnerCount - Number of winners already selected in previous rounds
  * @returns {Object} Action to take and the selected or candidate ideas
  */
-export function determinarAccionSiguiente(ideas) {
+export function determinarAccionSiguiente(ideas, currentWinnerCount = 0) {
+  const remainingSlots = 3 - currentWinnerCount;
+  
+  // If we already have 3 winners, we shouldn't be here
+  if (remainingSlots <= 0) {
+    return {
+      accion: 'FINALIZAR',
+      ideasElegidas: []
+    };
+  }
+  
   // Group ideas by vote count
   const gruposPorVotos = agruparIdeasPorVotos(ideas);
   
@@ -110,26 +158,26 @@ export function determinarAccionSiguiente(ideas) {
       ideas: entry[1]
     }));
   
-  // Case 1: Exactly 3 ideas with the same highest vote count
-  if (gruposOrdenados.length === 1 && gruposOrdenados[0].ideas.length === 3) {
+  // Case 1: Exactly the remaining slots with the same highest vote count
+  if (gruposOrdenados.length === 1 && gruposOrdenados[0].ideas.length === remainingSlots) {
     return {
       accion: 'FINALIZAR',
       ideasElegidas: gruposOrdenados[0].ideas.map(idea => idea.id)
     };
   }
   
-  // Case 2: More than 3 ideas tied with the highest vote count
-  if (gruposOrdenados.length === 1 && gruposOrdenados[0].ideas.length > 3) {
+  // Case 2: More ideas tied with the highest vote count than remaining slots
+  if (gruposOrdenados.length === 1 && gruposOrdenados[0].ideas.length > remainingSlots) {
     return {
       accion: 'NUEVA_RONDA',
       ideasCandidatas: gruposOrdenados[0].ideas.map(idea => idea.id)
     };
   }
   
-  // Case 3: Less than 3 ideas in the highest vote group
-  if (gruposOrdenados[0].ideas.length < 3) {
+  // Case 3: Less ideas in the highest vote group than remaining slots
+  if (gruposOrdenados[0].ideas.length < remainingSlots) {
     const ideasSeleccionadas = [...gruposOrdenados[0].ideas];
-    let ideasRestantes = 3 - ideasSeleccionadas.length;
+    let ideasRestantes = remainingSlots - ideasSeleccionadas.length;
     
     // If we need more ideas and there are more vote groups
     if (ideasRestantes > 0 && gruposOrdenados.length > 1) {
@@ -146,8 +194,10 @@ export function determinarAccionSiguiente(ideas) {
       
       // Case 3.2: Too many ideas in the second group (need a tiebreaker)
       if (segundoGrupo.length > ideasRestantes) {
+        // Add winners from first group and continue with tiebreaker for second group
         return {
-          accion: 'NUEVA_RONDA',
+          accion: 'AGREGAR_GANADORES',
+          ideasElegidas: ideasSeleccionadas.map(idea => idea.id),
           ideasCandidatas: segundoGrupo.map(idea => idea.id)
         };
       }
@@ -170,8 +220,10 @@ export function determinarAccionSiguiente(ideas) {
         
         // Case 3.3.2: Too many ideas in the third group (need a tiebreaker)
         if (tercerGrupo.length > ideasRestantes) {
+          // Add winners from first and second groups, continue with tiebreaker for third group
           return {
-            accion: 'NUEVA_RONDA',
+            accion: 'AGREGAR_GANADORES',
+            ideasElegidas: ideasSeleccionadas.map(idea => idea.id),
             ideasCandidatas: tercerGrupo.map(idea => idea.id)
           };
         }
@@ -181,11 +233,11 @@ export function determinarAccionSiguiente(ideas) {
       }
     }
     
-    // If we have a complete set of 3 ideas, or we've used all available ideas
-    if (ideasSeleccionadas.length === 3 || ideasSeleccionadas.length === ideas.length) {
+    // If we have enough ideas or we've used all available ideas
+    if (ideasSeleccionadas.length >= remainingSlots || ideasSeleccionadas.length === ideas.length) {
       return {
         accion: 'FINALIZAR',
-        ideasElegidas: ideasSeleccionadas.map(idea => idea.id)
+        ideasElegidas: ideasSeleccionadas.slice(0, remainingSlots).map(idea => idea.id)
       };
     }
   }

@@ -354,32 +354,32 @@ export class Session {
         WHERE session_id = ?
       `);
       deleteIdeasStmt.run(id);
-      
-      // Remove participants
-      const deleteParticipantsStmt = db.prepare(`
-        DELETE FROM session_participants
-        WHERE session_id = ?
-      `);
-      deleteParticipantsStmt.run(id);
-      
-      // Remove metadata
-      const deleteMetadataStmt = db.prepare(`
-        DELETE FROM session_metadata
-        WHERE session_id = ?
-      `);
-      deleteMetadataStmt.run(id);
-      
+    
+    // Remove participants
+    const deleteParticipantsStmt = db.prepare(`
+      DELETE FROM session_participants
+      WHERE session_id = ?
+    `);
+    deleteParticipantsStmt.run(id);
+    
+    // Remove metadata
+    const deleteMetadataStmt = db.prepare(`
+      DELETE FROM session_metadata
+      WHERE session_id = ?
+    `);
+    deleteMetadataStmt.run(id);
+    
       // Finally remove the session
-      const deleteSessionStmt = db.prepare(`
-        DELETE FROM sessions
-        WHERE id = ?
-      `);
-      deleteSessionStmt.run(id);
+    const deleteSessionStmt = db.prepare(`
+      DELETE FROM sessions
+      WHERE id = ?
+    `);
+    deleteSessionStmt.run(id);
       
       // Commit the transaction
       db.exec('COMMIT');
-      
-      return true;
+    
+    return true;
     } catch (error) {
       // Rollback in case of error
       db.exec('ROLLBACK');

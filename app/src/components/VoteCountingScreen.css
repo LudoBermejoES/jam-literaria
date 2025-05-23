@@ -1,0 +1,392 @@
+.vote-counting-screen {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.vote-counting-screen.loading,
+.vote-counting-screen.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.loading-content,
+.error-content {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.vote-counting-screen h2 {
+  color: #333;
+  margin-bottom: 24px;
+  text-align: center;
+  font-size: 28px;
+}
+
+/* Participant View Styles */
+.vote-counting-screen.participant {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.counting-content {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+.counting-animation {
+  margin: 30px 0;
+}
+
+.counting-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.counting-dots span {
+  width: 12px;
+  height: 12px;
+  background-color: #4a90e2;
+  border-radius: 50%;
+  animation: counting-pulse 1.5s ease-in-out infinite;
+}
+
+.counting-dots span:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.counting-dots span:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes counting-pulse {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.counting-message {
+  margin: 24px 0;
+}
+
+.counting-message p {
+  margin: 12px 0;
+  color: #555;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.session-info {
+  background-color: #f7f9fc;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 24px;
+  border-left: 4px solid #4a90e2;
+}
+
+.session-info p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Owner View Styles */
+.vote-counting-screen.owner {
+  padding-bottom: 40px;
+}
+
+.counting-status {
+  margin-bottom: 32px;
+}
+
+.status-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-left: 4px solid #4a90e2;
+}
+
+.status-card h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.status-details p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 16px;
+}
+
+.status-details strong {
+  color: #333;
+  margin-right: 8px;
+}
+
+.complete-indicator {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Results Preview */
+.results-preview {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 32px;
+}
+
+.results-preview h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.result-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.result-position {
+  background-color: #4a90e2;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.result-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.idea-text {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.result-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #666;
+}
+
+.vote-count {
+  font-weight: 600;
+  color: #4a90e2;
+}
+
+.author {
+  font-style: italic;
+}
+
+/* Control Actions */
+.control-actions {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.action-message {
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 4px;
+}
+
+.action-message p {
+  margin: 0;
+  color: #856404;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.new-round-button,
+.finish-voting-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.new-round-button:disabled,
+.finish-voting-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.action-help {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.action-help p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Common Spinner */
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #4a90e2;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .vote-counting-screen {
+    padding: 16px;
+    margin: 10px;
+  }
+  
+  .vote-counting-screen h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .counting-content {
+    padding: 24px;
+  }
+  
+  .status-card,
+  .results-preview,
+  .control-actions {
+    padding: 16px;
+  }
+  
+  .result-item {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .result-position {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .idea-text {
+    font-size: 15px;
+  }
+  
+  .result-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .action-buttons {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .new-round-button,
+  .finish-voting-button {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vote-counting-screen {
+    padding: 12px;
+    margin: 5px;
+  }
+  
+  .vote-counting-screen h2 {
+    font-size: 20px;
+  }
+  
+  .counting-content {
+    padding: 20px;
+  }
+  
+  .status-card h3,
+  .results-preview h3 {
+    font-size: 18px;
+  }
+  
+  .status-details p {
+    font-size: 15px;
+  }
+  
+  .idea-text {
+    font-size: 14px;
+  }
+  
+  .result-meta {
+    font-size: 13px;
+  }
+} 

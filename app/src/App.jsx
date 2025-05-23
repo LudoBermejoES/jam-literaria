@@ -8,6 +8,8 @@ import Session from './pages/Session';
 import SessionPage from './pages/SessionPage';
 import PostIdeasWaiting from './components/PostIdeasWaiting';
 import VotingScreen from './components/VotingScreen';
+import VoteCountingScreen from './components/VoteCountingScreen';
+import ResultsScreen from './components/ResultsScreen';
 import JoinSession from './pages/JoinSession';
 import IdeaSubmission from './components/IdeaSubmission';
 import './App.css';
@@ -29,6 +31,8 @@ function App() {
                 <Route path="/session/:sessionId/ideas" element={<IdeaSubmission />} />
                 <Route path="/session/:sessionId/post-ideas" element={<PostIdeasWaiting />} />
                 <Route path="/session/:sessionId/voting" element={<VotingScreen />} />
+                <Route path="/session/:sessionId/counting" element={<VoteCountingScreen />} />
+                <Route path="/session/:sessionId/results" element={<ResultsScreen />} />
                 <Route path="/join/:code" element={<JoinSession />} />
           </Route>
           

@@ -1,6 +1,7 @@
 import { Vote } from '../models/Vote.js';
 import { Session, SESSION_STATUS } from '../models/Session.js';
 import * as votingService from './votingService.js';
+import { Idea } from '../models/Idea.js';
 
 /**
  * Create a new vote
@@ -190,10 +191,10 @@ export function getVoteStatus(sessionId, round) {
 }
 
 /**
- * Get vote results for a round
+ * Get vote results for a session
  * @param {string} sessionId - Session ID
  * @param {number} round - Voting round number (optional, defaults to current round)
- * @returns {Array} Array of ideas with vote counts
+ * @returns {Array} Array of ideas with vote counts or accumulated winners for completed sessions
  */
 export function getVoteResults(sessionId, round) {
   if (!sessionId) {
@@ -206,6 +207,29 @@ export function getVoteResults(sessionId, round) {
       throw new Error('Session not found');
     }
     
+    // If session is completed, return accumulated winners from metadata
+    if (session.status === SESSION_STATUS.COMPLETED) {
+      const metadata = Session.getSessionMetadata(sessionId);
+      if (metadata && metadata.ideas_elegidas && metadata.ideas_elegidas.length > 0) {
+        // Get full idea details for the accumulated winners
+        const winnerIdeas = Idea.getIdeasByIds(metadata.ideas_elegidas);
+        
+        // Return winners in the expected format with their final ranking
+        return winnerIdeas.map((idea, index) => ({
+          idea_id: idea.id,
+          content: idea.content,
+          author_id: idea.author_id,
+          author_name: idea.author_name,
+          vote_count: 0, // We don't track individual vote counts for final winners
+          position: index + 1 // Position based on order they were selected
+        }));
+      }
+      
+      // Fallback to empty results if no winners stored
+      return [];
+    }
+    
+    // For ongoing sessions, return current round vote counts
     // If round is not specified, use the current round
     const currentRound = round !== undefined ? round : session.current_round;
     

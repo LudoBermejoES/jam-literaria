@@ -109,6 +109,7 @@ export function voteHandlers(io, socket) {
             round: result.result.round,
             candidateIdeas: result.result.candidateIdeas,
             requiredVotes: result.result.requiredVotes,
+            accumulatedWinners: result.result.accumulatedWinners,
             message: result.result.message
           });
         }
@@ -174,6 +175,8 @@ export function voteHandlers(io, socket) {
           io.to(`session:${sessionId}`).emit('new-voting-round', {
             round: result.result.round,
             candidateIdeas: result.result.candidateIdeas,
+            requiredVotes: result.result.requiredVotes,
+            accumulatedWinners: result.result.accumulatedWinners,
             message: result.result.message
           });
         }
