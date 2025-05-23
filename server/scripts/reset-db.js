@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Database from 'better-sqlite3';
+import { DatabaseSync } from 'node:sqlite';
 
 // Get the current file's directory
 const __filename = fileURLToPath(import.meta.url);
@@ -23,9 +23,17 @@ if (fs.existsSync(dbPath)) {
   console.log('No existing database file found.');
 }
 
+// Create database directory if it doesn't exist
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
 // Create a new database and initialize with schema
 console.log('Creating new database...');
-const db = new Database(dbPath);
+const db = new DatabaseSync(dbPath, {
+  enableForeignKeyConstraints: true
+});
 
 // Read and execute the schema SQL
 const schema = fs.readFileSync(schemaPath, 'utf8');
