@@ -16,8 +16,7 @@ const VotingScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [hasVoted, setHasVoted] = useState(false);
-  
-  const MAX_SELECTIONS = 3;
+  const [requiredVotes, setRequiredVotes] = useState(3);
   
   useEffect(() => {
     if (!socket || !sessionId) return;
@@ -50,10 +49,23 @@ const VotingScreen = () => {
       }
     });
     
+    // Listen for voting started event (includes requiredVotes)
+    socket.on('voting-started', (data) => {
+      if (data.requiredVotes !== undefined) {
+        setRequiredVotes(data.requiredVotes);
+      }
+      if (data.ideas) {
+        setIdeas(data.ideas);
+      }
+    });
+    
     // Listen for vote confirmation
-    socket.on('vote-confirmed', () => {
+    socket.on('vote-confirmed', (data) => {
       setHasVoted(true);
       setSubmitting(false);
+      if (data.requiredVotes !== undefined) {
+        setRequiredVotes(data.requiredVotes);
+      }
     });
     
     // Listen for voting completion
@@ -66,6 +78,9 @@ const VotingScreen = () => {
       setIdeas(data.candidateIdeas || []);
       setSelectedIdeas(new Set());
       setHasVoted(false);
+      if (data.requiredVotes !== undefined) {
+        setRequiredVotes(data.requiredVotes);
+      }
     });
     
     // Error handling
@@ -77,6 +92,7 @@ const VotingScreen = () => {
     return () => {
       socket.off('session-state');
       socket.off('ideas');
+      socket.off('voting-started');
       socket.off('vote-confirmed');
       socket.off('voting-complete');
       socket.off('new-voting-round');
@@ -93,7 +109,7 @@ const VotingScreen = () => {
     if (newSelection.has(ideaId)) {
       // Deselect if already selected
       newSelection.delete(ideaId);
-    } else if (newSelection.size < MAX_SELECTIONS) {
+    } else if (newSelection.size < requiredVotes) {
       // Select if under limit
       newSelection.add(ideaId);
     }
@@ -103,7 +119,7 @@ const VotingScreen = () => {
   
   // Submit votes
   const handleSubmitVotes = () => {
-    if (selectedIdeas.size !== MAX_SELECTIONS || hasVoted) return;
+    if (selectedIdeas.size !== requiredVotes || hasVoted) return;
     
     setSubmitting(true);
     
@@ -153,16 +169,16 @@ const VotingScreen = () => {
       <h2>Vote for Ideas</h2>
       
       <div className="voting-instructions">
-        <p>Select exactly <strong>{MAX_SELECTIONS} ideas</strong> that you think are the best.</p>
+        <p>Select exactly <strong>{requiredVotes} ideas</strong> that you think are the best.</p>
         <p className="selection-counter">
-          Selected: {selectedIdeas.size} / {MAX_SELECTIONS}
+          Selected: {selectedIdeas.size} / {requiredVotes}
         </p>
       </div>
       
       <div className="ideas-grid">
         {ideas.map((idea, index) => {
           const isSelected = selectedIdeas.has(idea.id);
-          const canSelect = selectedIdeas.size < MAX_SELECTIONS || isSelected;
+          const canSelect = selectedIdeas.size < requiredVotes || isSelected;
           
           return (
             <div 
@@ -191,16 +207,16 @@ const VotingScreen = () => {
       <div className="voting-controls">
         <Button 
           onClick={handleSubmitVotes}
-          disabled={selectedIdeas.size !== MAX_SELECTIONS || submitting}
+          disabled={selectedIdeas.size !== requiredVotes || submitting}
           className="submit-votes-button"
           variant="primary"
           size="large"
         >
           {submitting 
             ? "Submitting votes..." 
-            : selectedIdeas.size === MAX_SELECTIONS
-              ? `Submit ${MAX_SELECTIONS} votes`
-              : `Select ${MAX_SELECTIONS - selectedIdeas.size} more idea${MAX_SELECTIONS - selectedIdeas.size > 1 ? 's' : ''}`
+            : selectedIdeas.size === requiredVotes
+              ? `Submit ${requiredVotes} votes`
+              : `Select ${requiredVotes - selectedIdeas.size} more idea${requiredVotes - selectedIdeas.size > 1 ? 's' : ''}`
           }
         </Button>
       </div>

@@ -59,5 +59,6 @@ CREATE TABLE IF NOT EXISTS session_metadata (
   ideas_candidatas TEXT, -- JSON array of idea IDs
   mensaje_ronda TEXT,
   mensaje_final TEXT,
+  required_votes INTEGER, -- Number of votes required for current round
   FOREIGN KEY (session_id) REFERENCES sessions(id)
 ) STRICT; 

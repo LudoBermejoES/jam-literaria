@@ -1,6 +1,8 @@
 import * as voteService from '../services/voteService.js';
 import * as sessionService from '../services/sessionService.js';
+import * as ideaService from '../services/ideaService.js';
 import { SESSION_STATUS } from '../models/Session.js';
+import { calculateRequiredVotes } from '../services/votingService.js';
 
 /**
  * Socket handlers for vote-related events
@@ -31,20 +33,65 @@ export function voteHandlers(io, socket) {
         return;
       }
       
+      // Get session metadata to check required votes
+      const metadata = sessionService.getSessionMetadata(sessionId);
+      let requiredVotes = 3; // Default for first round
+      
+      console.log(`Vote validation - Session: ${sessionId}, Round: ${session.current_round}, Metadata:`, metadata);
+      
+      if (metadata && metadata.required_votes) {
+        requiredVotes = metadata.required_votes;
+        console.log(`Using metadata required votes: ${requiredVotes}`);
+      } else {
+        let ideaCount;
+        
+        // Check if we're in a subsequent round with candidate ideas
+        if (metadata && metadata.ideas_candidatas && Array.isArray(metadata.ideas_candidatas)) {
+          // Use candidate ideas for subsequent rounds
+          ideaCount = metadata.ideas_candidatas.length;
+          console.log(`Using candidate ideas count: ${ideaCount} ideas`);
+        } else {
+          // Use all session ideas for first round
+          const ideas = ideaService.getIdeasBySessionId(sessionId);
+          ideaCount = ideas.length;
+          console.log(`Using all session ideas count: ${ideaCount} ideas`);
+        }
+        
+        requiredVotes = calculateRequiredVotes(ideaCount);
+        console.log(`Calculated required votes: ${requiredVotes} for ${ideaCount} ideas`);
+        
+        // Update metadata with the calculated value
+        sessionService.updateSessionMetadata(sessionId, {
+          required_votes: requiredVotes
+        });
+      }
+      
+      console.log(`Final required votes: ${requiredVotes}, User submitted: ${ideaIds.length}`);
+      
+      // Validate the number of votes
+      if (ideaIds.length !== requiredVotes) {
+        socket.emit('error', { 
+          message: `You must select exactly ${requiredVotes} idea${requiredVotes !== 1 ? 's' : ''}` 
+        });
+        return;
+      }
+      
       // Submit all votes
       const result = await voteService.createVotes(socket.userId, ideaIds, sessionId);
       
       // Notify the user that their votes were registered
       socket.emit('vote-confirmed', {
         ideaIds,
-        round: session.current_round
+        round: session.current_round,
+        requiredVotes
       });
       
       // Notify all participants about the votes (without revealing who voted for what)
       io.to(`session:${sessionId}`).emit('vote-submitted', {
         userId: socket.userId,
         userName: socket.user.name,
-        round: session.current_round
+        round: session.current_round,
+        requiredVotes
       });
       
       // If all participants have voted and the round is complete
@@ -61,6 +108,7 @@ export function voteHandlers(io, socket) {
           io.to(`session:${sessionId}`).emit('new-voting-round', {
             round: result.result.round,
             candidateIdeas: result.result.candidateIdeas,
+            requiredVotes: result.result.requiredVotes,
             message: result.result.message
           });
         }

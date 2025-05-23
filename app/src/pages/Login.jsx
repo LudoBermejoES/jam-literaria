@@ -45,7 +45,7 @@ const Login = () => {
           navigate(`/join/${pendingSessionCode}`);
         } else {
           // Normal flow - redirect to home page
-          navigate('/');
+        navigate('/');
         }
       } else {
         setError(response.error || t('auth.registerFailed'));

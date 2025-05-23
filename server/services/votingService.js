@@ -3,6 +3,23 @@ import { Vote } from '../models/Vote.js';
 import { Session, SESSION_STATUS } from '../models/Session.js';
 
 /**
+ * Calculate how many votes are required based on the number of ideas
+ * @param {number} ideaCount - Number of ideas available
+ * @returns {number} Number of votes required
+ */
+export function calculateRequiredVotes(ideaCount) {
+  if (ideaCount >= 4) {
+    return 3; // Normal voting: choose 3 out of many
+  } else if (ideaCount === 3) {
+    return 2; // Tiebreaker: choose 2 out of 3
+  } else if (ideaCount === 2) {
+    return 1; // Final tiebreaker: choose 1 out of 2
+  } else {
+    return 0; // No voting needed if only 1 idea
+  }
+}
+
+/**
  * Process votes and determine the action to take after a voting round
  * @param {string} sessionId - Session ID
  * @param {number} round - Current round number
@@ -53,17 +70,22 @@ export async function processVotingRound(sessionId, round) {
     const candidateIdeas = Idea.getIdeasByIds(action.ideasCandidatas);
     const newRound = round + 1;
     
+    // Calculate how many votes are needed for this new round
+    const requiredVotes = calculateRequiredVotes(candidateIdeas.length);
+    
     // Update session round and metadata
     Session.updateSessionRound(sessionId, newRound);
     Session.updateSessionMetadata(sessionId, {
       ideas_candidatas: action.ideasCandidatas,
-      mensaje_ronda: `Ronda ${newRound} de votación para desempate`
+      mensaje_ronda: `Ronda ${newRound} de votación para desempate`,
+      required_votes: requiredVotes
     });
     
     return {
       action: 'NEW_ROUND',
       round: newRound,
       candidateIdeas,
+      requiredVotes,
       message: `Ronda ${newRound} de votación para desempate`
     };
   }

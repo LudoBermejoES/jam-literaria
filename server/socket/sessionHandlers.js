@@ -154,7 +154,7 @@ export function sessionHandlers(io, socket) {
   });
   
   // Start the voting phase
-  socket.on('start-voting', ({ sessionId }) => {
+  socket.on('start-voting', async ({ sessionId }) => {
     try {
       if (!sessionId) {
         return socket.emit('error', { message: 'Session ID is required' });
@@ -177,10 +177,20 @@ export function sessionHandlers(io, socket) {
       // Get ideas for voting
       const ideas = ideaService.getIdeasBySessionId(sessionId);
       
+      // Calculate required votes for the first round
+      const { calculateRequiredVotes } = await import('../services/votingService.js');
+      const requiredVotes = calculateRequiredVotes(ideas.length);
+      
+      // Store required votes in session metadata for the first round
+      sessionService.updateSessionMetadata(sessionId, {
+        required_votes: requiredVotes
+      });
+      
       // Broadcast to all participants in the session
       io.to(`session:${sessionId}`).emit('voting-started', {
         session: updatedSession,
-        ideas
+        ideas,
+        requiredVotes
       });
     } catch (error) {
       console.error('Start voting error:', error);

@@ -252,7 +252,7 @@ export class Session {
     }
 
     const db = getDatabase();
-    const { ideas_elegidas, ideas_candidatas, mensaje_ronda, mensaje_final } = metadata;
+    const { ideas_elegidas, ideas_candidatas, mensaje_ronda, mensaje_final, required_votes } = metadata;
     
     // Convert arrays to JSON strings if they are arrays, handle undefined as null
     const ideasElegidas = Array.isArray(ideas_elegidas) 
@@ -268,7 +268,8 @@ export class Session {
       SET ideas_elegidas = COALESCE(?, ideas_elegidas),
           ideas_candidatas = COALESCE(?, ideas_candidatas),
           mensaje_ronda = COALESCE(?, mensaje_ronda),
-          mensaje_final = COALESCE(?, mensaje_final)
+          mensaje_final = COALESCE(?, mensaje_final),
+          required_votes = COALESCE(?, required_votes)
       WHERE session_id = ?
     `);
     
@@ -277,6 +278,7 @@ export class Session {
       ideasCandidatas,
       mensaje_ronda || null,
       mensaje_final || null,
+      required_votes || null,
       sessionId
     );
     
