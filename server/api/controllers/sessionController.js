@@ -246,4 +246,33 @@ export const getJoinedSessions = async (req, res) => {
       error: 'Failed to get joined sessions'
     });
   }
+};
+
+/**
+ * Delete a session
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ */
+export const deleteSession = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user } = req;
+    
+    // Delete the session
+    const result = sessionService.deleteSession(id, user.id);
+    
+    return res.status(200).json({
+      success: true,
+      data: {
+        deleted: result
+      }
+    });
+  } catch (error) {
+    console.error('Delete session error:', error);
+    
+    return res.status(400).json({
+      success: false,
+      error: error.message || 'Failed to delete session'
+    });
+  }
 }; 

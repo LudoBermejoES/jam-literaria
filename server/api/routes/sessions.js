@@ -6,7 +6,8 @@ import {
   startSession,
   getSessionStatus,
   getAllSessions,
-  getJoinedSessions
+  getJoinedSessions,
+  deleteSession
 } from '../controllers/sessionController.js';
 import { authMiddleware, sessionOwnerMiddleware } from '../middleware/auth.js';
 
@@ -23,5 +24,6 @@ router.get('/:id', getSession);
 router.get('/:id/status', getSessionStatus);
 router.post('/:id/join', joinSession);
 router.post('/:id/start', startSession); // Ideally should use sessionOwnerMiddleware
+router.delete('/:id', deleteSession);
 
 export default router; 

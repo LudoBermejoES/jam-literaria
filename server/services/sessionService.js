@@ -274,4 +274,35 @@ export function updateSessionMetadata(sessionId, metadata) {
     console.error('Error updating session metadata:', error);
     throw new Error('Failed to update session metadata');
   }
+}
+
+/**
+ * Delete a session
+ * @param {string} sessionId - Session ID
+ * @param {string} ownerId - ID of the user trying to delete the session
+ * @returns {boolean} True if successful
+ */
+export function deleteSession(sessionId, ownerId) {
+  if (!sessionId || !ownerId) {
+    throw new Error('Session ID and owner ID are required');
+  }
+  
+  try {
+    // Check if session exists
+    const session = Session.getSessionById(sessionId);
+    if (!session) {
+      throw new Error('Session not found');
+    }
+    
+    // Check if user is the owner
+    if (session.owner_id !== ownerId) {
+      throw new Error('Only the session owner can delete the session');
+    }
+    
+    // Delete the session
+    return Session.deleteSession(sessionId);
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    throw error;
+  }
 } 
