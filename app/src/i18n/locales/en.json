@@ -1,0 +1,82 @@
+{
+  "app": {
+    "name": "Jam Literaria"
+  },
+  "auth": {
+    "welcome": "Join the Writing Experience",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "Enter your name",
+    "joinButton": "Join Now",
+    "joiningButton": "Joining...",
+    "nameRequired": "Please enter your name",
+    "registerFailed": "Failed to register",
+    "registrationError": "An error occurred during registration",
+    "logoutFailed": "Failed to logout"
+  },
+  "home": {
+    "welcome": "Welcome, {{name}}",
+    "logout": "Logout",
+    "title": "Welcome to Jam Literaria",
+    "subtitle": "A collaborative writing platform for brainstorming and sharing ideas",
+    "createTitle": "Create a New Session",
+    "createDesc": "Start a new collaborative writing session and invite others",
+    "createButton": "Create Session",
+    "creatingButton": "Creating...",
+    "joinTitle": "Join Existing Session",
+    "joinDesc": "Enter a session code to join an existing collaboration",
+    "codePlaceholder": "Enter session code",
+    "joinButton": "Join Session",
+    "joiningButton": "Joining...",
+    "yourSessionsTitle": "Your Sessions",
+    "yourSessionsDesc": "Sessions you have created",
+    "noSessions": "You haven't created any sessions yet",
+    "joinedSessionsTitle": "Sessions You've Joined",
+    "joinedSessionsDesc": "Sessions created by others that you've participated in",
+    "noJoinedSessions": "You haven't joined any sessions yet",
+    "enterSession": "Enter Session",
+    "shareLink": "Share Link",
+    "deleteSession": "Delete",
+    "copySuccess": "Link copied to clipboard!",
+    "sessionCode": "Code:",
+    "codeRequired": "Please enter a session code",
+    "joinFailed": "Failed to join session",
+    "joinError": "An error occurred while joining the session",
+    "createFailed": "Failed to create session",
+    "createError": "An error occurred while creating the session",
+    "fetchSessionsFailed": "Failed to fetch your sessions"
+  },
+  "session": {
+    "title": "Writing Session",
+    "loading": "Loading session...",
+    "error": "An error occurred",
+    "notFound": "Session not found",
+    "fetchFailed": "Failed to fetch session details",
+    "statusFailed": "Failed to get session status",
+    "startFailed": "Failed to start session",
+    "deleteFailed": "Failed to delete session",
+    "socketError": "Connection error",
+    "code": "Session Code",
+    "status": "Status",
+    "backToHome": "Back to Home",
+    "admin": "Admin",
+    "you": "You",
+    "participantsTitle": "Participants",
+    "adminControls": "Admin Controls",
+    "waitingAdmin": "Waiting for you to start the session when everyone has joined",
+    "waitingParticipant": "Waiting for the session admin to start the session",
+    "start": "Start Session",
+    "starting": "Starting...",
+    "delete": "Delete Session",
+    "deleteConfirm": "Are you sure you want to delete this session? This action cannot be undone.",
+    "needMoreParticipants": "Need at least one more participant to start"
+  },
+  "protectedRoute": {
+    "loading": "Loading..."
+  },
+  "errors": {
+    "nameRequired": "Name is required",
+    "registerFailed": "Failed to register user",
+    "currentUserFailed": "Failed to get current user",
+    "logoutFailed": "Failed to logout"
+  }
+} 

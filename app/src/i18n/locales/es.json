@@ -1,0 +1,82 @@
+{
+  "app": {
+    "name": "Jam Literaria"
+  },
+  "auth": {
+    "welcome": "Únete a la Experiencia de Escritura",
+    "nameLabel": "Tu Nombre",
+    "namePlaceholder": "Ingresa tu nombre",
+    "joinButton": "Unirse Ahora",
+    "joiningButton": "Uniéndose...",
+    "nameRequired": "Por favor ingresa tu nombre",
+    "registerFailed": "Error al registrarse",
+    "registrationError": "Ocurrió un error durante el registro",
+    "logoutFailed": "Error al cerrar sesión"
+  },
+  "home": {
+    "welcome": "Bienvenido, {{name}}",
+    "logout": "Cerrar Sesión",
+    "title": "Bienvenido a Jam Literaria",
+    "subtitle": "Una plataforma de escritura colaborativa para compartir ideas",
+    "createTitle": "Crear Nueva Sesión",
+    "createDesc": "Inicia una nueva sesión de escritura colaborativa e invita a otros",
+    "createButton": "Crear Sesión",
+    "creatingButton": "Creando...",
+    "joinTitle": "Unirse a Sesión Existente",
+    "joinDesc": "Ingresa un código de sesión para unirte a una colaboración existente",
+    "codePlaceholder": "Ingresa código de sesión",
+    "joinButton": "Unirse a Sesión",
+    "joiningButton": "Uniéndose...",
+    "codeRequired": "Por favor ingresa un código de sesión",
+    "joinFailed": "Error al unirse a la sesión",
+    "joinError": "Ocurrió un error al unirse a la sesión",
+    "createFailed": "Error al crear sesión",
+    "createError": "Ocurrió un error al crear la sesión",
+    "yourSessionsTitle": "Tus Sesiones",
+    "yourSessionsDesc": "Sesiones que has creado",
+    "noSessions": "Aún no has creado ninguna sesión",
+    "joinedSessionsTitle": "Sesiones a las que te has unido",
+    "joinedSessionsDesc": "Sesiones creadas por otros en las que has participado",
+    "noJoinedSessions": "Aún no te has unido a ninguna sesión",
+    "enterSession": "Entrar a la Sesión",
+    "shareLink": "Compartir Enlace",
+    "deleteSession": "Eliminar",
+    "copySuccess": "¡Enlace copiado al portapapeles!",
+    "sessionCode": "Código:",
+    "fetchSessionsFailed": "Error al obtener tus sesiones"
+  },
+  "session": {
+    "title": "Sesión de Escritura",
+    "loading": "Cargando sesión...",
+    "error": "Ocurrió un error",
+    "notFound": "Sesión no encontrada",
+    "fetchFailed": "Error al obtener detalles de la sesión",
+    "statusFailed": "Error al obtener estado de la sesión",
+    "startFailed": "Error al iniciar la sesión",
+    "deleteFailed": "Error al eliminar la sesión",
+    "socketError": "Error de conexión",
+    "code": "Código de Sesión",
+    "status": "Estado",
+    "backToHome": "Volver al Inicio",
+    "admin": "Admin",
+    "you": "Tú",
+    "participantsTitle": "Participantes",
+    "adminControls": "Controles de Administrador",
+    "waitingAdmin": "Esperando a que inicies la sesión cuando todos hayan ingresado",
+    "waitingParticipant": "Esperando a que el administrador inicie la sesión",
+    "start": "Iniciar Sesión",
+    "starting": "Iniciando...",
+    "delete": "Eliminar Sesión",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar esta sesión? Esta acción no se puede deshacer.",
+    "needMoreParticipants": "Se necesita al menos un participante más para iniciar"
+  },
+  "protectedRoute": {
+    "loading": "Cargando..."
+  },
+  "errors": {
+    "nameRequired": "El nombre es obligatorio",
+    "registerFailed": "Error al registrar usuario",
+    "currentUserFailed": "Error al obtener usuario actual",
+    "logoutFailed": "Error al cerrar sesión"
+  }
+} 
