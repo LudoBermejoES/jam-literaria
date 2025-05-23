@@ -1,0 +1,261 @@
+.voting-screen {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.voting-screen.loading,
+.voting-screen.error,
+.voting-screen.voted {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 50vh;
+}
+
+.voting-screen h2 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 28px;
+}
+
+.voting-instructions {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.voting-instructions p {
+  margin: 10px 0;
+  color: #555;
+}
+
+.selection-counter {
+  font-size: 18px;
+  font-weight: bold;
+  color: #4a90e2;
+}
+
+.ideas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.idea-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.idea-card:hover {
+  border-color: #4a90e2;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.idea-card.selected {
+  border-color: #4a90e2;
+  background-color: #f0f7ff;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+}
+
+.idea-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.idea-card.disabled:hover {
+  border-color: #e0e0e0;
+  box-shadow: none;
+}
+
+.idea-content {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  margin-bottom: 12px;
+  min-height: 40px;
+  word-wrap: break-word;
+}
+
+.idea-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+}
+
+.idea-author {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+.selection-badge {
+  background-color: #4a90e2;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.voting-controls {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.submit-votes-button {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  font-size: 18px;
+  padding: 12px 24px;
+}
+
+.no-ideas {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.error-message {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #f8bbd9;
+}
+
+.waiting-message {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.waiting-message p {
+  margin: 10px 0;
+  color: #555;
+  font-size: 16px;
+}
+
+.progress-container {
+  margin: 20px 0;
+}
+
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #4a90e2;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.session-info {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.session-info p {
+  margin: 8px 0;
+  color: #555;
+  text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .voting-screen {
+    padding: 16px;
+    margin: 10px;
+  }
+  
+  .voting-screen h2 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+  
+  .ideas-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .idea-card {
+    padding: 12px;
+  }
+  
+  .idea-content {
+    font-size: 15px;
+    min-height: 30px;
+  }
+  
+  .voting-instructions {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .submit-votes-button {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .voting-screen {
+    padding: 12px;
+    margin: 5px;
+  }
+  
+  .voting-screen h2 {
+    font-size: 20px;
+  }
+  
+  .idea-card {
+    padding: 10px;
+  }
+  
+  .idea-content {
+    font-size: 14px;
+  }
+  
+  .voting-instructions {
+    padding: 12px;
+  }
+  
+  .selection-counter {
+    font-size: 16px;
+  }
+  
+  .idea-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .selection-badge {
+    align-self: flex-end;
+  }
+} 

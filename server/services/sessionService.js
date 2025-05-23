@@ -305,4 +305,30 @@ export function deleteSession(sessionId, ownerId) {
     console.error('Error deleting session:', error);
     throw error;
   }
+}
+
+/**
+ * Start the voting phase for a session
+ * @param {string} sessionId - The session ID
+ * @param {string} userId - The user ID making the request
+ * @returns {Object} The updated session
+ */
+export function startVotingPhase(sessionId) {
+  // Get session
+  const session = getSessionById(sessionId);
+  
+  if (!session) {
+    throw new Error('Session not found');
+  }
+  
+  // Check if the session is in the correct state to start voting
+  if (session.status !== 'SUBMITTING_IDEAS') {
+    throw new Error('Session must be in the SUBMITTING_IDEAS phase to start voting');
+  }
+  
+  // Update session status to VOTING
+  Session.updateSessionStatus(sessionId, SESSION_STATUS.VOTING);
+  
+  // Return the updated session with participants
+  return getSessionWithParticipants(sessionId);
 } 

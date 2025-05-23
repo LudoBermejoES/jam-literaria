@@ -70,6 +70,13 @@ const Session = () => {
     }
   }, [user, sessionId]);
   
+  // Monitor session status changes and redirect when appropriate
+  useEffect(() => {
+    if (session && session.status === 'SUBMITTING_IDEAS') {
+      navigate(`/session/${sessionId}/ideas`);
+    }
+  }, [session, sessionId, navigate]);
+  
   // Socket event handlers
   const handleUserJoined = (data) => {
     setParticipants(prevParticipants => {
@@ -95,6 +102,11 @@ const Session = () => {
   
   const handleSessionStarted = (data) => {
     setSession(data.session);
+    
+    // Redirect to idea submission when session starts
+    if (data.session.status === 'SUBMITTING_IDEAS') {
+      navigate(`/session/${sessionId}/ideas`);
+    }
   };
   
   const handleSocketError = (error) => {

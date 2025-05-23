@@ -1,5 +1,6 @@
 import * as sessionService from '../../services/sessionService.js';
 import * as ideaService from '../../services/ideaService.js';
+import { io } from '../../socket/io.js';
 
 /**
  * Create a new session
@@ -123,10 +124,20 @@ export const startSession = async (req, res) => {
     // Start the session
     const session = sessionService.startSession(id, user.id);
     
+    // Add max ideas per user information
+    const maxIdeasPerUser = ideaService.getMaxIdeasPerUserForSession(id);
+    
+    // Broadcast to all participants via socket.io
+    io.to(`session:${id}`).emit('session-started', {
+      session,
+      maxIdeasPerUser
+    });
+    
     return res.status(200).json({
       success: true,
       data: {
-        session
+        session,
+        maxIdeasPerUser
       }
     });
   } catch (error) {

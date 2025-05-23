@@ -324,7 +324,7 @@ export class Session {
   }
   
   /**
-   * Delete a session (for testing purposes)
+   * Delete a session and all related data
    * @param {string} id - Session ID
    * @returns {boolean} True if successful
    */
@@ -335,31 +335,55 @@ export class Session {
 
     const db = getDatabase();
     
-    // Remove participants
-    const deleteParticipantsStmt = db.prepare(`
-      DELETE FROM session_participants
-      WHERE session_id = ?
-    `);
-    
-    deleteParticipantsStmt.run(id);
-    
-    // Remove metadata
-    const deleteMetadataStmt = db.prepare(`
-      DELETE FROM session_metadata
-      WHERE session_id = ?
-    `);
-    
-    deleteMetadataStmt.run(id);
-    
-    // Remove session
-    const deleteSessionStmt = db.prepare(`
-      DELETE FROM sessions
-      WHERE id = ?
-    `);
-    
-    deleteSessionStmt.run(id);
-    
-    return true;
+    try {
+      // Begin transaction
+      db.exec('BEGIN TRANSACTION');
+      
+      // First delete votes (references both ideas and sessions)
+      const deleteVotesStmt = db.prepare(`
+        DELETE FROM votes
+        WHERE session_id = ?
+      `);
+      deleteVotesStmt.run(id);
+      
+      // Delete ideas
+      const deleteIdeasStmt = db.prepare(`
+        DELETE FROM ideas
+        WHERE session_id = ?
+      `);
+      deleteIdeasStmt.run(id);
+      
+      // Remove participants
+      const deleteParticipantsStmt = db.prepare(`
+        DELETE FROM session_participants
+        WHERE session_id = ?
+      `);
+      deleteParticipantsStmt.run(id);
+      
+      // Remove metadata
+      const deleteMetadataStmt = db.prepare(`
+        DELETE FROM session_metadata
+        WHERE session_id = ?
+      `);
+      deleteMetadataStmt.run(id);
+      
+      // Finally remove the session
+      const deleteSessionStmt = db.prepare(`
+        DELETE FROM sessions
+        WHERE id = ?
+      `);
+      deleteSessionStmt.run(id);
+      
+      // Commit the transaction
+      db.exec('COMMIT');
+      
+      return true;
+    } catch (error) {
+      // Rollback in case of error
+      db.exec('ROLLBACK');
+      console.error('Error in transaction:', error);
+      throw error;
+    }
   }
   
   /**

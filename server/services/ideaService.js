@@ -3,6 +3,40 @@ import { Session, SESSION_STATUS } from '../models/Session.js';
 import * as sessionService from './sessionService.js';
 
 /**
+ * Determine the maximum number of ideas per user based on participant count
+ * @param {number} participantCount - Number of participants in the session
+ * @returns {number} Maximum ideas per user
+ */
+export function getMaxIdeasPerUser(participantCount) {
+  if (participantCount === 2) {
+    return 4; // Two people: 4 ideas per person
+  } else if (participantCount >= 3 && participantCount <= 4) {
+    return 3; // 3-4 people: 3 ideas per person
+  } else {
+    return 2; // 5+ people: 2 ideas per person
+  }
+}
+
+/**
+ * Get the maximum number of ideas per user for a specific session
+ * @param {string} sessionId - Session ID
+ * @returns {number} Maximum ideas per user
+ */
+export function getMaxIdeasPerUserForSession(sessionId) {
+  if (!sessionId) {
+    throw new Error('Session ID is required');
+  }
+  
+  try {
+    const participants = Session.getParticipants(sessionId);
+    return getMaxIdeasPerUser(participants.length);
+  } catch (error) {
+    console.error('Error getting max ideas per user:', error);
+    throw error;
+  }
+}
+
+/**
  * Create a new idea
  * @param {string} content - Idea content
  * @param {string} authorId - ID of the idea author
@@ -29,8 +63,9 @@ export function createIdea(content, authorId, sessionId) {
     const userIdeas = Idea.getIdeasBySessionAndAuthor(sessionId, authorId);
     const participants = Session.getParticipants(sessionId);
     
-    // Each participant can submit up to 2 ideas
-    const maxIdeasPerUser = 2;
+    // Determine max ideas per user based on participant count
+    const maxIdeasPerUser = getMaxIdeasPerUser(participants.length);
+    
     if (userIdeas.length >= maxIdeasPerUser) {
       throw new Error(`You can only submit up to ${maxIdeasPerUser} ideas`);
     }
@@ -38,12 +73,8 @@ export function createIdea(content, authorId, sessionId) {
     // Create the idea
     const idea = Idea.createIdea(content, authorId, sessionId);
     
-    // Check if all participants have submitted their ideas
-    const allIdeas = Idea.getIdeasBySessionId(sessionId);
-    if (allIdeas.length >= participants.length * maxIdeasPerUser) {
-      // Update the session status to voting
-      Session.updateSessionStatus(sessionId, SESSION_STATUS.VOTING);
-    }
+    // Note: Do not automatically change session status to VOTING
+    // The session owner must manually start the voting phase
     
     return idea;
   } catch (error) {

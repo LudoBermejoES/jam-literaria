@@ -15,6 +15,7 @@ import voteRoutes from './api/routes/votes.js';
 
 // Database and Socket.IO
 import { initDatabase, closeDatabase } from './models/db.js';
+import { initSocketIO } from './socket/io.js';
 import { setupSocketServer } from './socket/index.js';
 
 // Load environment variables
@@ -61,7 +62,7 @@ app.use(session({
 initDatabase();
 
 // Set up Socket.IO
-const io = setupSocketServer(server);
+setupSocketServer(server);
 
 // Set up API routes
 app.use('/api/auth', authRoutes);

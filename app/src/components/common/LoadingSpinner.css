@@ -1,0 +1,54 @@
+.loading-spinner {
+  display: inline-block;
+  position: relative;
+}
+
+.spinner-circle {
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #4a90e2;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+/* Sizes */
+.loading-spinner.small .spinner-circle {
+  width: 16px;
+  height: 16px;
+}
+
+.loading-spinner.medium .spinner-circle {
+  width: 32px;
+  height: 32px;
+}
+
+.loading-spinner.large .spinner-circle {
+  width: 48px;
+  height: 48px;
+}
+
+/* Colors */
+.loading-spinner.primary .spinner-circle {
+  border-top-color: #4a90e2;
+}
+
+.loading-spinner.secondary .spinner-circle {
+  border-top-color: #6c757d;
+}
+
+.loading-spinner.success .spinner-circle {
+  border-top-color: #4caf50;
+}
+
+.loading-spinner.danger .spinner-circle {
+  border-top-color: #e53935;
+}
+
+.loading-spinner.warning .spinner-circle {
+  border-top-color: #ff9800;
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+} 

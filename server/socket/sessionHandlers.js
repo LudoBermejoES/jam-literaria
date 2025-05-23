@@ -1,5 +1,6 @@
 import * as sessionService from '../services/sessionService.js';
 import * as userService from '../services/userService.js';
+import * as ideaService from '../services/ideaService.js';
 
 /**
  * Socket handlers for session-related events
@@ -46,8 +47,14 @@ export function sessionHandlers(io, socket) {
       // Get session details with participants
       const sessionDetails = sessionService.getSessionWithParticipants(sessionId);
       
+      // Add max ideas per user information
+      const maxIdeasPerUser = ideaService.getMaxIdeasPerUserForSession(sessionId);
+      
       // Send session state to the user
-      socket.emit('session-state', sessionDetails);
+      socket.emit('session-state', {
+        ...sessionDetails,
+        maxIdeasPerUser
+      });
       
       console.log(`User ${socket.userId} joined session ${sessionId}`);
     } catch (error) {
@@ -95,15 +102,89 @@ export function sessionHandlers(io, socket) {
       // Start the session
       const session = sessionService.startSession(sessionId, socket.userId);
       
+      // Add max ideas per user information
+      const maxIdeasPerUser = ideaService.getMaxIdeasPerUserForSession(sessionId);
+      
       // Broadcast to all participants
       io.to(`session:${sessionId}`).emit('session-started', {
-        session
+        session,
+        maxIdeasPerUser
       });
       
       console.log(`Session ${sessionId} started by user ${socket.userId}`);
     } catch (error) {
       console.error('Error in start-session:', error);
       socket.emit('error', { message: error.message || 'Failed to start session' });
+    }
+  });
+
+  // Start the ideation phase
+  socket.on('start-ideation', ({ sessionId }) => {
+    try {
+      if (!sessionId) {
+        return socket.emit('error', { message: 'Session ID is required' });
+      }
+      
+      // Verify user is the session owner
+      const session = sessionService.getSessionById(sessionId);
+      
+      if (!session) {
+        return socket.emit('error', { message: 'Session not found' });
+      }
+      
+      if (session.owner_id !== socket.userId) {
+        return socket.emit('error', { message: 'Only the session owner can start ideation' });
+      }
+      
+      // Start the ideation phase
+      const updatedSession = sessionService.startIdeation(sessionId);
+      
+      // Get max ideas per user
+      const maxIdeasPerUser = ideaService.getMaxIdeasPerUserForSession(sessionId);
+      
+      // Broadcast to all participants in the session
+      io.to(`session:${sessionId}`).emit('ideation-started', {
+        session: updatedSession,
+        maxIdeasPerUser
+      });
+    } catch (error) {
+      console.error('Start ideation error:', error);
+      socket.emit('error', { message: error.message || 'Failed to start ideation' });
+    }
+  });
+  
+  // Start the voting phase
+  socket.on('start-voting', ({ sessionId }) => {
+    try {
+      if (!sessionId) {
+        return socket.emit('error', { message: 'Session ID is required' });
+      }
+      
+      // Verify user is the session owner
+      const session = sessionService.getSessionById(sessionId);
+      
+      if (!session) {
+        return socket.emit('error', { message: 'Session not found' });
+      }
+      
+      if (session.owner_id !== socket.userId) {
+        return socket.emit('error', { message: 'Only the session owner can start voting' });
+      }
+      
+      // Start the voting phase
+      const updatedSession = sessionService.startVotingPhase(sessionId);
+      
+      // Get ideas for voting
+      const ideas = ideaService.getIdeasBySessionId(sessionId);
+      
+      // Broadcast to all participants in the session
+      io.to(`session:${sessionId}`).emit('voting-started', {
+        session: updatedSession,
+        ideas
+      });
+    } catch (error) {
+      console.error('Start voting error:', error);
+      socket.emit('error', { message: error.message || 'Failed to start voting phase' });
     }
   });
 } 

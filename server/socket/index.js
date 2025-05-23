@@ -1,17 +1,16 @@
-import { Server } from 'socket.io';
 import { sessionHandlers } from './sessionHandlers.js';
 import { ideaHandlers } from './ideaHandlers.js';
 import { voteHandlers } from './voteHandlers.js';
 import * as userService from '../services/userService.js';
+import { initSocketIO } from './io.js';
 
 /**
  * Set up the Socket.IO server
  * @param {Object} httpServer - HTTP server instance
- * @param {Object} models - Database models
  * @returns {Object} Socket.IO server instance
  */
 export function setupSocketServer(httpServer) {
-    const io = new Server(httpServer, {
+    const io = initSocketIO(httpServer, {
         cors: {
             origin: function(origin, callback) {
                 const allowedOrigins = [process.env.CLIENT_URL || 'http://localhost:3000', 'http://localhost:5173'];

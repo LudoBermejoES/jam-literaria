@@ -52,18 +52,6 @@ export function ideaHandlers(io, socket) {
         }
       });
       
-      // If session status changed to voting, notify all participants
-      if (updatedSession.status === SESSION_STATUS.VOTING && session.status !== SESSION_STATUS.VOTING) {
-        // Get all ideas for the session
-        const ideas = ideaService.getIdeasBySessionId(sessionId);
-        
-        // Notify all participants
-        io.to(`session:${sessionId}`).emit('voting-started', {
-          session: updatedSession,
-          ideas
-        });
-      }
-      
       console.log(`User ${socket.userId} submitted idea in session ${sessionId}`);
     } catch (error) {
       console.error('Error in submit-idea:', error);
