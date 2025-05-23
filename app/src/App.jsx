@@ -16,29 +16,29 @@ function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <Router>
+    <Router>
           <div className="app-container">
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<Login />} />
-              
-              {/* Protected routes */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/session/:sessionId" element={<Session />} />
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/session/:sessionId" element={<Session />} />
                 <Route path="/session/:sessionId/ideas" element={<IdeaSubmission />} />
                 <Route path="/session/:sessionId/post-ideas" element={<PostIdeasWaiting />} />
                 <Route path="/session/:sessionId/voting" element={<VotingScreen />} />
                 <Route path="/join/:code" element={<JoinSession />} />
-              </Route>
-              
-              {/* Redirect to home if no route matches */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+          </Route>
+          
+          {/* Redirect to home if no route matches */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
           </div>
         </Router>
       </SocketProvider>
-    </AuthProvider>
+      </AuthProvider>
   );
 }
 

@@ -9,6 +9,71 @@ import { SESSION_STATUS } from '../models/Session.js';
  */
 export function voteHandlers(io, socket) {
   /**
+   * Submit multiple votes in a single call
+   */
+  socket.on('submit-votes', async ({ sessionId, ideaIds }) => {
+    try {
+      if (!sessionId || !Array.isArray(ideaIds) || ideaIds.length === 0) {
+        socket.emit('error', { message: 'Session ID and array of idea IDs are required' });
+        return;
+      }
+      
+      // Check if session exists
+      const session = sessionService.getSessionById(sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
+      }
+      
+      // Check if session is in the voting phase
+      if (session.status !== SESSION_STATUS.VOTING) {
+        socket.emit('error', { message: 'Session is not in the voting phase' });
+        return;
+      }
+      
+      // Submit all votes
+      const result = await voteService.createVotes(socket.userId, ideaIds, sessionId);
+      
+      // Notify the user that their votes were registered
+      socket.emit('vote-confirmed', {
+        ideaIds,
+        round: session.current_round
+      });
+      
+      // Notify all participants about the votes (without revealing who voted for what)
+      io.to(`session:${sessionId}`).emit('vote-submitted', {
+        userId: socket.userId,
+        userName: socket.user.name,
+        round: session.current_round
+      });
+      
+      // If all participants have voted and the round is complete
+      if (result.roundComplete) {
+        // Notify all participants about the round result
+        if (result.result.action === 'COMPLETE') {
+          // If the voting is complete, notify about the final results
+          io.to(`session:${sessionId}`).emit('voting-complete', {
+            selectedIdeas: result.result.selectedIdeas,
+            message: result.result.message
+          });
+        } else if (result.result.action === 'NEW_ROUND') {
+          // If a new voting round is needed, notify about the new round
+          io.to(`session:${sessionId}`).emit('new-voting-round', {
+            round: result.result.round,
+            candidateIdeas: result.result.candidateIdeas,
+            message: result.result.message
+          });
+        }
+      }
+      
+      console.log(`User ${socket.userId} submitted ${ideaIds.length} votes in session ${sessionId}`);
+    } catch (error) {
+      console.error('Error in submit-votes:', error);
+      socket.emit('error', { message: error.message || 'Failed to submit votes' });
+    }
+  });
+
+  /**
    * Submit a vote
    */
   socket.on('submit-vote', async ({ sessionId, ideaId }) => {

@@ -254,14 +254,14 @@ export class Session {
     const db = getDatabase();
     const { ideas_elegidas, ideas_candidatas, mensaje_ronda, mensaje_final } = metadata;
     
-    // Convert arrays to JSON strings if they are arrays
+    // Convert arrays to JSON strings if they are arrays, handle undefined as null
     const ideasElegidas = Array.isArray(ideas_elegidas) 
       ? JSON.stringify(ideas_elegidas) 
-      : ideas_elegidas;
+      : ideas_elegidas || null;
       
     const ideasCandidatas = Array.isArray(ideas_candidatas) 
       ? JSON.stringify(ideas_candidatas) 
-      : ideas_candidatas;
+      : ideas_candidatas || null;
     
     const stmt = db.prepare(`
       UPDATE session_metadata
@@ -275,8 +275,8 @@ export class Session {
     stmt.run(
       ideasElegidas,
       ideasCandidatas,
-      mensaje_ronda,
-      mensaje_final,
+      mensaje_ronda || null,
+      mensaje_final || null,
       sessionId
     );
     

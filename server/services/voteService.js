@@ -62,6 +62,69 @@ export async function createVote(userId, ideaId, sessionId) {
 }
 
 /**
+ * Create multiple votes for a user in a single transaction
+ * @param {string} userId - ID of the user voting
+ * @param {Array} ideaIds - Array of idea IDs being voted for
+ * @param {string} sessionId - ID of the session
+ * @returns {Object} Created votes and session status update
+ */
+export async function createVotes(userId, ideaIds, sessionId) {
+  if (!userId || !Array.isArray(ideaIds) || ideaIds.length === 0 || !sessionId) {
+    throw new Error('User ID, array of idea IDs, and session ID are required');
+  }
+  
+  try {
+    // Check if session exists and is in the voting phase
+    const session = Session.getSessionById(sessionId);
+    if (!session) {
+      throw new Error('Session not found');
+    }
+    
+    if (session.status !== SESSION_STATUS.VOTING) {
+      throw new Error('Session is not in the voting phase');
+    }
+    
+    const round = session.current_round;
+    
+    // Check if the user has already voted in this round
+    if (Vote.hasUserVotedInRound(userId, sessionId, round)) {
+      throw new Error('You have already voted in this round');
+    }
+    
+    // Record all votes
+    const votes = [];
+    for (const ideaId of ideaIds) {
+      const vote = Vote.createVote(userId, ideaId, sessionId, round);
+      votes.push(vote);
+    }
+    
+    // Check if all participants have voted
+    const participants = Session.getParticipants(sessionId);
+    const votersCount = Vote.getVotersByRound(sessionId, round).length;
+    
+    // If all participants have voted, process the round
+    if (votersCount >= participants.length) {
+      // Process the voting round and determine the next action
+      const result = await votingService.processVotingRound(sessionId, round);
+      
+      return {
+        votes,
+        roundComplete: true,
+        result
+      };
+    }
+    
+    return {
+      votes,
+      roundComplete: false
+    };
+  } catch (error) {
+    console.error('Error creating votes:', error);
+    throw error;
+  }
+}
+
+/**
  * Get votes by session and round
  * @param {string} sessionId - Session ID
  * @param {number} round - Voting round number (optional, defaults to current round)

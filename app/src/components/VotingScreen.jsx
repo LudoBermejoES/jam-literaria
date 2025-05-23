@@ -107,10 +107,9 @@ const VotingScreen = () => {
     
     setSubmitting(true);
     
-    // Submit each selected idea as a vote
-    Array.from(selectedIdeas).forEach(ideaId => {
-      socket.emit('submit-vote', { sessionId, ideaId });
-    });
+    // Submit all selected ideas in a single call
+    const ideaIds = Array.from(selectedIdeas);
+    socket.emit('submit-votes', { sessionId, ideaIds });
   };
   
   // Loading state
