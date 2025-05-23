@@ -5,7 +5,7 @@ export class User {
   /**
    * Create a new user
    * @param {string} name - User name
-   * @returns {Object} Created user
+   * @returns {Object} Created user or existing user with the same name
    */
   static createUser(name) {
     if (!name || name.trim() === '') {
@@ -13,10 +13,18 @@ export class User {
     }
 
     const db = getDatabase();
-    const id = uuidv4();
+    const trimmedName = name.trim();
     
+    // Check if user with this name already exists
+    const existingUser = this.getUserByName(trimmedName);
+    if (existingUser) {
+      return existingUser;
+    }
+    
+    // Create new user if not found
+    const id = uuidv4();
     const stmt = db.prepare('INSERT INTO users (id, name) VALUES (?, ?)');
-    stmt.run(id, name.trim());
+    stmt.run(id, trimmedName);
     
     return this.getUserById(id);
   }
@@ -96,5 +104,20 @@ export class User {
     const db = getDatabase();
     const stmt = db.prepare('DELETE FROM users WHERE id = ?');
     return stmt.run(id);
+  }
+  
+  /**
+   * Get a user by name
+   * @param {string} name - User name
+   * @returns {Object|null} User object or null if not found
+   */
+  static getUserByName(name) {
+    if (!name) {
+      throw new Error('User name is required');
+    }
+
+    const db = getDatabase();
+    const stmt = db.prepare('SELECT * FROM users WHERE name = ? COLLATE NOCASE');
+    return stmt.get(name.trim()) || null;
   }
 } 

@@ -8,7 +8,8 @@
     "start": "node app.js",
     "dev": "pm2 start app.js --watch",
     "stop": "pm2 stop app",
-    "status": "pm2 status"
+    "status": "pm2 status",
+    "reset-db": "node scripts/reset-db.js"
   },
   "keywords": [
     "jam",
