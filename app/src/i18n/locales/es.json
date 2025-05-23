@@ -11,7 +11,8 @@
     "nameRequired": "Por favor ingresa tu nombre",
     "registerFailed": "Error al registrarse",
     "registrationError": "Ocurrió un error durante el registro",
-    "logoutFailed": "Error al cerrar sesión"
+    "logoutFailed": "Error al cerrar sesión",
+    "redirectAfterLogin": "Serás redirigido a unirte a la sesión después de iniciar sesión"
   },
   "home": {
     "welcome": "Bienvenido, {{name}}",

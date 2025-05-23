@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -8,9 +8,16 @@ const Login = () => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasPendingSession, setHasPendingSession] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  // Check on component mount if there's a pending session
+  useEffect(() => {
+    const pendingSessionCode = localStorage.getItem('pendingSessionCode');
+    setHasPendingSession(!!pendingSessionCode);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,8 +35,18 @@ const Login = () => {
       const response = await register(name);
       
       if (response.success) {
-        // Redirect to home page on successful login
-        navigate('/');
+        // Check if there's a pending session to join
+        const pendingSessionCode = localStorage.getItem('pendingSessionCode');
+        
+        if (pendingSessionCode) {
+          // Clear the stored session code
+          localStorage.removeItem('pendingSessionCode');
+          // Redirect to join that session
+          navigate(`/join/${pendingSessionCode}`);
+        } else {
+          // Normal flow - redirect to home page
+          navigate('/');
+        }
       } else {
         setError(response.error || t('auth.registerFailed'));
       }
@@ -47,6 +64,9 @@ const Login = () => {
         <h2>{t('auth.welcome')}</h2>
         
         {error && <div className="error-message">{error}</div>}
+        {hasPendingSession && (
+          <div className="info-message">{t('auth.redirectAfterLogin')}</div>
+        )}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">

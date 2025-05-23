@@ -84,4 +84,13 @@
   color: #e74c3c;
   border-radius: 4px;
   font-size: 0.9rem;
+}
+
+.info-message {
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
+  background-color: #e6f7ff;
+  color: #0984e3;
+  border-radius: 4px;
+  font-size: 0.9rem;
 } 

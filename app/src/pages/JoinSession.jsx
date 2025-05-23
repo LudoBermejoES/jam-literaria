@@ -10,12 +10,14 @@ const JoinSession = () => {
   const { t } = useTranslation();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [hasAttemptedJoin, setHasAttemptedJoin] = useState(false);
 
   useEffect(() => {
-    if (code) {
+    if (code && !hasAttemptedJoin) {
       joinSessionWithCode(code);
+      setHasAttemptedJoin(true);
     }
-  }, [code]);
+  }, [code, hasAttemptedJoin]);
 
   const joinSessionWithCode = async (sessionCode) => {
     try {

@@ -11,7 +11,8 @@
     "nameRequired": "Please enter your name",
     "registerFailed": "Failed to register",
     "registrationError": "An error occurred during registration",
-    "logoutFailed": "Failed to logout"
+    "logoutFailed": "Failed to logout",
+    "redirectAfterLogin": "You'll be redirected to join the session after login"
   },
   "home": {
     "welcome": "Welcome, {{name}}",
