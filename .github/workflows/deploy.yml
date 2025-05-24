@@ -1,0 +1,232 @@
+name: Deploy Jam Literaria
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            app/package-lock.json
+            server/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd app
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd app
+          npm run build
+
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm ci --production
+
+      - name: Create deployment archives
+        run: |
+          # Create frontend archive
+          cd app/dist
+          tar -czf ../../jam-client.tar.gz .
+          cd ../..
+          
+          # Create server archive (exclude node_modules, .env, and dev files)
+          tar -czf jam-server.tar.gz \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='.git' \
+            --exclude='*.log' \
+            --exclude='coverage' \
+            --exclude='.nyc_output' \
+            server/
+
+      - name: Deploy to remote server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # Create deployment directories
+            sudo mkdir -p /var/www/jam-client
+            sudo mkdir -p /var/www/jam-server
+            
+            # Set proper ownership
+            sudo chown -R $USER:$USER /var/www/jam-client
+            sudo chown -R $USER:$USER /var/www/jam-server
+            
+            # Clean previous deployments
+            rm -rf /var/www/jam-client/*
+            rm -rf /var/www/jam-server/*
+            
+            # Download deployment archives
+            cd /tmp
+            wget "https://github.com/LudoBermejoES/jam-literaria/releases/latest/download/jam-client.tar.gz" || echo "Client archive not found, will use artifacts"
+            wget "https://github.com/LudoBermejoES/jam-literaria/releases/latest/download/jam-server.tar.gz" || echo "Server archive not found, will use artifacts"
+
+      - name: Upload and extract frontend
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "jam-client.tar.gz"
+          target: "/tmp/"
+
+      - name: Upload and extract server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "jam-server.tar.gz"
+          target: "/tmp/"
+
+      - name: Extract and setup applications
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # Extract frontend
+            cd /var/www/jam-client
+            tar -xzf /tmp/jam-client.tar.gz
+            rm /tmp/jam-client.tar.gz
+            
+            # Extract server
+            cd /var/www/jam-server
+            tar -xzf /tmp/jam-server.tar.gz --strip-components=1
+            rm /tmp/jam-server.tar.gz
+            
+            # Install server production dependencies
+            cd /var/www/jam-server
+            npm ci --production
+            
+            # Copy environment file if it doesn't exist
+            if [ ! -f .env ]; then
+              echo "NODE_ENV=production" > .env
+              echo "PORT=3001" >> .env
+              echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> .env
+              echo "DATABASE_PATH=../database/jam_literaria.db" >> .env
+            fi
+            
+            # Ensure database directory exists
+            mkdir -p /var/www/database
+            
+            # Copy database schema if database doesn't exist
+            if [ ! -f /var/www/database/jam_literaria.db ]; then
+              # Initialize database with schema
+              cd /var/www/jam-server
+              node -e "
+                import sqlite3 from 'sqlite3';
+                import { open } from 'sqlite';
+                import fs from 'fs';
+                
+                async function initDB() {
+                  const db = await open({
+                    filename: '/var/www/database/jam_literaria.db',
+                    driver: sqlite3.Database
+                  });
+                  
+                  // Read and execute schema
+                  const schema = fs.readFileSync('./database/schema.sql', 'utf8');
+                  await db.exec(schema);
+                  await db.close();
+                  console.log('Database initialized successfully');
+                }
+                
+                initDB().catch(console.error);
+              "
+            fi
+            
+            # Install PM2 globally if not present
+            if ! command -v pm2 &> /dev/null; then
+              sudo npm install -g pm2
+            fi
+            
+            # Stop existing PM2 processes
+            pm2 stop jam-literaria || true
+            pm2 delete jam-literaria || true
+            
+            # Start the application with PM2
+            pm2 start app.js --name "jam-literaria" --watch
+            pm2 save
+            
+            # Setup nginx config if nginx is available
+            if command -v nginx &> /dev/null; then
+              sudo tee /etc/nginx/sites-available/jam-literaria > /dev/null <<EOF
+            server {
+                listen 80;
+                server_name your-domain.com;  # Replace with your domain
+                
+                # Frontend
+                location / {
+                    root /var/www/jam-client;
+                    try_files \$uri \$uri/ /index.html;
+                    
+                    # Cache static assets
+                    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+                        expires 1y;
+                        add_header Cache-Control "public, immutable";
+                    }
+                }
+                
+                # Backend API
+                location /api/ {
+                    proxy_pass http://localhost:3001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                    proxy_cache_bypass \$http_upgrade;
+                }
+                
+                # Socket.IO
+                location /socket.io/ {
+                    proxy_pass http://localhost:3001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                }
+            }
+            EOF
+              
+              # Enable site (remove default if it exists)
+              sudo rm -f /etc/nginx/sites-enabled/default
+              sudo ln -sf /etc/nginx/sites-available/jam-literaria /etc/nginx/sites-enabled/
+              
+              # Test and reload nginx
+              sudo nginx -t && sudo systemctl reload nginx
+            fi
+            
+            echo "Deployment completed successfully!"
+            echo "Frontend deployed to: /var/www/jam-client"
+            echo "Backend deployed to: /var/www/jam-server"
+            echo "PM2 status:"
+            pm2 status 
