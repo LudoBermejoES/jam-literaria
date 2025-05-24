@@ -70,12 +70,9 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/sessions', ideaRoutes);
 app.use('/api/sessions', voteRoutes);
 
-// Serve static files in production (only if nginx is not handling static files)
-if (process.env.NODE_ENV === 'production' && process.env.SERVE_STATIC === 'true') {
-  // In production, the client files are deployed to /var/www/jam-client
-  // and the server is deployed to /var/www/jam-server
-  const clientPath = process.env.CLIENT_PATH || path.join(__dirname, '../jam-client');
-  console.log(`Serving static files from: ${clientPath}`);
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  const clientPath = path.join(__dirname, '../client/build');
   app.use(express.static(clientPath));
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientPath, 'index.html'));
