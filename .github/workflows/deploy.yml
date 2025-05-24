@@ -63,6 +63,10 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             # Create deployment directories
+            echo "$SSH_HOST"
+            echo "$SSH_USERNAME"
+            echo "$SSH_KEY"
+            echo "$SSH_PORT"
             sudo mkdir -p /var/www/jam-client
             sudo mkdir -p /var/www/jam-server
             
