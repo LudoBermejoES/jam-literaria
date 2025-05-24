@@ -9,6 +9,24 @@ This is the React client for Jam Literaria, a collaborative writing platform tha
 - Real-time collaboration
 - Idea submission and voting
 
+## Environment Configuration
+
+The application supports different environments with specific configurations:
+
+### Development
+Uses `.env.development` or `.env` for local development:
+```
+VITE_API_URL=http://localhost:5000
+VITE_API_BASE=http://localhost:5000/api
+```
+
+### Production
+Uses `.env.production` for production deployment:
+```
+VITE_API_URL=https://www.ludobermejo.es:5000
+VITE_API_BASE=https://www.ludobermejo.es:5000/api
+```
+
 ## Getting Started
 
 ### Prerequisites
@@ -32,7 +50,9 @@ This is the React client for Jam Literaria, a collaborative writing platform tha
 ## Available Scripts
 
 - `npm run dev` - Start the development server
-- `npm run build` - Build the app for production
+- `npm run build` - Build the app for production (auto-detects environment)
+- `npm run build:development` - Build for development environment
+- `npm run build:production` - Build for production environment
 - `npm run lint` - Run ESLint to check for code issues
 - `npm run preview` - Preview the production build locally
 
@@ -46,11 +66,17 @@ This is the React client for Jam Literaria, a collaborative writing platform tha
 
 ## API Connection
 
-The app connects to a Node.js/Express backend running on `http://localhost:5000` by default. Make sure the server is running before using the app.
+The app connects to a Node.js/Express backend. The connection URL is determined by environment variables:
+
+- **Development**: `http://localhost:5000` (default)
+- **Production**: `https://www.ludobermejo.es:5000`
+
+Make sure the server is running before using the app.
 
 ## Tech Stack
 
 - React
 - React Router
 - Axios for API requests
+- Socket.IO for real-time communication
 - CSS for styling (no additional UI libraries)

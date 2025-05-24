@@ -1,7 +1,7 @@
 import axios from 'axios';
 import i18n from '../i18n';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
 
 // Create axios instance with credentials
 const api = axios.create({
