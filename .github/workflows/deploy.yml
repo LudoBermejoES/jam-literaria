@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: |
             app/package-lock.json
@@ -54,36 +54,7 @@ jobs:
             --exclude='.nyc_output' \
             server/
 
-      - name: Deploy to remote server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            # Create deployment directories
-            echo "$SSH_HOST"
-            echo "$SSH_USERNAME"
-            echo "$SSH_KEY"
-            echo "$SSH_PORT"
-            sudo mkdir -p /var/www/jam-client
-            sudo mkdir -p /var/www/jam-server
-            
-            # Set proper ownership
-            sudo chown -R $USER:$USER /var/www/jam-client
-            sudo chown -R $USER:$USER /var/www/jam-server
-            
-            # Clean previous deployments
-            rm -rf /var/www/jam-client/*
-            rm -rf /var/www/jam-server/*
-            
-            # Download deployment archives
-            cd /tmp
-            wget "https://github.com/LudoBermejoES/jam-literaria/releases/latest/download/jam-client.tar.gz" || echo "Client archive not found, will use artifacts"
-            wget "https://github.com/LudoBermejoES/jam-literaria/releases/latest/download/jam-server.tar.gz" || echo "Server archive not found, will use artifacts"
-
-      - name: Upload and extract frontend
+      - name: Upload frontend archive
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -93,7 +64,7 @@ jobs:
           source: "jam-client.tar.gz"
           target: "/tmp/"
 
-      - name: Upload and extract server
+      - name: Upload server archive
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -103,7 +74,7 @@ jobs:
           source: "jam-server.tar.gz"
           target: "/tmp/"
 
-      - name: Extract and setup applications
+      - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -111,6 +82,22 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            set -e
+            
+            # Create deployment directories
+            sudo mkdir -p /var/www/jam-client
+            sudo mkdir -p /var/www/jam-server
+            sudo mkdir -p /var/www/database
+            
+            # Set proper ownership
+            sudo chown -R $USER:$USER /var/www/jam-client
+            sudo chown -R $USER:$USER /var/www/jam-server
+            sudo chown -R $USER:$USER /var/www/database
+            
+            # Clean previous deployments
+            rm -rf /var/www/jam-client/*
+            rm -rf /var/www/jam-server/*
+            
             # Extract frontend
             cd /var/www/jam-client
             tar -xzf /tmp/jam-client.tar.gz
@@ -125,41 +112,21 @@ jobs:
             cd /var/www/jam-server
             npm ci --production
             
-            # Copy environment file if it doesn't exist
-            if [ ! -f .env ]; then
-              echo "NODE_ENV=production" > .env
-              echo "PORT=3001" >> .env
-              echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> .env
-              echo "DATABASE_PATH=../database/jam_literaria.db" >> .env
-            fi
+            # Create environment file
+            cat > .env << EOF
+            NODE_ENV=production
+            PORT=3001
+            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+            DATABASE_PATH=../database/jam_literaria.db
+            EOF
             
-            # Ensure database directory exists
-            mkdir -p /var/www/database
-            
-            # Copy database schema if database doesn't exist
+            # Initialize database if it doesn't exist
             if [ ! -f /var/www/database/jam_literaria.db ]; then
-              # Initialize database with schema
+              echo "Initializing database..."
               cd /var/www/jam-server
-              node -e "
-                import sqlite3 from 'sqlite3';
-                import { open } from 'sqlite';
-                import fs from 'fs';
-                
-                async function initDB() {
-                  const db = await open({
-                    filename: '/var/www/database/jam_literaria.db',
-                    driver: sqlite3.Database
-                  });
-                  
-                  // Read and execute schema
-                  const schema = fs.readFileSync('./database/schema.sql', 'utf8');
-                  await db.exec(schema);
-                  await db.close();
-                  console.log('Database initialized successfully');
-                }
-                
-                initDB().catch(console.error);
-              "
+              cp database/schema.sql /var/www/database/
+              sqlite3 /var/www/database/jam_literaria.db < database/schema.sql
+              echo "Database initialized successfully"
             fi
             
             # Install PM2 globally if not present
@@ -172,20 +139,21 @@ jobs:
             pm2 delete jam-literaria || true
             
             # Start the application with PM2
+            cd /var/www/jam-server
             pm2 start app.js --name "jam-literaria" --watch
             pm2 save
             
             # Setup nginx config if nginx is available
             if command -v nginx &> /dev/null; then
-              sudo tee /etc/nginx/sites-available/jam-literaria > /dev/null <<EOF
+              sudo tee /etc/nginx/sites-available/jam-literaria > /dev/null << 'NGINXEOF'
             server {
                 listen 80;
-                server_name your-domain.com;  # Replace with your domain
+                server_name _;
                 
                 # Frontend
                 location / {
                     root /var/www/jam-client;
-                    try_files \$uri \$uri/ /index.html;
+                    try_files $uri $uri/ /index.html;
                     
                     # Cache static assets
                     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
@@ -198,28 +166,28 @@ jobs:
                 location /api/ {
                     proxy_pass http://localhost:3001;
                     proxy_http_version 1.1;
-                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Upgrade $http_upgrade;
                     proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host \$host;
-                    proxy_set_header X-Real-IP \$remote_addr;
-                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto \$scheme;
-                    proxy_cache_bypass \$http_upgrade;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_cache_bypass $http_upgrade;
                 }
                 
                 # Socket.IO
                 location /socket.io/ {
                     proxy_pass http://localhost:3001;
                     proxy_http_version 1.1;
-                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Upgrade $http_upgrade;
                     proxy_set_header Connection "upgrade";
-                    proxy_set_header Host \$host;
-                    proxy_set_header X-Real-IP \$remote_addr;
-                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto \$scheme;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
                 }
             }
-            EOF
+            NGINXEOF
               
               # Enable site (remove default if it exists)
               sudo rm -f /etc/nginx/sites-enabled/default
