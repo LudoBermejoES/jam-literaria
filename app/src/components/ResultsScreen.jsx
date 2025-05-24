@@ -194,9 +194,11 @@ const ResultsScreen = () => {
                   <div className="winner-badge">
                     <span className="winner-text">{t('resultsScreen.winner')}</span>
                   </div>
-                  <div className="author-info">
-                    <span className="author">— {result.author_name}</span>
-                  </div>
+                  {isOwner && (
+                    <div className="author-info">
+                      <span className="author">— {result.author_name}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -214,7 +216,9 @@ const ResultsScreen = () => {
             {otherIdeas.map((idea) => (
               <div key={idea.id} className="other-idea-card">
                 <p className="idea-text">{idea.content}</p>
-                <div className="idea-author">— {idea.author_name}</div>
+                {isOwner && (
+                  <div className="idea-author">— {idea.author_name}</div>
+                )}
               </div>
             ))}
           </div>

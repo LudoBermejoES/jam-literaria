@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { SocketContext } from '../context/SocketContext';
 import Button from './common/Button';
 import './VotingScreen.css';
 
 const VotingScreen = () => {
   const { sessionId } = useParams();
+  const { user } = useAuth();
   const { socket } = useContext(SocketContext);
   const navigate = useNavigate();
   
@@ -17,6 +19,12 @@ const VotingScreen = () => {
   const [error, setError] = useState(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [requiredVotes, setRequiredVotes] = useState(3);
+  
+  // Debug logging for required votes changes
+  useEffect(() => {
+    console.log('Required votes changed to:', requiredVotes);
+  }, [requiredVotes]);
+  const [isOwner, setIsOwner] = useState(false);
   
   useEffect(() => {
     if (!socket || !sessionId) return;
@@ -30,6 +38,7 @@ const VotingScreen = () => {
     // Listen for session state
     socket.on('session-state', (data) => {
       setSessionInfo(data);
+      setIsOwner(data.owner_id === user?.id);
       setLoading(false);
       
       // Redirect if session is not in voting state
@@ -75,10 +84,12 @@ const VotingScreen = () => {
     
     // Listen for new voting round
     socket.on('new-voting-round', (data) => {
+      console.log('Received new-voting-round event:', data);
       setIdeas(data.candidateIdeas || []);
       setSelectedIdeas(new Set());
       setHasVoted(false);
       if (data.requiredVotes !== undefined) {
+        console.log('Setting required votes to:', data.requiredVotes);
         setRequiredVotes(data.requiredVotes);
       }
     });
@@ -98,7 +109,7 @@ const VotingScreen = () => {
       socket.off('new-voting-round');
       socket.off('error');
     };
-  }, [socket, sessionId, navigate]);
+  }, [socket, sessionId, user?.id, navigate]);
   
   // Handle idea selection
   const handleIdeaSelect = (ideaId) => {
@@ -188,7 +199,9 @@ const VotingScreen = () => {
             >
               <div className="idea-content">{idea.content}</div>
               <div className="idea-meta">
-                <span className="idea-author">— {idea.author_name}</span>
+                {isOwner && (
+                  <span className="idea-author">— {idea.author_name}</span>
+                )}
                 {isSelected && (
                   <span className="selection-badge">✓ Selected</span>
                 )}
@@ -224,4 +237,4 @@ const VotingScreen = () => {
   );
 };
 
-export default VotingScreen; 
+export default VotingScreen;

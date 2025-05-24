@@ -81,7 +81,12 @@ export async function processVotingRound(sessionId, round) {
     const newRound = round + 1;
     
     // Calculate how many votes are needed for this new round
-    const requiredVotes = calculateRequiredVotes(candidateIdeas.length);
+    // Limited by remaining slots needed
+    const remainingSlots = 3 - newWinners.length;
+    const calculatedVotes = calculateRequiredVotes(candidateIdeas.length);
+    const requiredVotes = Math.min(calculatedVotes, remainingSlots);
+    
+    console.log(`New round calculation: ${candidateIdeas.length} candidates, ${calculatedVotes} calculated votes, ${remainingSlots} remaining slots, final: ${requiredVotes}`);
     
     // Update session round and metadata
     Session.updateSessionRound(sessionId, newRound);
@@ -106,7 +111,12 @@ export async function processVotingRound(sessionId, round) {
     const newRound = round + 1;
     
     // Calculate how many votes are needed for this new round
-    const requiredVotes = calculateRequiredVotes(candidateIdeas.length);
+    // Limited by remaining slots needed
+    const remainingSlots = 3 - accumulatedWinners.length;
+    const calculatedVotes = calculateRequiredVotes(candidateIdeas.length);
+    const requiredVotes = Math.min(calculatedVotes, remainingSlots);
+    
+    console.log(`Tiebreaker round calculation: ${candidateIdeas.length} candidates, ${calculatedVotes} calculated votes, ${remainingSlots} remaining slots, final: ${requiredVotes}`);
     
     // Update session round and metadata
     Session.updateSessionRound(sessionId, newRound);
@@ -158,95 +168,64 @@ export function determinarAccionSiguiente(ideas, currentWinnerCount = 0) {
       ideas: entry[1]
     }));
   
-  // Case 1: Exactly the remaining slots with the same highest vote count
-  if (gruposOrdenados.length === 1 && gruposOrdenados[0].ideas.length === remainingSlots) {
+  console.log(`Determining action: ${remainingSlots} slots remaining, vote groups:`, 
+    gruposOrdenados.map(g => `${g.votos} votes: ${g.ideas.length} ideas`));
+  
+  // Strategy: Try to select clear winners first, then handle ties
+  const clearWinners = [];
+  const tiedCandidates = [];
+  let slotsToFill = remainingSlots;
+  
+  for (let i = 0; i < gruposOrdenados.length; i++) {
+    const grupo = gruposOrdenados[i];
+    
+    if (slotsToFill <= 0) break;
+    
+    // Check if this group can fit entirely in remaining slots
+    if (grupo.ideas.length <= slotsToFill) {
+      // This entire group are clear winners
+      clearWinners.push(...grupo.ideas);
+      slotsToFill -= grupo.ideas.length;
+      console.log(`Selected ${grupo.ideas.length} clear winners with ${grupo.votos} votes each`);
+    } else {
+      // This group has more ideas than remaining slots - they are tied candidates
+      tiedCandidates.push(...grupo.ideas);
+      console.log(`Found ${grupo.ideas.length} tied candidates with ${grupo.votos} votes each for ${slotsToFill} remaining slots`);
+      break; // No need to check lower vote groups
+    }
+  }
+  
+  // Decision logic based on what we found
+  if (clearWinners.length > 0 && tiedCandidates.length > 0) {
+    // We have some clear winners and some tied candidates
+    console.log(`AGREGAR_GANADORES: ${clearWinners.length} winners, ${tiedCandidates.length} candidates for ${slotsToFill} slots`);
+    return {
+      accion: 'AGREGAR_GANADORES',
+      ideasElegidas: clearWinners.map(idea => idea.id),
+      ideasCandidatas: tiedCandidates.map(idea => idea.id)
+    };
+  } else if (clearWinners.length > 0 && tiedCandidates.length === 0) {
+    // We have clear winners and no ties - we're done
+    console.log(`FINALIZAR: ${clearWinners.length} clear winners selected`);
     return {
       accion: 'FINALIZAR',
-      ideasElegidas: gruposOrdenados[0].ideas.map(idea => idea.id)
+      ideasElegidas: clearWinners.map(idea => idea.id)
     };
-  }
-  
-  // Case 2: More ideas tied with the highest vote count than remaining slots
-  if (gruposOrdenados.length === 1 && gruposOrdenados[0].ideas.length > remainingSlots) {
+  } else if (clearWinners.length === 0 && tiedCandidates.length > 0) {
+    // All remaining ideas are tied - need a tiebreaker round
+    console.log(`NUEVA_RONDA: ${tiedCandidates.length} tied candidates need tiebreaker`);
     return {
       accion: 'NUEVA_RONDA',
-      ideasCandidatas: gruposOrdenados[0].ideas.map(idea => idea.id)
+      ideasCandidatas: tiedCandidates.map(idea => idea.id)
+    };
+  } else {
+    // Edge case: no clear winners and no candidates (shouldn't happen)
+    console.log(`Edge case: no winners or candidates found, finalizing with all ideas`);
+    return {
+      accion: 'FINALIZAR',
+      ideasElegidas: ideas.slice(0, remainingSlots).map(idea => idea.id)
     };
   }
-  
-  // Case 3: Less ideas in the highest vote group than remaining slots
-  if (gruposOrdenados[0].ideas.length < remainingSlots) {
-    const ideasSeleccionadas = [...gruposOrdenados[0].ideas];
-    let ideasRestantes = remainingSlots - ideasSeleccionadas.length;
-    
-    // If we need more ideas and there are more vote groups
-    if (ideasRestantes > 0 && gruposOrdenados.length > 1) {
-      const segundoGrupo = gruposOrdenados[1].ideas;
-      
-      // Case 3.1: Exactly the right number of ideas in the second group
-      if (segundoGrupo.length === ideasRestantes) {
-        ideasSeleccionadas.push(...segundoGrupo);
-        return {
-          accion: 'FINALIZAR',
-          ideasElegidas: ideasSeleccionadas.map(idea => idea.id)
-        };
-      }
-      
-      // Case 3.2: Too many ideas in the second group (need a tiebreaker)
-      if (segundoGrupo.length > ideasRestantes) {
-        // Add winners from first group and continue with tiebreaker for second group
-        return {
-          accion: 'AGREGAR_GANADORES',
-          ideasElegidas: ideasSeleccionadas.map(idea => idea.id),
-          ideasCandidatas: segundoGrupo.map(idea => idea.id)
-        };
-      }
-      
-      // Case 3.3: Not enough ideas in the second group, need to look at the third group
-      ideasSeleccionadas.push(...segundoGrupo);
-      ideasRestantes -= segundoGrupo.length;
-      
-      if (ideasRestantes > 0 && gruposOrdenados.length > 2) {
-        const tercerGrupo = gruposOrdenados[2].ideas;
-        
-        // Case 3.3.1: Exactly the right number of ideas in the third group
-        if (tercerGrupo.length === ideasRestantes) {
-          ideasSeleccionadas.push(...tercerGrupo);
-          return {
-            accion: 'FINALIZAR',
-            ideasElegidas: ideasSeleccionadas.map(idea => idea.id)
-          };
-        }
-        
-        // Case 3.3.2: Too many ideas in the third group (need a tiebreaker)
-        if (tercerGrupo.length > ideasRestantes) {
-          // Add winners from first and second groups, continue with tiebreaker for third group
-          return {
-            accion: 'AGREGAR_GANADORES',
-            ideasElegidas: ideasSeleccionadas.map(idea => idea.id),
-            ideasCandidatas: tercerGrupo.map(idea => idea.id)
-          };
-        }
-        
-        // Case 3.3.3: Not enough ideas overall, just use what we have
-        ideasSeleccionadas.push(...tercerGrupo);
-      }
-    }
-    
-    // If we have enough ideas or we've used all available ideas
-    if (ideasSeleccionadas.length >= remainingSlots || ideasSeleccionadas.length === ideas.length) {
-      return {
-        accion: 'FINALIZAR',
-        ideasElegidas: ideasSeleccionadas.slice(0, remainingSlots).map(idea => idea.id)
-      };
-    }
-  }
-  
-  // Default behavior: if no specific case matches, new voting round with all ideas
-  return {
-    accion: 'NUEVA_RONDA',
-    ideasCandidatas: ideas.map(idea => idea.id)
-  };
 }
 
 /**

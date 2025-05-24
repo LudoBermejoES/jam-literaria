@@ -39,32 +39,38 @@ export function voteHandlers(io, socket) {
       
       console.log(`Vote validation - Session: ${sessionId}, Round: ${session.current_round}, Metadata:`, metadata);
       
-      if (metadata && metadata.required_votes) {
-        requiredVotes = metadata.required_votes;
-        console.log(`Using metadata required votes: ${requiredVotes}`);
+      // Calculate required votes based on current state
+      let ideaCount;
+      let remainingSlots = 3; // Total winners needed
+      
+      // Check if we're in a subsequent round with candidate ideas
+      if (metadata && metadata.ideas_candidatas && Array.isArray(metadata.ideas_candidatas)) {
+        // Use candidate ideas for subsequent rounds
+        ideaCount = metadata.ideas_candidatas.length;
+        console.log(`Using candidate ideas count: ${ideaCount} ideas`);
+        
+        // Calculate how many winners we still need
+        const alreadySelected = metadata.ideas_elegidas ? metadata.ideas_elegidas.length : 0;
+        remainingSlots = 3 - alreadySelected;
+        console.log(`Already selected: ${alreadySelected}, remaining slots: ${remainingSlots}`);
+        
+        // Required votes should be minimum of calculated votes for idea count and remaining slots
+        const calculatedVotes = calculateRequiredVotes(ideaCount);
+        requiredVotes = Math.min(calculatedVotes, remainingSlots);
+        console.log(`Calculated votes for ${ideaCount} ideas: ${calculatedVotes}, limited by remaining slots: ${requiredVotes}`);
       } else {
-        let ideaCount;
-        
-        // Check if we're in a subsequent round with candidate ideas
-        if (metadata && metadata.ideas_candidatas && Array.isArray(metadata.ideas_candidatas)) {
-          // Use candidate ideas for subsequent rounds
-          ideaCount = metadata.ideas_candidatas.length;
-          console.log(`Using candidate ideas count: ${ideaCount} ideas`);
-        } else {
-          // Use all session ideas for first round
-          const ideas = ideaService.getIdeasBySessionId(sessionId);
-          ideaCount = ideas.length;
-          console.log(`Using all session ideas count: ${ideaCount} ideas`);
-        }
-        
+        // Use all session ideas for first round
+        const ideas = ideaService.getIdeasBySessionId(sessionId);
+        ideaCount = ideas.length;
+        console.log(`Using all session ideas count: ${ideaCount} ideas`);
         requiredVotes = calculateRequiredVotes(ideaCount);
         console.log(`Calculated required votes: ${requiredVotes} for ${ideaCount} ideas`);
-        
-        // Update metadata with the calculated value
-        sessionService.updateSessionMetadata(sessionId, {
-          required_votes: requiredVotes
-        });
       }
+      
+      // Update metadata with the calculated value
+      sessionService.updateSessionMetadata(sessionId, {
+        required_votes: requiredVotes
+      });
       
       console.log(`Final required votes: ${requiredVotes}, User submitted: ${ideaIds.length}`);
       
