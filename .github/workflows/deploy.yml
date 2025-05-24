@@ -84,16 +84,6 @@ jobs:
           script: |
             set -e
             
-            # Create deployment directories
-            sudo mkdir -p /var/www/jam-client
-            sudo mkdir -p /var/www/jam-server
-            sudo mkdir -p /var/www/database
-            
-            # Set proper ownership
-            sudo chown -R $USER:$USER /var/www/jam-client
-            sudo chown -R $USER:$USER /var/www/jam-server
-            sudo chown -R $USER:$USER /var/www/database
-            
             # Clean previous deployments
             rm -rf /var/www/jam-client/*
             rm -rf /var/www/jam-server/*
