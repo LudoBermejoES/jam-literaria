@@ -32,7 +32,11 @@ const server = http.createServer(app);
 // Set up middleware
 app.use(cors({
   origin: function(origin, callback) {
-    const allowedOrigins = [process.env.CLIENT_URL || 'http://localhost:3000', 'http://localhost:5173'];
+    const allowedOrigins = [
+      process.env.CLIENT_URL || 'http://localhost:3000', 
+      'http://localhost:5173',
+      'https://jam.ludobermejo.es'
+    ];
     // Allow requests with no origin (like mobile apps or curl requests)
     if(!origin) return callback(null, true);
     if(allowedOrigins.indexOf(origin) !== -1){
@@ -42,6 +46,12 @@ app.use(cors({
   },
   credentials: true
 }));
+
+// Trust proxy for HTTPS (when behind nginx)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -52,9 +62,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production', // true for HTTPS
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // for cross-origin requests in production
   }
 }));
 
