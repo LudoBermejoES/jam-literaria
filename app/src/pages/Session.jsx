@@ -161,6 +161,24 @@ const Session = () => {
   const handleBackToHome = () => {
     navigate('/');
   };
+
+  const handleCopyLink = async () => {
+    const shareUrl = `${window.location.origin}/join/${session.code}`;
+    
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert(t('session.linkCopied'));
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert(t('session.linkCopied'));
+    }
+  };
   
   // Render loading state
   if (isLoading) {
@@ -246,6 +264,15 @@ const Session = () => {
             {isAdmin && session.status === 'WAITING' && (
               <div className="admin-controls">
                 <h3>{t('session.adminControls')}</h3>
+                
+                <button 
+                  onClick={handleCopyLink} 
+                  className="copy-link-button" 
+                  disabled={isLoading}
+                >
+                  {t('session.copyLink')}
+                </button>
+                
                 <button 
                   onClick={handleStartSession} 
                   className="start-session-button" 

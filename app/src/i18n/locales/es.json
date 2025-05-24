@@ -69,7 +69,9 @@
     "starting": "Iniciando...",
     "delete": "Eliminar Sesión",
     "deleteConfirm": "¿Estás seguro de que deseas eliminar esta sesión? Esta acción no se puede deshacer.",
-    "needMoreParticipants": "Se necesita al menos un participante más para iniciar"
+    "needMoreParticipants": "Se necesita al menos un participante más para iniciar",
+    "copyLink": "Copiar Enlace",
+    "linkCopied": "¡Enlace de sesión copiado al portapapeles!"
   },
   "protectedRoute": {
     "loading": "Cargando..."
