@@ -573,3 +573,5 @@ export default api;
    - Tests end-to-end para flujos completos
 
 Con esta arquitectura moderna, la aplicación de Jam Literaria tendrá una base sólida, mantenible y escalable, aprovechando lo mejor de las tecnologías web actuales. 
+
+

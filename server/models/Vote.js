@@ -259,4 +259,27 @@ export class Vote {
     stmt.run(sessionId, round);
     return true;
   }
+
+  /**
+   * Get total vote counts for specific ideas across all rounds in a session
+   * @param {string} sessionId - Session ID
+   * @param {Array} ideaIds - Array of idea IDs to get vote counts for
+   * @returns {Array} Array of objects with idea ID and total vote count
+   */
+  static getTotalVoteCountsForIdeas(sessionId, ideaIds) {
+    if (!sessionId || !Array.isArray(ideaIds) || ideaIds.length === 0) {
+      throw new Error('Session ID and array of idea IDs are required');
+    }
+
+    const db = getDatabase();
+    const placeholders = ideaIds.map(() => '?').join(',');
+    const stmt = db.prepare(`
+      SELECT v.idea_id, COUNT(*) as total_vote_count
+      FROM votes v
+      WHERE v.session_id = ? AND v.idea_id IN (${placeholders})
+      GROUP BY v.idea_id
+    `);
+    
+    return stmt.all(sessionId, ...ideaIds);
+  }
 } 

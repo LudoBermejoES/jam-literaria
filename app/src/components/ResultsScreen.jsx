@@ -194,6 +194,12 @@ const ResultsScreen = () => {
                   <div className="winner-badge">
                     <span className="winner-text">{t('resultsScreen.winner')}</span>
                   </div>
+                  <div className="vote-count">
+                    <span className="vote-count-number">{result.vote_count}</span>
+                    <span className="vote-count-label">
+                      {result.vote_count === 1 ? t('common.vote') : t('common.votes')}
+                    </span>
+                  </div>
                   {isOwner && (
                     <div className="author-info">
                       <span className="author">— {result.author_name}</span>

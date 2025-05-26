@@ -127,16 +127,6 @@ jobs:
               echo "Database initialized successfully"
             fi
             
-            # Setup nginx config if nginx is available
-            if command -v nginx &> /dev/null; then
-              # Copy the updated nginx configuration
-              sudo cp example.nginx /etc/nginx/sites-available/default
-              
-              # Test and reload nginx
-              sudo nginx -t && sudo systemctl reload nginx
-              echo "✅ Nginx reloaded with HTTPS configuration for jam.ludobermejo.es"
-            fi
-            
             echo "Deployment completed successfully!"
             echo "Frontend deployed to: /var/www/jam-client"
             echo "Backend deployed to: /var/www/jam-server"

@@ -214,13 +214,22 @@ export function getVoteResults(sessionId, round) {
         // Get full idea details for the accumulated winners
         const winnerIdeas = Idea.getIdeasByIds(metadata.ideas_elegidas);
         
-        // Return winners in the expected format with their final ranking
+        // Get total vote counts for the winning ideas across all rounds
+        const voteCounts = Vote.getTotalVoteCountsForIdeas(sessionId, metadata.ideas_elegidas);
+        
+        // Create a map for quick lookup of vote counts
+        const voteCountMap = new Map();
+        voteCounts.forEach(voteCount => {
+          voteCountMap.set(voteCount.idea_id, voteCount.total_vote_count);
+        });
+        
+        // Return winners in the expected format with their actual vote counts
         return winnerIdeas.map((idea, index) => ({
           idea_id: idea.id,
           content: idea.content,
           author_id: idea.author_id,
           author_name: idea.author_name,
-          vote_count: 0, // We don't track individual vote counts for final winners
+          vote_count: voteCountMap.get(idea.id) || 0, // Get actual vote count or 0 if not found
           position: index + 1 // Position based on order they were selected
         }));
       }

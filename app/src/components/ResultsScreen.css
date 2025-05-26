@@ -178,6 +178,28 @@
   opacity: 0.9;
 }
 
+.vote-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 16px;
+  border: 2px solid #e9ecef;
+}
+
+.vote-count-number {
+  font-size: 18px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.vote-count-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
 .author {
   color: #666;
   font-style: italic;
@@ -428,6 +450,10 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+  
+  .vote-count {
+    align-self: flex-start;
   }
   
   .result-row {
