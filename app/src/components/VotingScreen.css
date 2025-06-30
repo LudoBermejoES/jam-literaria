@@ -186,6 +186,52 @@
   text-align: center;
 }
 
+/* Selected ideas summary for voted state */
+.selected-ideas-summary {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 600px;
+  width: 100%;
+}
+
+.selected-ideas-summary h3 {
+  color: #333;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.selected-ideas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.selected-idea-summary {
+  background: #f0f7ff;
+  border: 2px solid #4a90e2;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.selected-idea-summary .idea-content {
+  flex: 1;
+  margin-bottom: 0;
+  min-height: auto;
+  font-size: 14px;
+}
+
+.selected-idea-summary .selection-badge {
+  flex-shrink: 0;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .voting-screen {

@@ -60,7 +60,7 @@ export function ideaHandlers(io, socket) {
   });
   
   /**
-   * Get ideas for a session
+   * Get ideas for a session (context-aware)
    */
   socket.on('get-ideas', async ({ sessionId }) => {
     try {
@@ -76,13 +76,25 @@ export function ideaHandlers(io, socket) {
         return;
       }
       
-      // Get ideas for the session
-      const ideas = ideaService.getIdeasBySessionId(sessionId);
+      let ideas;
+      
+      // CRITICAL FIX: Return appropriate ideas based on session status
+      if (session.status === SESSION_STATUS.VOTING) {
+        // In voting phase, return candidate ideas for current round
+        ideas = ideaService.getCandidateIdeasForVoting(sessionId);
+        console.log(`Returning ${ideas.length} candidate ideas for voting in session ${sessionId}`);
+      } else {
+        // In other phases, return all session ideas
+        ideas = ideaService.getIdeasBySessionId(sessionId);
+        console.log(`Returning ${ideas.length} total ideas for session ${sessionId}`);
+      }
       
       // Send ideas to the requesting user
       socket.emit('ideas', {
         sessionId,
-        ideas
+        ideas,
+        round: session.current_round,
+        sessionStatus: session.status
       });
       
       console.log(`User ${socket.userId} requested ideas for session ${sessionId}`);

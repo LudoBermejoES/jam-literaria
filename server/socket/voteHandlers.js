@@ -1,7 +1,9 @@
 import * as voteService from '../services/voteService.js';
 import * as sessionService from '../services/sessionService.js';
 import * as ideaService from '../services/ideaService.js';
+import * as userService from '../services/userService.js';
 import { SESSION_STATUS } from '../models/Session.js';
+import { Vote } from '../models/Vote.js';
 import { calculateRequiredVotes } from '../services/votingService.js';
 
 /**
@@ -73,6 +75,16 @@ export function voteHandlers(io, socket) {
       });
       
       console.log(`Final required votes: ${requiredVotes}, User submitted: ${ideaIds.length}`);
+      
+      // CRITICAL FIX: Check if user has already voted in this round
+      const hasAlreadyVoted = Vote.hasUserVotedInRound(socket.userId, sessionId, session.current_round);
+      
+      if (hasAlreadyVoted) {
+        socket.emit('error', { 
+          message: 'You have already voted in this round. Refresh the page to see your current voting status.' 
+        });
+        return;
+      }
       
       // Validate the number of votes
       if (ideaIds.length !== requiredVotes) {
@@ -151,6 +163,16 @@ export function voteHandlers(io, socket) {
         return;
       }
       
+      // CRITICAL FIX: Check if user has already voted in this round (single vote version)
+      const hasAlreadyVoted = Vote.hasUserVotedInRound(socket.userId, sessionId, session.current_round);
+      
+      if (hasAlreadyVoted) {
+        socket.emit('error', { 
+          message: 'You have already voted in this round. Refresh the page to see your current voting status.' 
+        });
+        return;
+      }
+      
       // Submit the vote
       const result = await voteService.createVote(socket.userId, ideaId, sessionId);
       
@@ -195,6 +217,62 @@ export function voteHandlers(io, socket) {
     }
   });
   
+  /**
+   * Get user's voting status for state recovery
+   */
+  socket.on('get-user-vote-status', async ({ sessionId }) => {
+    try {
+      if (!sessionId) {
+        socket.emit('error', { message: 'Session ID is required' });
+        return;
+      }
+      
+      // Check if session exists
+      const session = sessionService.getSessionById(sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
+      }
+      
+      // Check if user is a participant
+      const isParticipant = userService.validateUserSessionAccess(socket.userId, sessionId);
+      if (!isParticipant) {
+        socket.emit('error', { message: 'Not a participant in this session' });
+        return;
+      }
+      
+      // Get user's voting status for current round
+      const hasVoted = Vote.hasUserVotedInRound(socket.userId, sessionId, session.current_round);
+      
+      let userVotes = [];
+      if (hasVoted) {
+        // Get the specific ideas the user voted for
+        userVotes = Vote.getVotesByUserSessionAndRound(socket.userId, sessionId, session.current_round);
+      }
+      
+      // Get session metadata for required votes info
+      const metadata = sessionService.getSessionMetadata(sessionId);
+      const requiredVotes = metadata?.required_votes || 3;
+      
+      // Send voting status to the user
+      socket.emit('user-vote-status', {
+        sessionId,
+        round: session.current_round,
+        hasVoted,
+        userVotes: userVotes.map(vote => ({
+          ideaId: vote.idea_id,
+          ideaContent: vote.idea_content
+        })),
+        requiredVotes
+      });
+      
+      console.log(`User ${socket.userId} vote status: hasVoted=${hasVoted}, round=${session.current_round}`);
+    } catch (error) {
+      console.error('Error in get-user-vote-status:', error);
+      socket.emit('error', { message: error.message || 'Failed to get voting status' });
+    }
+  });
+
   /**
    * Get vote status for a session
    */

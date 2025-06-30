@@ -35,6 +35,9 @@ const VotingScreen = () => {
     // Get ideas for voting
     socket.emit('get-ideas', { sessionId });
     
+    // CRITICAL FIX: Get user's voting status for state recovery
+    socket.emit('get-user-vote-status', { sessionId });
+    
     // Listen for session state
     socket.on('session-state', (data) => {
       setSessionInfo(data);
@@ -54,6 +57,7 @@ const VotingScreen = () => {
     // Listen for ideas
     socket.on('ideas', (data) => {
       if (data.sessionId === sessionId) {
+        console.log(`Received ${data.ideas?.length || 0} ideas for session ${sessionId}, round ${data.round}, status: ${data.sessionStatus}`);
         setIdeas(data.ideas || []);
       }
     });
@@ -92,6 +96,42 @@ const VotingScreen = () => {
         console.log('Setting required votes to:', data.requiredVotes);
         setRequiredVotes(data.requiredVotes);
       }
+      
+      // Request updated vote status for the new round
+      socket.emit('get-user-vote-status', { sessionId });
+    });
+    
+    // CRITICAL FIX: Listen for user vote status (state recovery)
+    socket.on('user-vote-status', (data) => {
+      console.log('Received user-vote-status:', data);
+      
+      if (data.sessionId === sessionId) {
+        // Update required votes
+        if (data.requiredVotes !== undefined) {
+          setRequiredVotes(data.requiredVotes);
+        }
+        
+        // Recover voting state
+        if (data.hasVoted) {
+          setHasVoted(true);
+          setSubmitting(false);
+          
+          // Recover selected ideas if available
+          if (data.userVotes && data.userVotes.length > 0) {
+            const votedIdeaIds = new Set(data.userVotes.map(vote => vote.ideaId));
+            setSelectedIdeas(votedIdeaIds);
+            console.log('Recovered voting state:', { 
+              hasVoted: true, 
+              selectedIdeas: Array.from(votedIdeaIds) 
+            });
+          }
+        } else {
+          // User hasn't voted yet
+          setHasVoted(false);
+          setSelectedIdeas(new Set());
+          console.log('User has not voted yet in round', data.round);
+        }
+      }
     });
     
     // Error handling
@@ -107,6 +147,7 @@ const VotingScreen = () => {
       socket.off('vote-confirmed');
       socket.off('voting-complete');
       socket.off('new-voting-round');
+      socket.off('user-vote-status');
       socket.off('error');
     };
   }, [socket, sessionId, user?.id, navigate]);
@@ -171,6 +212,21 @@ const VotingScreen = () => {
           <p>Session: {sessionInfo?.code}</p>
           <p>Your selected ideas: {selectedIdeas.size}</p>
         </div>
+        
+        {/* Show selected ideas for confirmation */}
+        {selectedIdeas.size > 0 && (
+          <div className="selected-ideas-summary">
+            <h3>Your Selected Ideas:</h3>
+            <div className="selected-ideas-list">
+              {ideas.filter(idea => selectedIdeas.has(idea.id)).map((idea, index) => (
+                <div key={idea.id || index} className="selected-idea-summary">
+                  <div className="idea-content">{idea.content}</div>
+                  <div className="selection-badge">✓ Selected</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
