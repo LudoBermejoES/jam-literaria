@@ -1,0 +1,32 @@
+{
+  "name": "jam-literaria",
+  "version": "1.0.0",
+  "description": "**A Real-Time Collaborative Writing Platform for Creative Brainstorming**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LudoBermejoES/jam-literaria.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/LudoBermejoES/jam-literaria/issues"
+  },
+  "homepage": "https://github.com/LudoBermejoES/jam-literaria#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "playwright": "^1.56.1"
+  }
+}
