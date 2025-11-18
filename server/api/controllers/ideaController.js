@@ -59,10 +59,10 @@ export const createIdea = async (req, res) => {
 export const getIdeasBySession = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // Get ideas for the session
-    const ideas = ideaService.getIdeasBySessionId(id);
-    
+
+    // Get ideas for the session (service will validate session exists)
+    const ideas = ideaService.getIdeasBySessionWithValidation(id);
+
     return res.status(200).json({
       success: true,
       data: {
@@ -71,7 +71,7 @@ export const getIdeasBySession = async (req, res) => {
     });
   } catch (error) {
     console.error('Get ideas error:', error);
-    
+
     return res.status(500).json({
       success: false,
       error: 'Failed to get ideas'

@@ -48,6 +48,11 @@ export function initDatabase() {
  * @returns {DatabaseSync} Database instance
  */
 export function getDatabase() {
+  // In test environment, use the global test database
+  if (process.env.NODE_ENV === 'test' && global.testDatabase) {
+    return global.testDatabase;
+  }
+
   if (!database) {
     return initDatabase();
   }
