@@ -84,7 +84,15 @@ This documentation provides complete coverage of the system architecture, implem
    - Integration tests (API endpoints)
    - Test utilities and helpers
    - Running and debugging tests
-   - 355 tests with 100% pass rate
+   - 460 tests with 100% pass rate
+
+10. **[TESTING_FRONTEND.md](./TESTING_FRONTEND.md)** - Frontend Testing
+   - Test framework setup (Vitest + React Testing Library)
+   - Component tests (Button, TextArea, etc.)
+   - Service tests (socketService)
+   - Testing best practices
+   - Running and debugging tests
+   - 78 tests with 96.15% coverage
 
 ---
 
@@ -125,8 +133,11 @@ cd app && npm run dev
 
 **Running Tests**:
 ```bash
-# Backend tests (355 tests)
+# Backend tests (460 tests, 84% coverage)
 cd server && npm test
+
+# Frontend tests (78 tests, 96% coverage)
+cd app && npm test
 
 # Watch mode (for development)
 npm run test:watch
@@ -135,7 +146,7 @@ npm run test:watch
 npm run test:coverage
 ```
 
-**See**: [TESTING_BACKEND.md](./TESTING_BACKEND.md) for complete testing guide
+**See**: [TESTING_BACKEND.md](./TESTING_BACKEND.md) and [TESTING_FRONTEND.md](./TESTING_FRONTEND.md) for complete testing guides
 
 ### For Operators
 
@@ -439,9 +450,10 @@ Session (1) ──── has ────> Vote (N)
 
 All contributions must include tests:
 - **Backend changes**: Add unit/integration tests
-- **Run tests**: `cd server && npm test`
-- **Ensure 100% pass rate**: All 355+ tests must pass
-- **See**: [TESTING_BACKEND.md](./TESTING_BACKEND.md) for testing guide
+- **Frontend changes**: Add component/service tests
+- **Run tests**: `cd server && npm test` or `cd app && npm test`
+- **Ensure 100% pass rate**: All 538+ tests must pass
+- **See**: [TESTING_BACKEND.md](./TESTING_BACKEND.md) and [TESTING_FRONTEND.md](./TESTING_FRONTEND.md) for testing guides
 
 ### Documentation Updates
 
