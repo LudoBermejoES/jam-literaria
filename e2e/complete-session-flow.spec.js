@@ -1,27 +1,47 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Complete Session Flow - Single User', () => {
+  test.beforeAll(() => {
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('🎬 STARTING E2E TEST SUITE: Complete Session Flow');
+    console.log('═══════════════════════════════════════════════════════');
+  });
+
   test('should complete full session flow from login to results', async ({ page }) => {
+    console.log('🚀 Starting E2E test: Complete Session Flow');
+
     // Navigate to the application
+    console.log('📍 Navigating to home page...');
     await page.goto('/');
+    console.log('✅ Page loaded');
 
     // ==========================================
     // STEP 1: LOGIN
     // ==========================================
     await test.step('Login as user', async () => {
+      console.log('🔐 Step 1: Starting login...');
       await expect(page).toHaveTitle(/Jam Literaria/);
+      console.log('✅ Page title verified');
 
       // Find and fill the name input
+      console.log('📝 Looking for name input...');
       const nameInput = page.getByPlaceholder(/enter your name|nombre/i);
       await expect(nameInput).toBeVisible();
+      console.log('✅ Name input found');
+
       await nameInput.fill('Test User');
+      console.log('✅ Name filled: Test User');
 
       // Click login/continue button
+      console.log('👆 Clicking login button...');
       const loginButton = page.getByRole('button', { name: /continue|continuar|login|entrar/i });
       await loginButton.click();
+      console.log('✅ Login button clicked');
 
       // Wait for navigation to home page
+      console.log('⏳ Waiting for navigation to home page...');
       await page.waitForURL(/\/(home|inicio)/);
+      console.log('✅ Step 1 Complete: User logged in successfully');
     });
 
     // ==========================================
