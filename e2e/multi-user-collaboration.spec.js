@@ -22,10 +22,10 @@ test.describe('Multi-User Collaboration', () => {
         const nameInput = ownerPage.getByPlaceholder(/enter your name|nombre/i);
         await nameInput.fill('Session Owner');
 
-        const loginButton = ownerPage.getByRole('button', { name: /continue|continuar/i });
+        const loginButton = ownerPage.getByRole('button', { name: /continue|continuar|join now/i });
         await loginButton.click();
 
-        await ownerPage.waitForURL(/\/(home|inicio)/);
+        await ownerPage.waitForSelector('text=/Welcome to Jam Literaria/i');
 
         // Create session
         const createButton = ownerPage.getByRole('button', { name: /create.*session|crear.*sesión/i });
@@ -55,10 +55,10 @@ test.describe('Multi-User Collaboration', () => {
         const nameInput = participantPage.getByPlaceholder(/enter your name|nombre/i);
         await nameInput.fill('Participant User');
 
-        const loginButton = participantPage.getByRole('button', { name: /continue|continuar/i });
+        const loginButton = participantPage.getByRole('button', { name: /continue|continuar|join now/i });
         await loginButton.click();
 
-        await participantPage.waitForURL(/\/(home|inicio)/);
+        await participantPage.waitForSelector('text=/Welcome to Jam Literaria/i');
 
         // Join session using code
         const codeInput = participantPage.getByPlaceholder(/session.*code|código/i);

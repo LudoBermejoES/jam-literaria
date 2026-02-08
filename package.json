@@ -27,6 +27,8 @@
   "homepage": "https://github.com/LudoBermejoES/jam-literaria#readme",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "playwright": "^1.56.1"
+    "concurrently": "^9.2.1",
+    "playwright": "^1.56.1",
+    "wait-on": "^9.0.3"
   }
 }

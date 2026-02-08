@@ -1,190 +1,214 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Complete Session Flow - Single User', () => {
+test.describe('Complete Session Flow - Multi User', () => {
   test.beforeAll(() => {
     console.log('═══════════════════════════════════════════════════════');
-    console.log('🎬 STARTING E2E TEST SUITE: Complete Session Flow');
+    console.log('🎬 STARTING E2E TEST SUITE: Complete Session Flow (Multi-User)');
     console.log('═══════════════════════════════════════════════════════');
   });
 
-  test('should complete full session flow from login to results', async ({ page }) => {
-    console.log('🚀 Starting E2E test: Complete Session Flow');
+  test('should complete full session flow with two users', async ({ browser }) => {
+    console.log('🚀 Starting E2E test: Complete Multi-User Session Flow');
 
-    // Navigate to the application
-    console.log('📍 Navigating to home page...');
-    await page.goto('/');
-    console.log('✅ Page loaded');
+    // Create two browser contexts for two different users
+    const ownerContext = await browser.newContext();
+    const participantContext = await browser.newContext();
 
-    // ==========================================
-    // STEP 1: LOGIN
-    // ==========================================
-    await test.step('Login as user', async () => {
-      console.log('🔐 Step 1: Starting login...');
-      await expect(page).toHaveTitle(/Jam Literaria/);
-      console.log('✅ Page title verified');
+    const ownerPage = await ownerContext.newPage();
+    const participantPage = await participantContext.newPage();
 
-      // Find and fill the name input
-      console.log('📝 Looking for name input...');
-      const nameInput = page.getByPlaceholder(/enter your name|nombre/i);
-      await expect(nameInput).toBeVisible();
-      console.log('✅ Name input found');
-
-      await nameInput.fill('Test User');
-      console.log('✅ Name filled: Test User');
-
-      // Click login/continue button
-      console.log('👆 Clicking login button...');
-      const loginButton = page.getByRole('button', { name: /continue|continuar|login|entrar/i });
-      await loginButton.click();
-      console.log('✅ Login button clicked');
-
-      // Wait for navigation to home page
-      console.log('⏳ Waiting for navigation to home page...');
-      await page.waitForURL(/\/(home|inicio)/);
-      console.log('✅ Step 1 Complete: User logged in successfully');
-    });
-
-    // ==========================================
-    // STEP 2: CREATE SESSION
-    // ==========================================
     let sessionCode;
-    await test.step('Create a new session', async () => {
-      // Click create session button
-      const createButton = page.getByRole('button', { name: /create.*session|crear.*sesión/i });
-      await expect(createButton).toBeVisible();
-      await createButton.click();
 
-      // Wait for session page
-      await page.waitForURL(/\/session\/[a-zA-Z0-9]+/);
+    try {
+      // ==========================================
+      // STEP 1: OWNER LOGIN AND CREATE SESSION
+      // ==========================================
+      await test.step('Owner logs in and creates session', async () => {
+        console.log('👤 Owner: Logging in...');
+        await ownerPage.goto('/');
 
-      // Get session code from URL or page
-      const url = page.url();
-      const match = url.match(/\/session\/([a-zA-Z0-9]+)/);
-      sessionCode = match ? match[1] : null;
-      expect(sessionCode).toBeTruthy();
+        await expect(ownerPage).toHaveTitle(/Jam Literaria/);
 
-      console.log(`Session created with code: ${sessionCode}`);
+        const nameInput = ownerPage.getByPlaceholder(/enter your name|nombre/i);
+        await nameInput.fill('Session Owner');
 
-      // Verify we're in WAITING state
-      await expect(page.getByText(/waiting.*participants|esperando.*participantes/i)).toBeVisible({ timeout: 10000 });
-    });
+        const loginButton = ownerPage.getByRole('button', { name: /continue|continuar|join now/i });
+        await loginButton.click();
 
-    // ==========================================
-    // STEP 3: START SESSION (AS OWNER)
-    // ==========================================
-    await test.step('Start the session', async () => {
-      // Click start session button (owner only)
-      const startButton = page.getByRole('button', { name: /start.*session|iniciar.*sesión/i });
-      await expect(startButton).toBeVisible();
-      await startButton.click();
+        await ownerPage.waitForSelector('text=/Welcome to Jam Literaria/i');
+        console.log('✅ Owner logged in');
 
-      // Wait for idea submission phase
-      await expect(page.getByText(/submit.*ideas?|enviar.*ideas?/i)).toBeVisible({ timeout: 10000 });
-    });
+        // Create session
+        console.log('📝 Owner: Creating session...');
+        const createButton = ownerPage.getByRole('button', { name: /create.*session|crear.*sesión/i });
+        await createButton.click();
 
-    // ==========================================
-    // STEP 4: SUBMIT IDEAS
-    // ==========================================
-    await test.step('Submit ideas', async () => {
-      // Submit first idea
-      const ideaInput = page.locator('textarea').first();
-      await ideaInput.fill('First creative idea for the session');
+        await ownerPage.waitForURL(/\/session\/[a-zA-Z0-9]+/);
 
-      let submitButton = page.getByRole('button', { name: /submit|enviar|add|añadir/i }).first();
-      await submitButton.click();
+        // Get session code from page
+        const sessionCodeElement = await ownerPage.locator('[class*="session-code"], [class*="code"]').first();
+        sessionCode = await sessionCodeElement.textContent();
+        sessionCode = sessionCode.trim();
 
-      // Wait for idea to be added
-      await page.waitForTimeout(500);
+        console.log(`✅ Session created with code: ${sessionCode}`);
 
-      // Submit second idea
-      await ideaInput.fill('Second brilliant idea');
-      await submitButton.click();
+        // Verify waiting for participants
+        await expect(ownerPage.getByText(/waiting.*participants|esperando.*participantes/i)).toBeVisible({ timeout: 10000 });
+      });
 
-      await page.waitForTimeout(500);
+      // ==========================================
+      // STEP 2: PARTICIPANT JOINS SESSION
+      // ==========================================
+      await test.step('Participant joins session', async () => {
+        console.log('👤 Participant: Logging in...');
+        await participantPage.goto('/');
 
-      // Verify ideas are displayed
-      await expect(page.getByText('First creative idea')).toBeVisible();
-      await expect(page.getByText('Second brilliant idea')).toBeVisible();
+        const nameInput = participantPage.getByPlaceholder(/enter your name|nombre/i);
+        await nameInput.fill('Participant User');
 
-      console.log('Successfully submitted 2 ideas');
-    });
+        const loginButton = participantPage.getByRole('button', { name: /continue|continuar|join now/i });
+        await loginButton.click();
 
-    // ==========================================
-    // STEP 5: START VOTING (AS OWNER)
-    // ==========================================
-    await test.step('Start voting phase', async () => {
-      // As owner, click start voting button
-      const startVotingButton = page.getByRole('button', { name: /start.*vot/i });
+        await participantPage.waitForSelector('text=/Welcome to Jam Literaria/i');
+        console.log('✅ Participant logged in');
 
-      // Wait for button to be enabled (all participants submitted ideas)
-      await expect(startVotingButton).toBeVisible({ timeout: 15000 });
-      await startVotingButton.click();
+        // Join session using code
+        console.log(`🔗 Participant: Joining session with code ${sessionCode}...`);
+        const codeInput = participantPage.getByPlaceholder(/session.*code|código/i);
+        await codeInput.fill(sessionCode);
 
-      // Wait for voting screen
-      await expect(page.getByText(/vote.*ideas?|votar.*ideas?/i)).toBeVisible({ timeout: 10000 });
+        const joinButton = participantPage.getByRole('button', { name: /join.*session|unirse/i });
+        await joinButton.click();
 
-      console.log('Voting phase started');
-    });
+        // Wait for session page
+        await participantPage.waitForURL(/\/session\/[a-zA-Z0-9]+/, { timeout: 10000 });
+        console.log('✅ Participant joined session');
 
-    // ==========================================
-    // STEP 6: VOTE FOR IDEAS
-    // ==========================================
-    await test.step('Vote for favorite ideas', async () => {
-      // Find all idea cards/checkboxes
-      const ideaCheckboxes = page.locator('input[type="checkbox"]');
-      const count = await ideaCheckboxes.count();
+        // Verify participant sees waiting state
+        await expect(participantPage.getByText(/waiting.*participants|esperando.*participantes/i)).toBeVisible({ timeout: 10000 });
+      });
 
-      console.log(`Found ${count} ideas to vote for`);
+      // ==========================================
+      // STEP 3: OWNER STARTS SESSION
+      // ==========================================
+      await test.step('Owner starts the session', async () => {
+        console.log('▶️  Owner: Starting session...');
 
-      // Vote for first 2 ideas (or less if fewer available)
-      const votesToCast = Math.min(2, count);
-      for (let i = 0; i < votesToCast; i++) {
-        await ideaCheckboxes.nth(i).check();
-      }
+        // Wait a bit for participant to be registered
+        await ownerPage.waitForTimeout(1000);
 
-      // Submit votes
-      const submitVotesButton = page.getByRole('button', { name: /submit.*vote|enviar.*voto/i });
-      await expect(submitVotesButton).toBeVisible();
-      await submitVotesButton.click();
+        const startButton = ownerPage.getByRole('button', { name: /start.*session|iniciar.*sesión/i });
 
-      console.log(`Voted for ${votesToCast} ideas`);
+        // Verify button is enabled (should be now with 2 participants)
+        await expect(startButton).toBeEnabled({ timeout: 5000 });
+        await startButton.click();
 
-      // Wait for either results or next voting round
-      await page.waitForTimeout(2000);
-    });
+        console.log('✅ Session started');
 
-    // ==========================================
-    // STEP 7: VIEW RESULTS
-    // ==========================================
-    await test.step('View final results', async () => {
-      // Check if we reached results page
-      const isResultsPage = await page.getByText(/results|resultados|winners|ganadores/i).isVisible({ timeout: 5000 }).catch(() => false);
+        // Both users should see idea submission phase
+        await expect(ownerPage.getByText(/submit.*ideas?|enviar.*ideas?/i)).toBeVisible({ timeout: 10000 });
+        await expect(participantPage.getByText(/submit.*ideas?|enviar.*ideas?/i)).toBeVisible({ timeout: 10000 });
+      });
 
-      if (isResultsPage) {
-        console.log('Reached results page');
+      // ==========================================
+      // STEP 4: BOTH USERS SUBMIT IDEAS
+      // ==========================================
+      await test.step('Both users submit ideas', async () => {
+        console.log('💡 Users: Submitting ideas...');
 
-        // Verify results are displayed
-        await expect(page.getByText(/results|resultados/i)).toBeVisible();
+        // Owner submits ideas
+        const ownerIdeaInput = ownerPage.locator('textarea').first();
+        await ownerIdeaInput.fill('Owner idea 1');
+        let submitButton = ownerPage.getByRole('button', { name: /submit|enviar|add|añadir/i }).first();
+        await submitButton.click();
+        await ownerPage.waitForTimeout(500);
 
-        // Take a screenshot of results
-        await page.screenshot({ path: 'e2e/screenshots/final-results.png', fullPage: true });
-      } else {
-        console.log('May need additional voting rounds or still counting votes');
+        await ownerIdeaInput.fill('Owner idea 2');
+        submitButton = ownerPage.getByRole('button', { name: /submit|enviar|add|añadir/i }).first();
+        await submitButton.click();
+        await ownerPage.waitForTimeout(500);
 
-        // Take screenshot of current state
-        await page.screenshot({ path: 'e2e/screenshots/post-voting-state.png', fullPage: true });
-      }
-    });
+        await ownerIdeaInput.fill('Owner idea 3');
+        submitButton = ownerPage.getByRole('button', { name: /submit|enviar|add|añadir/i }).first();
+        await submitButton.click();
 
-    // ==========================================
-    // FINAL: VERIFY SESSION COMPLETED
-    // ==========================================
-    await test.step('Verify session is accessible', async () => {
-      // Session should still be accessible
-      const currentUrl = page.url();
-      expect(currentUrl).toContain('/session/');
+        console.log('✅ Owner submitted 3 ideas');
 
-      console.log('Session flow completed successfully');
-    });
+        // Participant submits ideas
+        const participantIdeaInput = participantPage.locator('textarea').first();
+        await participantIdeaInput.fill('Participant idea 1');
+        let participantSubmitButton = participantPage.getByRole('button', { name: /submit|enviar|add|añadir/i }).first();
+        await participantSubmitButton.click();
+        await participantPage.waitForTimeout(500);
+
+        await participantIdeaInput.fill('Participant idea 2');
+        participantSubmitButton = participantPage.getByRole('button', { name: /submit|enviar|add|añadir/i }).first();
+        await participantSubmitButton.click();
+        await participantPage.waitForTimeout(500);
+
+        await participantIdeaInput.fill('Participant idea 3');
+        participantSubmitButton = participantPage.getByRole('button', { name: /submit|enviar|add|añadir/i }).first();
+        await participantSubmitButton.click();
+
+        console.log('✅ Participant submitted 3 ideas');
+
+        // Mark as done
+        const ownerDoneButton = ownerPage.getByRole('button', { name: /done|listo|finish|finalizar/i });
+        await ownerDoneButton.click();
+
+        const participantDoneButton = participantPage.getByRole('button', { name: /done|listo|finish|finalizar/i });
+        await participantDoneButton.click();
+
+        console.log('✅ Both users marked ideas as done');
+      });
+
+      // ==========================================
+      // STEP 5: VOTING PHASE
+      // ==========================================
+      await test.step('Voting phase', async () => {
+        console.log('🗳️  Users: Voting on ideas...');
+
+        // Wait for voting phase
+        await expect(ownerPage.getByText(/vote|votar/i)).toBeVisible({ timeout: 15000 });
+        await expect(participantPage.getByText(/vote|votar/i)).toBeVisible({ timeout: 15000 });
+
+        // Vote on ideas (both users vote on first 3 ideas they see)
+        const ownerVoteButtons = await ownerPage.getByRole('button', { name: /vote|votar/i }).all();
+        for (let i = 0; i < Math.min(3, ownerVoteButtons.length); i++) {
+          await ownerVoteButtons[i].click();
+          await ownerPage.waitForTimeout(300);
+        }
+
+        const participantVoteButtons = await participantPage.getByRole('button', { name: /vote|votar/i }).all();
+        for (let i = 0; i < Math.min(3, participantVoteButtons.length); i++) {
+          await participantVoteButtons[i].click();
+          await participantPage.waitForTimeout(300);
+        }
+
+        console.log('✅ Both users voted');
+      });
+
+      // ==========================================
+      // STEP 6: RESULTS
+      // ==========================================
+      await test.step('View results', async () => {
+        console.log('🏆 Checking results...');
+
+        // Wait for results screen (timeout longer as counting might take time)
+        await expect(ownerPage.getByText(/results|resultados|winners?|ganador/i)).toBeVisible({ timeout: 20000 });
+        await expect(participantPage.getByText(/results|resultados|winners?|ganador/i)).toBeVisible({ timeout: 20000 });
+
+        console.log('✅ Results displayed to both users');
+      });
+
+      console.log('✅ Complete multi-user session flow test passed!');
+
+    } finally {
+      // Cleanup
+      await ownerPage.close();
+      await participantPage.close();
+      await ownerContext.close();
+      await participantContext.close();
+    }
   });
 });

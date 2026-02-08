@@ -80,7 +80,7 @@ export const sessionService = {
   // Join an existing session using code
   joinSession: async (code) => {
     try {
-      const response = await api.post(`/sessions/${code}/join`, { code });
+      const response = await api.post('/sessions/join', { code });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: i18n.t('home.joinFailed') };

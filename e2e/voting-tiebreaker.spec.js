@@ -21,8 +21,8 @@ test.describe('Voting and Tiebreaker Scenarios', () => {
         // User 1 (Owner) creates session
         await user1Page.goto('/');
         await user1Page.getByPlaceholder(/enter your name|nombre/i).fill('User One');
-        await user1Page.getByRole('button', { name: /continue|continuar/i }).click();
-        await user1Page.waitForURL(/\/(home|inicio)/);
+        await user1Page.getByRole('button', { name: /continue|continuar|join now/i }).click();
+        await user1Page.waitForSelector('text=/Welcome to Jam Literaria/i');
 
         await user1Page.getByRole('button', { name: /create.*session|crear/i }).click();
         await user1Page.waitForURL(/\/session\/[a-zA-Z0-9]+/);
@@ -34,8 +34,8 @@ test.describe('Voting and Tiebreaker Scenarios', () => {
         // User 2 joins
         await user2Page.goto('/');
         await user2Page.getByPlaceholder(/enter your name|nombre/i).fill('User Two');
-        await user2Page.getByRole('button', { name: /continue|continuar/i }).click();
-        await user2Page.waitForURL(/\/(home|inicio)/);
+        await user2Page.getByRole('button', { name: /continue|continuar|join now/i }).click();
+        await user2Page.waitForSelector('text=/Welcome to Jam Literaria/i');
 
         await user2Page.getByPlaceholder(/session.*code|código/i).fill(sessionCode);
         await user2Page.getByRole('button', { name: /join|unirse/i }).click();
@@ -44,8 +44,8 @@ test.describe('Voting and Tiebreaker Scenarios', () => {
         // User 3 joins
         await user3Page.goto('/');
         await user3Page.getByPlaceholder(/enter your name|nombre/i).fill('User Three');
-        await user3Page.getByRole('button', { name: /continue|continuar/i }).click();
-        await user3Page.waitForURL(/\/(home|inicio)/);
+        await user3Page.getByRole('button', { name: /continue|continuar|join now/i }).click();
+        await user3Page.waitForSelector('text=/Welcome to Jam Literaria/i');
 
         await user3Page.getByPlaceholder(/session.*code|código/i).fill(sessionCode);
         await user3Page.getByRole('button', { name: /join|unirse/i }).click();
