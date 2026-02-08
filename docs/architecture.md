@@ -1,577 +1,381 @@
-# Arquitectura de la Aplicación de Jam Literaria
+# Architecture Documentation
 
-## Visión General
-La aplicación Jam Literaria permite organizar sesiones de escritura colaborativa donde múltiples escritores proponen ideas, votan por ellas y seleccionan tres ideas finales mediante un proceso de votación estructurado. La aplicación utilizará una arquitectura moderna con separación clara entre frontend y backend.
+## System Overview
 
-## Stack Tecnológico
-- **Backend**: Node.js v22+ con Express
-- **Frontend**: React con arquitectura de componentes
-- **Lenguaje**: JavaScript moderno (ECMAScript)
-- **Base de Datos**: SQLite utilizando el módulo nativo de Node.js (node:sqlite)
-- **Tiempo Real**: Socket.io para comunicación bidireccional
-- **Estilos**: Enfoque Mobile-First con un framework CSS ligero
-- **Testing**: Jest para tests unitarios y funcionales
+Jam Literaria is a real-time collaborative brainstorming platform built with a modern client-server architecture using WebSocket communication for real-time updates.
 
-## Ventajas del Stack Moderno
-- **Separación de Responsabilidades**: Clara división entre frontend y backend
-- **Eficiencia en Desarrollo**: React para UI reactiva y modular
-- **Rendimiento Optimizado**: Módulo nativo SQLite sin dependencias adicionales
-- **Características Modernas**: Aprovechamiento de funcionalidades de Node.js v22
-- **Escalabilidad**: Arquitectura que facilita la expansión de funcionalidades
-- **Mantenibilidad**: Separación por servicios, modelos y componentes
-
-## Estructura de Directorios
 ```
-/
-├── server/                     # Código del backend
-│   ├── api/                    # API endpoints
-│   │   ├── routes/             # Definiciones de rutas Express
-│   │   │   ├── auth.js         # Rutas de autenticación
-│   │   │   ├── sessions.js     # Rutas de sesión
-│   │   │   ├── ideas.js        # Rutas para gestión de ideas
-│   │   │   └── votes.js        # Rutas para votación
-│   │   ├── controllers/        # Controladores de la API
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React Client  │────│   Express API   │────│   SQLite DB     │
+│   (Frontend)    │    │   (Backend)     │    │   (Database)    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │
+         └───────────────────────┘
+              Socket.io
+           (Real-time Events)
+```
+
+## Technology Stack
+
+### Backend
+- **Runtime**: Node.js 22+ with ES Modules
+- **Framework**: Express.js 4.18+
+- **Real-time**: Socket.IO 4.7+
+- **Database**: SQLite 5.0+ (embedded, ACID-compliant)
+- **Process Manager**: PM2 (production)
+- **Authentication**: express-session with cookie-parser
+- **Security**: CORS, secure cookies, session management
+
+### Frontend
+- **UI Library**: React 19.1+ (latest features)
+- **Build Tool**: Vite 6.3+ (fast HMR, optimized builds)
+- **Routing**: React Router DOM 7.6+
+- **Real-time Client**: Socket.IO Client 4.8+
+- **HTTP Client**: Axios 1.9+
+- **i18n**: react-i18next 15.5+ (English/Spanish support)
+- **State Management**: React Context API
+
+## Project Structure
+
+```
+jam-literaria/
+├── server/                    # Backend Node.js application
+│   ├── api/                  # REST API layer
+│   │   ├── controllers/      # Business logic controllers
 │   │   │   ├── authController.js
 │   │   │   ├── sessionController.js
 │   │   │   ├── ideaController.js
 │   │   │   └── voteController.js
-│   │   └── middleware/         # Middleware Express
-│   │       ├── auth.js         # Middleware de autenticación
-│   │       └── validation.js   # Validación de entradas
-│   ├── services/               # Lógica de negocio
-│   │   ├── userService.js
-│   │   ├── sessionService.js
-│   │   ├── ideaService.js
-│   │   ├── voteService.js
-│   │   └── votingService.js    # Algoritmo de votación
-│   ├── models/                 # Modelos de datos con SQLite
-│   │   ├── db.js               # Configuración de base de datos
+│   │   ├── middleware/       # Express middleware
+│   │   │   └── auth.js
+│   │   └── routes/          # API route definitions
+│   │       ├── auth.js
+│   │       ├── sessions.js
+│   │       ├── ideas.js
+│   │       └── votes.js
+│   ├── socket/              # Socket.IO event handlers
+│   │   ├── index.js         # Socket server setup
+│   │   ├── io.js            # Socket.IO initialization
+│   │   ├── sessionHandlers.js
+│   │   ├── ideaHandlers.js
+│   │   └── voteHandlers.js
+│   ├── models/              # Database models & ORM
+│   │   ├── db.js            # Database connection
 │   │   ├── User.js
 │   │   ├── Session.js
 │   │   ├── Idea.js
 │   │   └── Vote.js
-│   ├── socket/                 # Configuración tiempo real
-│   │   ├── index.js            # Configuración general
-│   │   ├── sessionHandlers.js  # Handlers para eventos de sesión
-│   │   ├── ideaHandlers.js     # Handlers para eventos de ideas
-│   │   └── voteHandlers.js     # Handlers para eventos de votación
-│   ├── utils/                  # Utilidades
-│   │   ├── errorHandler.js     # Manejo centralizado de errores
-│   │   ├── validators.js       # Validaciones comunes
-│   │   └── helpers.js          # Funciones auxiliares
-│   ├── config/                 # Configuraciones
-│   │   ├── app.js              # Configuración de aplicación
-│   │   ├── db.js               # Configuración de base de datos
-│   │   └── socket.js           # Configuración Socket.io
-│   └── app.js                  # Punto de entrada del servidor
-├── client/                     # Código del frontend (React)
-│   ├── public/                 # Archivos estáticos
-│   ├── src/                    # Código fuente React
-│   │   ├── components/         # Componentes reutilizables
-│   │   │   ├── common/         # Componentes comunes (botones, inputs, etc.)
-│   │   │   ├── layout/         # Componentes de layout
-│   │   │   ├── auth/           # Componentes de autenticación
-│   │   │   ├── session/        # Componentes de sesión
-│   │   │   ├── ideas/          # Componentes de ideas
-│   │   │   └── voting/         # Componentes de votación
-│   │   ├── pages/              # Páginas de la aplicación
-│   │   │   ├── Auth/           # Páginas de autenticación
-│   │   │   ├── Home/           # Página principal
-│   │   │   ├── Session/        # Páginas de sesión
-│   │   │   ├── Ideas/          # Páginas de ideas
-│   │   │   └── Voting/         # Páginas de votación
-│   │   ├── hooks/              # Custom hooks
-│   │   │   ├── useAuth.js
-│   │   │   ├── useSession.js
-│   │   │   └── useSocket.js
-│   │   ├── services/           # Servicios de cliente
-│   │   │   ├── api.js          # Cliente API
-│   │   │   └── socket.js       # Cliente Socket.io
-│   │   ├── context/            # Contextos de React
-│   │   │   ├── AuthContext.js
-│   │   │   ├── SessionContext.js
-│   │   │   └── SocketContext.js
-│   │   ├── utils/              # Utilidades para frontend
-│   │   │   ├── validators.js
-│   │   │   └── helpers.js
-│   │   ├── styles/             # Estilos CSS
-│   │   │   ├── variables.css   # Variables CSS
-│   │   │   ├── global.css      # Estilos globales
-│   │   │   └── components/     # Estilos por componente
-│   │   ├── App.js              # Componente principal
-│   │   └── index.js            # Punto de entrada
-│   ├── package.json            # Dependencias frontend
-│   └── README.md               # Documentación frontend
-├── tests/                      # Tests con Jest
-│   ├── server/                 # Tests de backend
-│   │   ├── unit/               # Tests unitarios
-│   │   ├── integration/        # Tests de integración
-│   │   └── e2e/                # Tests end-to-end
-│   └── client/                 # Tests de frontend
-│       ├── unit/               # Tests unitarios
-│       └── integration/        # Tests de integración
-├── database/                   # Archivos de base de datos
-│   ├── schema.sql              # Esquema SQL
-│   └── migrations/             # Migraciones SQL
-├── package.json                # Dependencias generales
-└── README.md                   # Documentación general
+│   ├── services/            # Business logic services
+│   │   ├── userService.js
+│   │   ├── sessionService.js
+│   │   ├── ideaService.js
+│   │   ├── voteService.js
+│   │   └── votingService.js  # Core voting algorithm
+│   ├── scripts/             # Utility scripts
+│   │   └── reset-db.js
+│   └── app.js              # Main server entry point
+│
+├── app/                     # Frontend React application
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   │   ├── common/      # Reusable UI components
+│   │   │   │   ├── Button.jsx
+│   │   │   │   ├── TextArea.jsx
+│   │   │   │   └── LoadingSpinner.jsx
+│   │   │   ├── VotingScreen.jsx
+│   │   │   ├── ResultsScreen.jsx
+│   │   │   ├── VoteCountingScreen.jsx
+│   │   │   ├── IdeaSubmission.jsx
+│   │   │   ├── PostIdeasWaiting.jsx
+│   │   │   └── ProtectedRoute.jsx
+│   │   ├── pages/          # Page components
+│   │   │   ├── Login.jsx
+│   │   │   ├── Home.jsx
+│   │   │   ├── Session.jsx
+│   │   │   └── JoinSession.jsx
+│   │   ├── context/        # React Context providers
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── SocketContext.jsx
+│   │   ├── services/       # API communication layer
+│   │   │   ├── api.js
+│   │   │   └── socketService.js
+│   │   ├── i18n/           # Internationalization
+│   │   │   ├── index.js
+│   │   │   └── locales/
+│   │   │       ├── en.json
+│   │   │       └── es.json
+│   │   ├── styles/         # CSS stylesheets
+│   │   ├── App.jsx         # Main app component
+│   │   └── main.jsx        # Entry point
+│   └── public/             # Static assets
+│
+├── database/               # Database files
+│   ├── schema.sql         # Database schema definition
+│   └── jam_literaria.db   # SQLite database file
+│
+└── docs/                  # Documentation
+    └── (this folder)
 ```
 
-## Modelo de Datos
+## Core Components
 
-### Esquema de la Base de Datos (SQL)
+### 1. Backend Server (server/app.js)
 
-```sql
--- Usuarios
-CREATE TABLE users (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) STRICT;
+**Responsibilities:**
+- Initialize Express application
+- Configure middleware (CORS, sessions, cookies)
+- Set up REST API routes
+- Initialize Socket.IO server
+- Manage database connection
+- Handle graceful shutdown
 
--- Sesiones
-CREATE TABLE sessions (
-  id TEXT PRIMARY KEY,
-  code TEXT UNIQUE NOT NULL,
-  status TEXT DEFAULT 'WAITING',
-  current_round INTEGER DEFAULT 0,
-  owner_id TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (owner_id) REFERENCES users(id)
-) STRICT;
+**Key Middleware:**
+- `cors()` - Cross-origin resource sharing
+- `express.json()` - JSON body parsing
+- `express-session` - Session management
+- `cookieParser()` - Cookie parsing
 
--- Relación Usuarios-Sesiones (para participantes)
-CREATE TABLE session_participants (
-  session_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  PRIMARY KEY (session_id, user_id),
-  FOREIGN KEY (session_id) REFERENCES sessions(id),
-  FOREIGN KEY (user_id) REFERENCES users(id)
-) STRICT;
+**Configuration:**
+- Environment-based settings via `.env`
+- Trust proxy in production for HTTPS
+- Secure cookies in production
+- 24-hour session lifetime
 
--- Ideas
-CREATE TABLE ideas (
-  id TEXT PRIMARY KEY,
-  content TEXT NOT NULL,
-  author_id TEXT NOT NULL,
-  session_id TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (author_id) REFERENCES users(id),
-  FOREIGN KEY (session_id) REFERENCES sessions(id)
-) STRICT;
+### 2. Database Layer (server/models/)
 
--- Votos
-CREATE TABLE votes (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  idea_id TEXT NOT NULL,
-  session_id TEXT NOT NULL,
-  round INTEGER NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (user_id, idea_id, round, session_id),
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (idea_id) REFERENCES ideas(id),
-  FOREIGN KEY (session_id) REFERENCES sessions(id)
-) STRICT;
+**Pattern**: Active Record pattern with static methods
 
--- Sesión Metadata (para almacenar información adicional de sesión)
-CREATE TABLE session_metadata (
-  session_id TEXT PRIMARY KEY,
-  ideas_elegidas TEXT, -- JSON array of idea IDs
-  ideas_candidatas TEXT, -- JSON array of idea IDs
-  mensaje_ronda TEXT,
-  mensaje_final TEXT,
-  FOREIGN KEY (session_id) REFERENCES sessions(id)
-) STRICT;
+**Models:**
+- `User` - User account management
+- `Session` - Session lifecycle and metadata
+- `Idea` - Idea storage and retrieval
+- `Vote` - Vote tracking across rounds
+
+**Features:**
+- Prepared statements for SQL injection protection
+- Transaction support for atomic operations
+- JSON serialization for metadata
+- Automatic timestamp management
+
+### 3. Service Layer (server/services/)
+
+**Purpose**: Encapsulate business logic separate from HTTP/WebSocket handlers
+
+**Services:**
+- `userService` - User creation, validation, activity tracking
+- `sessionService` - Session CRUD, participant management, status updates
+- `ideaService` - Idea submission, retrieval, validation
+- `voteService` - Vote submission, counting, status tracking
+- `votingService` - **Core voting algorithm and tiebreaker logic**
+
+**Benefits:**
+- Reusable across REST and WebSocket handlers
+- Centralized validation
+- Easier testing
+- Clear separation of concerns
+
+### 4. Real-time Communication (server/socket/)
+
+**Architecture:**
+- Socket.IO server with authentication middleware
+- Room-based message broadcasting (`session:${sessionId}`)
+- Event-driven architecture
+- User authentication on handshake
+
+**Event Categories:**
+- Session events (join, leave, start)
+- Idea events (submit, get)
+- Vote events (submit, status, results)
+
+**See [SOCKET_EVENTS.md](./SOCKET_EVENTS.md) for detailed event documentation**
+
+### 5. Frontend Application (app/src/)
+
+**Architecture**: Component-based with React hooks and Context API
+
+**Key Patterns:**
+- **Context Providers**: AuthContext, SocketContext for global state
+- **Protected Routes**: Authentication-gated pages
+- **Real-time Updates**: Socket event listeners in useEffect hooks
+- **Optimistic UI**: Immediate feedback before server confirmation
+
+**State Management:**
+- Local state with `useState` for component-specific data
+- Context API for global state (user, socket)
+- No external state management library (Redux, etc.)
+
+**Routing Strategy:**
+- Client-side routing with React Router
+- Protected routes require authentication
+- Dynamic session-based routes (`/session/:sessionId/*`)
+
+## Data Flow Examples
+
+### Creating and Joining a Session
+
+```
+User (Client)                Server                    Database
+     |                          |                          |
+     |--POST /api/auth/login--> |                          |
+     |                          |--INSERT INTO users-----> |
+     |<----{user}-------------- |<---user------------------|
+     |                          |                          |
+     |--POST /api/sessions----> |                          |
+     |                          |--INSERT INTO sessions--> |
+     |                          |--INSERT participants---> |
+     |<----{session}----------- |<---session---------------|
+     |                          |                          |
+     |--emit('join-session')--> |                          |
+     |                          |--JOIN room-------------> |
+     |                          |--SELECT session/users--> |
+     |<--emit('session-state')- |<---session data----------|
+     |                          |                          |
 ```
 
-## Configuración de la Base de Datos (SQLite)
+### Voting Flow with Tiebreaker
 
-Utilización del módulo nativo de SQLite en Node.js v22+:
-
-```javascript
-// server/models/db.js
-import { DatabaseSync } from 'node:sqlite';
-
-let database;
-
-export function initDatabase() {
-  try {
-    database = new DatabaseSync('./database/jam_literaria.db', {
-      enableForeignKeyConstraints: true
-    });
-    
-    console.log('Base de datos SQLite inicializada correctamente');
-    return database;
-  } catch (error) {
-    console.error('Error al inicializar la base de datos SQLite:', error);
-    throw error;
-  }
-}
-
-export function getDatabase() {
-  if (!database) {
-    return initDatabase();
-  }
-  return database;
-}
-
-export function closeDatabase() {
-  if (database) {
-    database.close();
-    database = null;
-    console.log('Conexión a la base de datos cerrada');
-  }
-}
+```
+User (Client)                Server                    Database
+     |                          |                          |
+     |--emit('submit-votes')--> |                          |
+     |                          |--Validate session------> |
+     |                          |--Check if voted--------> |
+     |                          |--INSERT votes----------> |
+     |<--emit('vote-confirmed') |                          |
+     |                          |                          |
+     |                          |--Check if round done---> |
+     |                          |--Process results-------> |
+     |                          |--determineAction()-----> |
+     |                          |                          |
+     |                (if ties) |--UPDATE metadata-------> |
+     |                          |--UPDATE current_round--> |
+     |<--emit('new-voting-round)|                          |
+     |   {candidates,           |                          |
+     |    requiredVotes}        |                          |
+     |                          |                          |
 ```
 
-## Ejemplo de Modelo (Utilizando el módulo nativo SQLite)
+## Security Architecture
 
-```javascript
-// server/models/User.js
-import { v4 as uuidv4 } from 'uuid';
-import { getDatabase } from './db.js';
+### Authentication
+- Session-based authentication (not JWT)
+- HTTP-only cookies prevent XSS attacks
+- Secure flag in production (HTTPS only)
+- SameSite cookie attribute for CSRF protection
 
-export class User {
-  static createUser(name) {
-    const db = getDatabase();
-    const id = uuidv4();
-    
-    const stmt = db.prepare('INSERT INTO users (id, name) VALUES (?, ?)');
-    stmt.run(id, name);
-    
-    return this.getUserById(id);
-  }
-  
-  static getUserById(id) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
-    return stmt.get(id);
-  }
-  
-  static updateUserLastActive(id) {
-    const db = getDatabase();
-    const stmt = db.prepare('UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE id = ?');
-    return stmt.run(id);
-  }
-  
-  // Más métodos según sea necesario
-}
+### Authorization
+- Socket authentication middleware validates user on connect
+- User-session access validation before operations
+- Owner-only operations (start session, delete, etc.)
+- Vote validation prevents double voting
+
+### Input Validation
+- Server-side validation for all inputs
+- Prepared SQL statements prevent injection
+- Type checking with database STRICT mode
+- Rate limiting potential (not implemented)
+
+### Data Privacy
+- Anonymous voting (ideas shown without authors)
+- Admin can see authors for moderation
+- Vote details hidden from participants
+- Session isolation (users can't access other sessions)
+
+## Scalability Considerations
+
+### Current Limitations (SQLite)
+- Single file database
+- Write serialization (one writer at a time)
+- Limited concurrent connections
+- No built-in replication
+
+### Scaling Path
+1. **Horizontal scaling**: Redis for session state
+2. **Database migration**: PostgreSQL for production
+3. **Load balancing**: Nginx for multiple server instances
+4. **WebSocket clustering**: Socket.IO Redis adapter
+5. **CDN**: Static asset delivery
+6. **Caching**: Redis for frequently accessed data
+
+### Performance Optimizations
+- Database indexes on foreign keys
+- Connection pooling (when migrating to PostgreSQL)
+- Efficient SQL queries with JOINs
+- Client-side caching of session data
+- Optimistic UI updates
+
+## Deployment Architecture
+
+### Development
+```
+localhost:5173 (Vite dev server)
+      ↓
+localhost:5000 (Express + Socket.IO)
+      ↓
+./database/jam_literaria.db
 ```
 
-## Implementación de API REST (Backend)
-
-```javascript
-// server/api/routes/sessions.js
-import express from 'express';
-import { 
-  createSession, 
-  getSession, 
-  joinSession,
-  startSession 
-} from '../controllers/sessionController.js';
-import { authMiddleware } from '../middleware/auth.js';
-
-const router = express.Router();
-
-router.use(authMiddleware);
-
-router.post('/', createSession);
-router.get('/:id', getSession);
-router.post('/:id/join', joinSession);
-router.post('/:id/start', startSession);
-
-export default router;
+### Production
+```
+nginx (reverse proxy)
+  ↓
+  ├─→ Static files (/var/www/jam-client)
+  └─→ API + WebSocket (/var/www/jam-server)
+       ↓
+       PM2 (process manager)
+         ↓
+         Node.js server
+           ↓
+           SQLite database
 ```
 
-```javascript
-// server/api/controllers/sessionController.js
-import { SessionService } from '../../services/sessionService.js';
+**Production Configuration:**
+- Nginx handles SSL/TLS termination
+- PM2 manages Node.js process (auto-restart, clustering)
+- Static files served by Nginx (not Node.js)
+- Environment-specific configuration via `.env`
 
-export async function createSession(req, res) {
-  try {
-    const { userId } = req.user;
-    const session = SessionService.createSession(userId);
-    
-    return res.status(201).json({
-      success: true,
-      data: {
-        session
-      }
-    });
-  } catch (error) {
-    console.error('Error al crear sesión:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Error al crear sesión'
-    });
-  }
-}
+## Error Handling Strategy
 
-// Más controladores...
-```
+### Backend
+- Try-catch blocks in all async operations
+- Centralized error handling middleware
+- Error logging to console (production: use logging service)
+- Graceful degradation for database errors
 
-## Implementación de Componentes React (Frontend)
+### Frontend
+- Error boundaries for React component errors
+- Socket error event handlers
+- User-friendly error messages
+- Fallback UI for error states
 
-```jsx
-// client/src/components/session/SessionCreate.jsx
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import { createSession } from '../../services/api';
-import Button from '../common/Button';
+### Real-time Communication
+- Connection error handling
+- Automatic reconnection (Socket.IO built-in)
+- State recovery after reconnection
+- Timeout handling for long operations
 
-function SessionCreate() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
-  
-  const handleCreateSession = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const { data } = await createSession();
-      navigate(`/session/${data.session.id}`);
-    } catch (err) {
-      setError('Error al crear la sesión. Inténtalo de nuevo.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  return (
-    <div className="session-create">
-      <h2>Crear Nueva Sesión</h2>
-      <p>Como maestro de ceremonias, podrás iniciar una nueva sesión de Jam Literaria.</p>
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      <Button 
-        onClick={handleCreateSession}
-        disabled={loading}
-        className="btn-primary"
-      >
-        {loading ? 'Creando...' : 'Crear Sesión'}
-      </Button>
-    </div>
-  );
-}
+## Monitoring and Observability
 
-export default SessionCreate;
-```
+### Current Implementation
+- Console logging for events and errors
+- PM2 status monitoring
+- Socket connection/disconnection logging
 
-## Implementación de Socket.io (Tiempo Real)
+### Recommended Additions
+- Application Performance Monitoring (APM)
+- Error tracking (Sentry, Rollbar)
+- User analytics
+- Database query performance monitoring
+- Real-time dashboard for active sessions
 
-```javascript
-// server/socket/index.js
-import { Server } from 'socket.io';
-import { sessionHandlers } from './sessionHandlers.js';
-import { ideaHandlers } from './ideaHandlers.js';
-import { voteHandlers } from './voteHandlers.js';
-import { UserService } from '../services/userService.js';
+## Future Architecture Improvements
 
-export function setupSocketServer(httpServer) {
-  const io = new Server(httpServer, {
-    cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:3000',
-      methods: ['GET', 'POST']
-    }
-  });
-  
-  io.on('connection', (socket) => {
-    console.log('Usuario conectado:', socket.id);
-    
-    // Autenticación del socket
-    socket.on('authenticate', async (userId) => {
-      if (userId) {
-        socket.userId = userId;
-        await UserService.updateUserLastActive(userId);
-        console.log(`Socket ${socket.id} autenticado como usuario ${userId}`);
-      }
-    });
-    
-    // Registrar handlers para diferentes eventos
-    sessionHandlers(io, socket);
-    ideaHandlers(io, socket);
-    voteHandlers(io, socket);
-    
-    socket.on('disconnect', () => {
-      console.log('Usuario desconectado:', socket.id);
-    });
-  });
-  
-  return io;
-}
-```
-
-```javascript
-// server/socket/sessionHandlers.js
-import { SessionService } from '../services/sessionService.js';
-
-export function sessionHandlers(io, socket) {
-  // Unirse a una sala de sesión
-  socket.on('join-session', async ({ sessionId, userId }) => {
-    try {
-      socket.join(`session-${sessionId}`);
-      
-      // Actualizar estado del usuario
-      await UserService.updateUserLastActive(userId);
-      
-      // Notificar a otros participantes
-      socket.to(`session-${sessionId}`).emit('user-joined', { userId });
-      
-      // Enviar estado actual de la sesión
-      const sessionData = await SessionService.getSessionWithParticipants(sessionId);
-      socket.emit('session-state', sessionData);
-      
-    } catch (error) {
-      console.error('Error al unirse a la sesión:', error);
-      socket.emit('error', { message: 'Error al unirse a la sesión' });
-    }
-  });
-  
-  // Más eventos según sea necesario...
-}
-```
-
-## Lógica de Selección de Ideas y Desempates
-
-```javascript
-// server/services/votingService.js
-/**
- * Determina la acción siguiente después de una ronda de votación
- * @param {Array} ideas - Array de objetos con formato {id, content, votos, autorId}
- * @returns {Object} - Acción a seguir y las ideas seleccionadas o candidatas
- */
-export function determinarAccionSiguiente(ideas) {
-  // Ordena ideas por número de votos (descendente)
-  const ideasOrdenadas = [...ideas].sort((a, b) => b.votos - a.votos);
-  
-  // Agrupa ideas por cantidad de votos
-  const gruposPorVotos = agruparIdeasPorVotos(ideasOrdenadas);
-  
-  // Array con los grupos de votos en orden descendente
-  const gruposOrdenados = Object.entries(gruposPorVotos)
-    .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
-    .map(entry => ({
-      votos: parseInt(entry[0]),
-      ideas: entry[1]
-    }));
-  
-  // Implementación de los casos de selección
-  // Análisis de diferentes escenarios de votación
-  if (gruposOrdenados.length === 1 && gruposOrdenados[0].ideas.length === 3) {
-    // Caso 1: Exactamente 3 ideas empatadas con la mayor cantidad de votos
-    return {
-      accion: 'FINALIZAR',
-      ideasElegidas: gruposOrdenados[0].ideas.map(idea => idea.id)
-    };
-  } else if (gruposOrdenados.length === 1 && gruposOrdenados[0].ideas.length > 3) {
-    // Caso 2: Más de 3 ideas empatadas con la mayor cantidad de votos
-    return {
-      accion: 'NUEVA_RONDA',
-      ideasCandidatas: gruposOrdenados[0].ideas.map(idea => idea.id)
-    };
-  }
-  
-  // Más casos según la lógica del juego...
-}
-
-function agruparIdeasPorVotos(ideas) {
-  return ideas.reduce((grupos, idea) => {
-    if (!grupos[idea.votos]) {
-      grupos[idea.votos] = [];
-    }
-    grupos[idea.votos].push(idea);
-    return grupos;
-  }, {});
-}
-```
-
-## Implementación del Cliente API (Frontend)
-
-```javascript
-// client/src/services/api.js
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true
-});
-
-// Interceptores para manejar errores y tokens
-api.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response && error.response.status === 401) {
-      // Redirigir a login si es necesario
-    }
-    return Promise.reject(error);
-  }
-);
-
-// API de sesiones
-export const createSession = () => api.post('/sessions');
-export const getSession = (sessionId) => api.get(`/sessions/${sessionId}`);
-export const joinSession = (sessionId, code) => api.post(`/sessions/${sessionId}/join`, { code });
-export const startSession = (sessionId) => api.post(`/sessions/${sessionId}/start`);
-
-// API de ideas
-export const submitIdea = (sessionId, content) => api.post(`/sessions/${sessionId}/ideas`, { content });
-export const getIdeas = (sessionId) => api.get(`/sessions/${sessionId}/ideas`);
-
-// API de votos
-export const submitVote = (sessionId, ideaId) => api.post(`/sessions/${sessionId}/votes`, { ideaId });
-export const getResults = (sessionId) => api.get(`/sessions/${sessionId}/results`);
-
-// Exportación por defecto
-export default api;
-```
-
-## Ventajas del Nuevo Enfoque
-
-1. **Arquitectura Moderna**: Separación clara entre frontend y backend para un desarrollo más organizado.
-2. **Escalabilidad**: La estructura por servicios facilita la expansión y mantenimiento.
-3. **Rendimiento Optimizado**: Uso del módulo nativo SQLite para operaciones de base de datos eficientes.
-4. **Experiencia de Usuario Mejorada**: React proporciona una UI reactiva y fluida.
-5. **Mantenibilidad**: Código organizado con responsabilidades claramente definidas.
-6. **Mobile-First**: Diseño adaptativo que funciona bien en todos los dispositivos.
-7. **Testing Robusto**: Estructura organizada para tests completos.
-
-## Consideraciones Técnicas
-
-1. **Node.js v22 Features**: Aprovechar las últimas características como:
-   - Módulo nativo SQLite
-   - Mejoras en ESM (ECMAScript Modules)
-   - Mejoras de rendimiento del motor V8
-   - WebStreams API
-   - Mejoras en el sistema de módulos
-
-2. **Seguridad**:
-   - Validación de entradas en frontend y backend
-   - Protección contra inyección SQL usando parámetros preparados
-   - Manejo adecuado de autenticación y sesiones
-   - Implementación de CORS para API
-
-3. **Optimización**:
-   - Lazy loading de componentes React
-   - Agrupación eficiente de assets
-   - Optimización de consultas SQLite
-   - Estructura de datos eficiente
-
-4. **Testing**:
-   - Tests unitarios para lógica de negocio crítica
-   - Tests de integración para APIs
-   - Tests de componentes React
-   - Tests end-to-end para flujos completos
-
-Con esta arquitectura moderna, la aplicación de Jam Literaria tendrá una base sólida, mantenible y escalable, aprovechando lo mejor de las tecnologías web actuales. 
-
-
+1. **Microservices**: Separate voting service, session service
+2. **Message Queue**: RabbitMQ/Kafka for asynchronous processing
+3. **GraphQL**: Consider GraphQL for flexible API queries
+4. **TypeScript**: Type safety across codebase
+5. **Testing**: Comprehensive unit, integration, e2e tests
+6. **CI/CD Pipeline**: Automated testing and deployment
+7. **Containerization**: Docker for consistent deployments
+8. **Kubernetes**: Orchestration for production scaling

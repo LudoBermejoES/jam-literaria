@@ -3,6 +3,25 @@ import { Session, SESSION_STATUS } from '../models/Session.js';
 import * as sessionService from './sessionService.js';
 
 /**
+ * Validate that a session exists
+ * @param {string} sessionId - Session ID
+ * @returns {Object} Session object
+ * @throws {Error} If session not found
+ */
+export function validateSessionExists(sessionId) {
+  if (!sessionId) {
+    throw new Error('Session ID is required');
+  }
+
+  const session = Session.getSessionById(sessionId);
+  if (!session) {
+    throw new Error('Session not found');
+  }
+
+  return session;
+}
+
+/**
  * Determine the maximum number of ideas per user based on participant count
  * @param {number} participantCount - Number of participants in the session
  * @returns {number} Maximum ideas per user
@@ -110,13 +129,34 @@ export function getIdeasBySessionId(sessionId) {
   if (!sessionId) {
     throw new Error('Session ID is required');
   }
-  
+
   try {
     return Idea.getIdeasBySessionId(sessionId);
   } catch (error) {
     console.error('Error getting ideas by session ID:', error);
     throw new Error('Failed to get ideas');
   }
+}
+
+/**
+ * Get ideas by session ID with session validation
+ * @param {string} sessionId - Session ID
+ * @returns {Array} Array of idea objects
+ * @throws {Error} If session not found
+ */
+export function getIdeasBySessionWithValidation(sessionId) {
+  if (!sessionId) {
+    throw new Error('Session ID is required');
+  }
+
+  // Validate session exists
+  const session = Session.getSessionById(sessionId);
+  if (!session) {
+    throw new Error('Session not found');
+  }
+
+  // Get ideas
+  return Idea.getIdeasBySessionId(sessionId);
 }
 
 /**

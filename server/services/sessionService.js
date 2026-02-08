@@ -217,16 +217,16 @@ export function getSessionWithParticipants(sessionId) {
   if (!sessionId) {
     throw new Error('Session ID is required');
   }
-  
+
   try {
     const session = Session.getSessionById(sessionId);
     if (!session) {
-      throw new Error('Session not found');
+      return null;
     }
-    
+
     const participants = Session.getParticipants(sessionId);
     const metadata = Session.getSessionMetadata(sessionId);
-    
+
     return {
       ...session,
       participants,
@@ -234,7 +234,7 @@ export function getSessionWithParticipants(sessionId) {
     };
   } catch (error) {
     console.error('Error getting session with participants:', error);
-    throw new Error('Failed to get session details');
+    throw error;
   }
 }
 

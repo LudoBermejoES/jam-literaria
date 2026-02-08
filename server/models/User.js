@@ -94,7 +94,7 @@ export class User {
   /**
    * Delete a user (for testing purposes)
    * @param {string} id - User ID
-   * @returns {Object} Result of the delete operation
+   * @returns {boolean} True if user was deleted, false otherwise
    */
   static deleteUser(id) {
     if (!id) {
@@ -103,7 +103,8 @@ export class User {
 
     const db = getDatabase();
     const stmt = db.prepare('DELETE FROM users WHERE id = ?');
-    return stmt.run(id);
+    const result = stmt.run(id);
+    return result.changes > 0;
   }
   
   /**

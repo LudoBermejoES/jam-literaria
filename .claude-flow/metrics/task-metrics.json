@@ -1,0 +1,18 @@
+[
+  {
+    "id": "cmd-hive-mind-1768553216046",
+    "type": "hive-mind",
+    "success": true,
+    "duration": 67751.7625,
+    "timestamp": 1768553283798,
+    "metadata": {}
+  },
+  {
+    "id": "cmd-hive-mind-1768578549061",
+    "type": "hive-mind",
+    "success": true,
+    "duration": 695128.586583,
+    "timestamp": 1768579244190,
+    "metadata": {}
+  }
+]

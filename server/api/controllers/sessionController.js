@@ -123,16 +123,18 @@ export const startSession = async (req, res) => {
     
     // Start the session
     const session = sessionService.startSession(id, user.id);
-    
+
     // Add max ideas per user information
     const maxIdeasPerUser = ideaService.getMaxIdeasPerUserForSession(id);
-    
-    // Broadcast to all participants via socket.io
-    io.to(`session:${id}`).emit('session-started', {
-      session,
-      maxIdeasPerUser
-    });
-    
+
+    // Broadcast to all participants via socket.io (if available)
+    if (io) {
+      io.to(`session:${id}`).emit('session-started', {
+        session,
+        maxIdeasPerUser
+      });
+    }
+
     return res.status(200).json({
       success: true,
       data: {
@@ -142,7 +144,15 @@ export const startSession = async (req, res) => {
     });
   } catch (error) {
     console.error('Start session error:', error);
-    
+
+    // Return 403 for authorization errors
+    if (error.message.includes('owner')) {
+      return res.status(403).json({
+        success: false,
+        error: error.message
+      });
+    }
+
     return res.status(400).json({
       success: false,
       error: error.message || 'Failed to start session'
@@ -280,10 +290,116 @@ export const deleteSession = async (req, res) => {
     });
   } catch (error) {
     console.error('Delete session error:', error);
-    
+
+    // Return 403 for authorization errors
+    if (error.message.includes('owner')) {
+      return res.status(403).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    // Return 404 for not found errors
+    if (error.message.includes('not found')) {
+      return res.status(404).json({
+        success: false,
+        error: error.message
+      });
+    }
+
     return res.status(400).json({
       success: false,
       error: error.message || 'Failed to delete session'
     });
   }
-}; 
+};
+
+/**
+ * Get participants for a session
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ */
+export const getParticipants = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get the session with its participants
+    const session = sessionService.getSessionWithParticipants(id);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        participants: session.participants
+      }
+    });
+  } catch (error) {
+    console.error('Get participants error:', error);
+
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get participants'
+    });
+  }
+};
+
+/**
+ * Start voting phase for a session
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ */
+export const startVoting = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user } = req;
+
+    // Get session to check ownership
+    const session = sessionService.getSessionById(id);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
+    }
+
+    // Check if user is the owner
+    if (session.owner_id !== user.id) {
+      return res.status(403).json({
+        success: false,
+        error: 'Only the session owner can start voting'
+      });
+    }
+
+    // Start voting phase
+    const updatedSession = sessionService.startVotingPhase(id);
+
+    // Broadcast to all participants via socket.io (if available)
+    if (io) {
+      io.to(`session:${id}`).emit('voting-started', {
+        session: updatedSession
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        session: updatedSession
+      }
+    });
+  } catch (error) {
+    console.error('Start voting error:', error);
+
+    // Return 403 for authorization errors
+    if (error.message.includes('owner')) {
+      return res.status(403).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      error: error.message || 'Failed to start voting'
+    });
+  }
+};
