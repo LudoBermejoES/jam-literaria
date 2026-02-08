@@ -83,30 +83,28 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -e
-            
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-            
+
+            # Load NVM for www-data user
+            export NVM_DIR="/var/www/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
             # Clean previous deployments
             rm -rf /var/www/jam-client/*
             rm -rf /var/www/jam-server/*
-            
+
             # Extract frontend
             cd /var/www/jam-client
             tar -xzf /tmp/jam-client.tar.gz
-            rm /tmp/jam-client.tar.gz
-            
+
             # Extract server
             cd /var/www/jam-server
             tar -xzf /tmp/jam-server.tar.gz --strip-components=1
-            rm /tmp/jam-server.tar.gz
-            
+
             # Install server production dependencies
             cd /var/www/jam-server
-            /home/foundryvtt/.nvm/versions/node/v24.1.0/bin/npm ci --production
-            
+            npm ci --production
+
             # Create environment file
             cat > .env << EOF
             NODE_ENV=production
@@ -117,7 +115,7 @@ jobs:
             CLIENT_URL=https://jam.ludobermejo.es
             SERVE_STATIC=false
             EOF
-            
+
             # Initialize database if it doesn't exist
             if [ ! -f /var/www/database/jam_literaria.db ]; then
               echo "Initializing database..."
@@ -126,7 +124,15 @@ jobs:
               sqlite3 /var/www/database/jam_literaria.db < database/schema.sql
               echo "Database initialized successfully"
             fi
-            
+
+            # Restart PM2 service
+            pm2 restart jam-backend || pm2 start app.js --name jam-backend
+            pm2 save
+
+            # Clean up temp files
+            rm -f /tmp/jam-client.tar.gz
+            rm -f /tmp/jam-server.tar.gz
+
             echo "Deployment completed successfully!"
             echo "Frontend deployed to: /var/www/jam-client"
             echo "Backend deployed to: /var/www/jam-server"
